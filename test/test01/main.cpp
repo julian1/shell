@@ -451,7 +451,8 @@ struct Application
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
 
 
-		drawing_area.signal_expose_event() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
+		//drawing_area.signal_expose_event() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
+		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
 
 		test1( services );
 	} 
@@ -530,8 +531,8 @@ struct Application
 		switch( code)
 		{
 			// case GDK_Return: case GDK_Escape: case GDK_F1: etc
-			case GDK_Shift_L:  ret = IMyEvents ::shift_key; break; 
-			case GDK_Control_L: ret = IMyEvents ::ctrl_key; break;
+			case GDK_KEY_Shift_L  :  ret = IMyEvents ::shift_key; break; 
+			case GDK_KEY_Control_L: ret = IMyEvents ::ctrl_key; break;
 			default: ret = code; break;
 		};
 		return ret; 

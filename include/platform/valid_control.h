@@ -37,7 +37,8 @@ struct GUIValidController  //: IValidController
 		prev_button( "prev" ),
 		next_button( "next" ),
 //		label( "whoot" )
-		adjustment( 0, 0, 1, 1), 
+		//adjustment( 0, 0, 1, 1), 
+		adjustment(),
 		scrollbar( adjustment )
 	{
 		std::cout << "$$$$ GuiValidController constructor" << std::endl;
@@ -53,8 +54,10 @@ struct GUIValidController  //: IValidController
 
 		// we need a button press callback ...
 
+		adjustment->create( 0, 0, 1, 1 ) ; 
+
 		//adjustment.signal_changed() .connect( sigc::mem_fun( *this, &this_type::on_my_value_changed) );
-		adjustment.signal_value_changed() .connect( sigc::mem_fun( *this, &this_type::on_my_value_changed) );
+		adjustment->signal_value_changed() .connect( sigc::mem_fun( *this, &this_type::on_my_value_changed) );
 
 		// pixels
 		scrollbar.set_size_request( 100, -1 );
@@ -70,9 +73,9 @@ struct GUIValidController  //: IValidController
 	void on_my_value_changed()
 	{
 		std::cout << "$$$$ whoot value changed" << std::endl;
-		std::cout << adjustment.get_value () << std::endl;
+		std::cout << adjustment->get_value () << std::endl;
 
-		double uu = adjustment.get_value () ; 
+		double uu = adjustment->get_value () ; 
 
 		// OK this thing is going to need a lot more 
 
@@ -102,7 +105,7 @@ struct GUIValidController  //: IValidController
 */
 			// use a 5 min increment ?
 
-			int sec = (adjustment.get_value() / 1. ) * (diff.total_seconds() / 5 / 60 );  
+			int sec = (adjustment->get_value() / 1. ) * (diff.total_seconds() / 5 / 60 );  
 
 			boost::posix_time::ptime new_valid = a + boost::posix_time::seconds( sec * 5 * 60 ); 
 
@@ -151,7 +154,11 @@ private:
 	Gtk::Button prev_button; 
 	Gtk::Button next_button; 
 
-	Gtk::Adjustment	adjustment;
+//	 static Glib::RefPtr<Adjustment> create(double value, double lower, double upper, double step_increment =  1, double page_    increment =  10, double page_size =  0);
+
+	Glib::RefPtr< Gtk::Adjustment> adjustment; 
+//	Gtk::Adjustment	adjustment;
+
 	Gtk::HScrollbar scrollbar; 
 
 //	Gtk::Label label ; 

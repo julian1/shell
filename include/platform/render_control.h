@@ -39,7 +39,8 @@ struct RenderControl
 		timer()
 	{	
 
-		drawing_area.signal_expose_event() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
+		//drawing_area.signal_expose_event() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
+		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
 		drawing_area.signal_size_allocate() .connect( sigc::mem_fun( *this, &this_type::on_size_allocate_event));
 	}
 
@@ -81,29 +82,31 @@ struct RenderControl
 
 	bool on_expose_event( GdkEventExpose* event)
 	{
+#if 0
 		// should call them rects, because regions are something a bit different in gtk documentation
 		std::vector< Rect> regions; 
 
-		/*
-		http://developer.gnome.org/gtk/2.24/checklist-gdkeventexpose-region.html
-		Why.  The region field of GdkEventExpose allows you to redraw less than the traditional GdkEventRegion.area. 	
-		*/	
+
+		//cairo_rectangle_int_t *rectangles;
+		gint n, n_rectangles;
+		//- gdk_region_get_rectangles (region, &rectangles, &n_rectangles);
+		n_rectangles = cairo_region_num_rectangles ( event->region);
+		//rectangles = g_new (cairo_rectangle_int_t, n_rectangles);
+		for (n = 0; n < n_rectangles; n++) 
 		{
-			GdkRectangle *rects;
-			int n_rects;
-			gdk_region_get_rectangles ( event->region, &rects, &n_rects);
-			// std::cout << "expose event num_rects " << n_rects << std::endl;
-			for ( int i = 0; i < n_rects; i++)
-			{
-				GdkRectangle & rect = rects[ i] ;
-				//std::cout << "expose " << i << "   " << rect.x << " " << rect.y << ", " << rect.width << " " << rect.height << std::endl; 
-				regions.push_back( Rect( rect.x, rect.y, rect.width, rect.height) ); 
-			}
-			g_free (rects);
+
+			cairo_rectangle_int_t	rect;
+
+			//cairo_region_get_rectangle ( event->region, n, &rectangles[n]);
+			cairo_region_get_rectangle ( event->region, n, &rect );
+
+			regions.push_back( Rect( rect.x, rect.y, rect.width, rect.height) ); 
 		}
+
 
 		// get the rendered regions	
 		ptr< BitmapSurface> surface = renderer.update_expose( regions ); 
+
 
 		int region_area = 0; 
 		foreach( const Rect & region, regions)
@@ -122,6 +125,7 @@ struct RenderControl
 		}
 
         return false;   // dont presumpt
+#endif
 	}
 
 
@@ -131,13 +135,27 @@ struct RenderControl
 		but we want the update(), to trigger the expose.
 	*/
 
-	static void blit_buffer( Gtk::DrawingArea & drawing_area, const Rect & rect, ptr< BitmapSurface> & surface )
+
+	static void blit_buffer( Gtk::DrawingArea & drawing_area, const Rect & rect, ptr< BitmapSurface> & surface_ )
 	{
-		// blit the area corresponding to the rect from the surface to the drawing area.
-		// note, how we use the stride very nicely.
+#if 0
+		unsigned char *data = surface_->buf() + (rect.y * surface_->width() * 4) + (rect.x * 4); // beginning of buf 
 
-		const unsigned char *buf = surface->buf() + (rect.y * surface->width() * 4) + (rect.x * 4) ;			// beginning of buf 
+		cairo_t *cr;
+		cairo_surface_t *surface;
 
+		cr = gdk_cairo_create( drawing_area.get_window()->gobj() );// drawable );
+
+		surface = cairo_image_surface_create_for_data(
+					   data, CAIRO_FORMAT_ARGB32, rect.w, rect.h, rect.w * 4 );
+
+		cairo_set_source_surface( cr, surface, rect.x, rect.y );
+		cairo_paint( cr );
+		cairo_destroy( cr );
+		cairo_surface_destroy( surface );
+
+
+#if 0
 		gdk_draw_rgb_32_image (
 			drawing_area.get_window()->gobj(),
 			drawing_area.get_style()->gobj()->fg_gc[ GTK_STATE_NORMAL],
@@ -147,6 +165,8 @@ struct RenderControl
 			(const guchar *)  buf,
 			surface->width() * 4
 		); 
+#endif
+#endif
 	}
 
 
@@ -163,9 +183,6 @@ struct RenderControl
 		//      std::cout << "no win ?" << "\n";
 		}
 	}
-
-
-
 
 
 };

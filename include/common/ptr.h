@@ -30,6 +30,18 @@
 #endif
 
 
+template< class T> 
+inline void intrusive_ptr_add_ref( T *p)
+{
+	p->add_ref(); 
+}
+
+template< class T> 
+inline void intrusive_ptr_release( T *p)
+{
+	p->release(); 
+}
+
 //namespace boost
 //{
 
@@ -289,18 +301,6 @@ template<class E, class T, class Y> std::basic_ostream<E, T> & operator<< (std::
 
 
 
-
-template< class T> 
-inline void intrusive_ptr_add_ref( T *p)
-{
-	p->add_ref(); 
-}
-
-template< class T> 
-inline void intrusive_ptr_release( T *p)
-{
-	p->release(); 
-}
 
 // no fucking template typedef .... ugghhh....
 //template< class T> typedef  ptr< T> ptr< T >;  

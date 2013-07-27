@@ -1,4 +1,5 @@
 
+#include <common/ptr.h>
 #include <common/cube.h>
 #include <aggregate/cube_view.h>
 #include <aggregate/projection.h>
