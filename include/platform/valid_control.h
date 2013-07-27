@@ -54,7 +54,7 @@ struct GUIValidController  //: IValidController
 
 		// we need a button press callback ...
 
-		adjustment->create( 0, 0, 1, 1 ) ; 
+		adjustment = Gtk::Adjustment::create( 0, 0, 1, 1 ) ; 
 
 		//adjustment.signal_changed() .connect( sigc::mem_fun( *this, &this_type::on_my_value_changed) );
 		adjustment->signal_value_changed() .connect( sigc::mem_fun( *this, &this_type::on_my_value_changed) );

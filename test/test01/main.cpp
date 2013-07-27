@@ -7,6 +7,9 @@
 #include <platform/render_control.h> 
 
 
+
+
+
 /*
 
 #include <common/update.h>
@@ -45,7 +48,6 @@
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
-
 
 
 
@@ -306,6 +308,8 @@ static void test1( Services & services )
 	So the aggregate could still be composed of any combination of entities as we like.
 
 */
+
+
 
 struct Application
 {
@@ -584,7 +588,7 @@ struct Application
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & Application::timer_update), 60 );
 	}
 
-	bool on_expose_event( GdkEventExpose* event)
+	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
 	{
 
 //		std::cout << "expose event" << std::endl;
@@ -736,4 +740,5 @@ int main(int argc, char *argv[])
 			n->update();
 		} 
 	*/
+
 

@@ -8,6 +8,8 @@ boost           freetype              proj                    shapelib-1.2.10   
 
 mv external/ ../shell/ 
 
+mv data ../shell
+
 except we probably have to build 
 ---
 Deps,

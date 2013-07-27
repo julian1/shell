@@ -62,6 +62,7 @@ struct RenderControl
 		We have to run update, in order to know what areas to invalidate. but jjjjjjjjjjjjjjjj 
 	*/
 
+
 	void update()
 	{
 		unsigned elapsed = timer.elapsed();
@@ -79,22 +80,32 @@ struct RenderControl
 		}
 	}
 
-
-	bool on_expose_event( GdkEventExpose* event)
+	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
+//	bool on_expose_event( GdkEventExpose* event)
 	{
-#if 0
-		// should call them rects, because regions are something a bit different in gtk documentation
+
 		std::vector< Rect> regions; 
 
+		std::vector< Cairo::Rectangle > rectangles;
+		cr->copy_clip_rectangle_list ( rectangles); 	
+
+		for( int i = 0; i < rectangles.size(); ++i)
+		{
+			Cairo::Rectangle & rect = rectangles[ i] ; 
+			regions.push_back( Rect( rect.x, rect.y, rect.width, rect.height) ); 
+		}
+#if 0
+		// should call them rects, because regions are something a bit different in gtk documentation
+
+//		gdk_cairo_get_clip_rectangle()
 
 		//cairo_rectangle_int_t *rectangles;
 		gint n, n_rectangles;
 		//- gdk_region_get_rectangles (region, &rectangles, &n_rectangles);
-		n_rectangles = cairo_region_num_rectangles ( event->region);
+		n_rectangles = cairo_region_num_rectangles ( cr.get_context() /* event->region */);
 		//rectangles = g_new (cairo_rectangle_int_t, n_rectangles);
 		for (n = 0; n < n_rectangles; n++) 
 		{
-
 			cairo_rectangle_int_t	rect;
 
 			//cairo_region_get_rectangle ( event->region, n, &rectangles[n]);
@@ -102,8 +113,7 @@ struct RenderControl
 
 			regions.push_back( Rect( rect.x, rect.y, rect.width, rect.height) ); 
 		}
-
-
+#endif
 		// get the rendered regions	
 		ptr< BitmapSurface> surface = renderer.update_expose( regions ); 
 
@@ -123,9 +133,7 @@ struct RenderControl
 		{
 			blit_buffer( drawing_area, rect, surface ); 
 		}
-
         return false;   // dont presumpt
-#endif
 	}
 
 
@@ -138,7 +146,6 @@ struct RenderControl
 
 	static void blit_buffer( Gtk::DrawingArea & drawing_area, const Rect & rect, ptr< BitmapSurface> & surface_ )
 	{
-#if 0
 		unsigned char *data = surface_->buf() + (rect.y * surface_->width() * 4) + (rect.x * 4); // beginning of buf 
 
 		cairo_t *cr;
@@ -166,7 +173,6 @@ struct RenderControl
 			surface->width() * 4
 		); 
 #endif
-#endif
 	}
 
 
@@ -183,7 +189,6 @@ struct RenderControl
 		//      std::cout << "no win ?" << "\n";
 		}
 	}
-
 
 };
 
