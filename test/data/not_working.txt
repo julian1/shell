@@ -1,0 +1,22 @@
+
+*WORKING
+./a.out  ../cube_extra/egrr_160000.bin     - no bms, has pir
+./a.out  ../cube_extra/lfpw_160000.bin	   - no bms, no pir, different bit prec
+./a.out  ../cube_extra/ecmf_160000.bin     - no bms, no pir
+for i in ../cube_extra/Hirlam/* ; do echo $i; ./a.out $i ; done    - no bms, no pir
+./a.out  ../cube_extra/grb01-LITHUS-gme_dwdsat_1g_000-0712220000-rus3--EDZW-bin		- no bms, no pir
+./a.out  ../cube_extra/hirlam_2007082400_000.grib - no bms, no pir
+
+
+NOT WORKING
+./a.out  ../cube_extra/grb01-ROMATSA-gsm_dwdsat_1sg_006_0706061200-rus3--EDZW-bin 		- has bms
+./a.out  ../cube_extra/grb01-UKRAVI-gme_euraaa_hgp_000_000050-0801170000-rus3--EDZW-tar - has bms
+./a.out ../cube_extra/lfcr_160000.bin	 - second order packing
+
+
+believe problem with one is using the implied bms len rather than using ni nj when 
+performing the count of values .
+
+
+problem with lfcr is second order packing, and non standard second order
+

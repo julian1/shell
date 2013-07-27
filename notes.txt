@@ -1,0 +1,100 @@
+
+NDEBUG
+
+Corobor, it's not my place to have an opinon one way or the other about the soft. 
+	it's my job to just do the work.
+	having an opinion means that i am too close.
+
+HIGH LEVEL
+
+* IF AGGREGATE STORE WHETHER THEY ARE INVALID, THEN THEY SHOULD PROBABLY BE REGISTERED
+	FOR post update. are there other state in adaptors that need this, or can it be
+	cleared as wel go? 
+
+* it might be useful to make set_active() more expressive eg. set_mode(), and then enum argument of 
+	active or suppress or normal etc.
+
+*	if we got rid of the IKey. They we could do straight pointer comparisons on the interface, 
+	and the hashing could be done on the interface pointer value, on the server side. eg. there
+	would be no need to change the job interface.
+
+
+* Not sure if UIevents shouldn't be coded as just a set of interface methods, that propagate
+	from the modal controller, to individual controllers.
+ - It could be useful to have them recorded as playable. but it wouldn't be sufficient, because of 
+	all the gtk coordination of state. 
+
+
+* it might be very interesting to have a general event message, where the variable is
+	described by name, and the value is a variant. Then it could be used for basic
+	reflection. 
+
+* invalid flag needs to be set for any state change. 
+	- invalid is required because other services, will/may want to know if have to update. and they 
+	don't have z_order concept. 
+	Also label z_order may be completely different to render z_order().
+	- atomic operations, even if we follow the sequence set_active() modify() set_inactive() if it
+	is done without a update, then there will be no update. 
+
+	The invalid flag should be be set for any call to set_active(), - actually i think 
+	that it should always return true if set_active(), and have a dirty flag that
+	gets set.
+
+	get_invalid()
+		if( get_active() ) return true;
+		if( dirty) return true;					// or the root is invalid etc.
+
+	post_render
+		dirty = false;
+	
+	I think we are going to need a post update service, in which we can clear dirty flags, 
+	because some objects are not renderered eg projection.  eg. we can't just do it
+	in a render service post_render() call, because not all objects are in the renderer.
+
+	this decouples render_z_order from label_z_order. 
+
+	Also get_invalid() is required internally, to know if we have to update. it is the 
+	mechanism of tracing invalid dependencies.  eg. it becomes authoriative, as to whether
+	we have to reproject or style etc. 
+
+
+* need to be able to generate html, or pdf or gui interactive.
+
+
+* maintaining a set of objects in a service like our old map_service, is wrong, because
+	it should be the aggregate that is the authoriative transactional state. 
+	- first because loading from a shapefile is an atomic operation, and doesn't need
+	a service to persist. 
+	- secondly, even if did do this, then there should be a wrapper around around the
+	aggregate that gets injected. 
+
+
+* atomic like procedures/ operations/ datastructures 
+
+should be kept as functions, or non-stateful interfaces. eg loading operations, as much 
+as possible. They can be used as commands, or in services as required. we separate
+this from structures that enable the app to function. 
+
+
+* structure of common, aggregate, services
+
+try to keep algorithms as well as strucures in /common, without no mixing with app-level 
+logic and interfaces. This enables us to reuse in different contexts if really needed.  
+Avoid situation before where we would restart building the entire application in new folders 
+(animation3, gtk.220, sscomponent, mingw) etc. the services and aggregates, combine 
+these common elements for application structure.
+
+
+* interfaces delegating to interfaces delegating. In the aggregate it's possible to 
+wrap any state in any way we like. the singleness of the main aggregate or the individual
+items contained in collections in the aggregate.
+
+
+* get_invalid(), combines the concepts of get_active(), and atomic state changes. Also
+	combines input dependencies, and provides a localized authoritative point to determine
+	if we have to update. 
+
+
+
+--- 
+ok, now but, we have an issue of services that need to do caching. font service 

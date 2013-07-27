@@ -1,0 +1,59 @@
+
+-------------
+
+Make the verbs explicit
+
+If we have an interface IEventTarget { apply } 
+
+or IEventApply { apply()  } 
+
+then an object can use this same interface for getting events from one of it's dependencies *or* from the aggregate root.
+
+This is kind of a simplification.
+
+The only way to synchronize with update(), or render() is to store events and then synch in update()
+
+Update itself could be an event. - no the method call, contains the logic and breaks down stuff 
+into lower level events.
+
+The model does not know about the view.
+
+We separate out the history and replay, from the play ...
+
+no we call the method apply, which will have to be on an interface.
+
+event_source.apply
+event_source.store
+
+separating out the store and the apply events.  
+
+Ok, but how does this work with, the grid that changes  
+
+
+------
+
+Why not just have a projection that projects
+
+IProject
+	forward( geom )
+	inverse( geom )
+
+- this can perform clipping and affine as we like it ...
+- and can do jobs etc.
+- an individual object with many things that need to be projected can loop - without problem, 
+at some point we are going to have to associate uids with geom.  
+
+
+-------
+
+Extremely important. 
+
+We don't actually have to use intrusive_ptr, we could manually just perform add_ref() and release()
+
+then we could pass using references etc. 
+
+
+
+
+
+

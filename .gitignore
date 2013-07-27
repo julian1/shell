@@ -1,0 +1,13 @@
+*.o
+*.exe
+test_synop80
+*~
+*.swp
+*.swo
+*.a
+external/
+build/
+tmp/
+old/
+bin/
+

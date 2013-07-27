@@ -1,0 +1,425 @@
+
+----------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------
+
+
+change name of renderer to renderables to be consistent with labels and layers ? 
+
+get rid of the reference counting on components.    except for layer... 
+
+
+
+
+change name of layers to aggregate ... or else create these classes, that know how to add themselves to services.
+	they have to have the services.
+
+NOTE
+Without the key. we can't easily remove an item fro the services, because we generally create wrappers. 
+	this probably means that the add() and remove() functions probably have to be put on the objects themselves.
+	or else the wrapper has to be instantiated at a higher level. 
+
+	eg. layer = new Layer( Services, data, proj )		// create or deserialize
+		layer.load()									// add itself into the system.... 
+
+	But we don't want to maintain the reference. we want to remove it, via the references.  
+
+
+Let's try to create proper layer classes that can be added and removed. 
+	eg. should be able to access. from layers.  
+
+done 
+	change name of service add/remove functions to add/remove
+
+done
+	get rid of the keys in the renderer and labels and position editro.  and remove the key.h file.
+		done for labels.
+
+done
+	ok, we should be splitting the updateable services (view orientated) with the non-updatable services, 
+	that are usually pretty specific for a layer.   
+
+	the terminology of the layer and layer_update() is not right, since we call these things aggregates 
+		- actually it's kind of ok.
+		- we might change the name of the aggregate to layer.
+
+	change filename post to layer
+
+	*** potentially make layer perform reference counting to keep alive.
+
+done 
+	now we want to get rid of the the projection service.  
+
+
+----------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------
+
+
+----------
+	change name of add_x_job() to just add_job for the different services. 
+	
+---
+	EXTEREMELY IMPORTANT
+		- We should have a subsystem, that can deliver an event for when the projection is about to change. 
+		- This would be a much cleaner way, to suppress drawing on layers etc, during resizing etc. 
+		- eg. don't register against the projection, instead have a dedicated interface for these operations (like the onion model of event propagation). 
+
+-----
+	Modal control should delegate events, if it preserves the concept of an active controller.
+
+----
+	I think pimpl can be done more easily and might be better. and we can get rid of add_ref()/release() for services.
+	Where something 
+
+--
+	- We need a param controller as well. 
+	- and drop down list for params, also for levels. 
+
+	- also - it is quite simple to have the concept of active layer. and active cube.  
+	- can have a dedicated list of all layers etc. 	
+----
+	EXTREMELY IMPORTANT
+		stages can have their references or wrappers pushed out to subsystems eg.
+			- a selector for metadata (grib, analysis )
+			- an operation to smooth (gaussian blur) a grib
+
+---
+	try to get the validity working. and have a slider or something for retiming. and perhaps use platform separation of gtk code. also render support. 
+
+---
+	EXTREMELY IMPORTNAT
+		- we don't need full blown update callbacks, to communicate from a controller to a gui platform controller eg. 
+		for the gui to monitor the active item. a simple generic
+		notification of state change is quite sufficient. (Like c#  ). 
+		
+		struct INotify
+		{
+			// void * is ok. Because we should already be maintaining the fully typed reference to the sender . 
+			void update( void * sender ); 
+		};     
+		if( sender == cube )
+		{
+			// recalculate ...
+		}
+		if( sender == projection )
+		{
+
+		}
+
+-- 
+	how do we show the current level ? when an item is set to be active. another interface ?. and update() ?
+---
+	should we do a similar icube interface,  for the shapes. Probably. just enabling selection of different cubes 
+		or label fields. !!!!.  Not sure, these are options ????. But it should be exposed through this type 
+		of delegated indirection.
+	
+---
+we can also easily propagate change dependencies. eg receit of new data, or a delta applied etc.
+	because there is a clear pipeline. 
+
+	we could even put the gts decoding inside the cube itself. YES. This should be done for test purposes . not in the command. 
+
+
+	grib metadata, or sat can be applied and removed as we like. It is simple. it just needs to be treated separately from the Main criteria. 
+
+---
+	cube staging can be used for :-   (adding removing criterias)
+
+
+	- validity interpolation.
+	- adding of standard/expected levels, valids, even if data is missing. 
+	- elaborating formula that can be calculated both hard and soft coded.	
+	- osfm / deltas (eg rather than edit the grid. a cube stage, will maintain the deltas for validies and levels), and apply them as needed)
+			- eg. need to change the interface, to enable this two way change.
+			- this then propagates correctly to slices, or roaming teph, or point forcasts.  
+	- application of vectors for 'now casting'. 
+	- interpreting generic grib param code, to Param( "name", "unit" ) according to centre and origin.  soft (.txt tables) or hard coded 
+	- slices, roaming teph, analysis, point forcasts can all be built of it. 
+	- area combining (eg. for tiled gribs )
+	- caching
+	- unit conversion. eg. knots to mps, and f to degc. Easily inserted either before or/and after formua etc.  in fact it's pretty  
+		easy to insert on both sides if it was required. eg to degF for display, but degC for formula.  
+	- filtering of unneeded planes where we are not interested in the unit. 
+	- caching operations
+	- operations involving db loading, or from gts text file, etc. etc. 
+
+
+	Note, the importance of dependency injection of code, rather than using textual configuation. code is Much more powerful 
+		with execution context, and can delegate to a file if absolutely needed. 
+
+	- what we are not clear on, are point data, like reports. But they could probably be squashed into the scheme.
+
+----
+	EXTREMELY IMPORTANT
+		- grib param code conversion, can also be handled in the cube.  
+		eg. From the generic grid id. to a param and unit string, according to origin and centre.
+		- it doesn't have to be performed in the grib decoder. and can make the stages modular. 	
+		- can have an extremely customizable 
+
+	- satellite can be feed through the same interface. 
+	- and wind. 
+	- and possibly point data (forcast, and obs )
+
+----
+	for formulas. it might be a lot easier. to hard code their availablilty. by eg. just looping validity and level. 
+		struct DiffFormula
+			matchtest( s, level, validity, meta )	
+				if 
+					level.type == hpa
+					&& s.find( Criteria( param( "temp", "degc"), level, validity ) )  
+					&& s.find( Criteria( param( "temp", "degc"), Level( level + 1), validity ))  ; 
+
+				return
+					SurfaceCriteria( param( "temp diff", "degc", level, validity )) ; 
+
+			calculate( cube, level, validity )
+				cube.get( "temp", level, validity ) etc ... 
+			
+		calculate_formula
+			get all levels and validies ...
+			then test the creation formulas ...
+	
+
+-----
+	EXTREMLELY IMPORTANT. The actual application of a delta (to more than one level and validity), can be performed
+		inside a stage of the icube as well. !!!.  eg. the vector is computed. and then applied for all requests
+		for data.
+		- then it correctly propagates to formulas as well as slices etc.
+
+	- similarly units can be done through an icube stage.
+
+	- it might be easier to treat parameter names and units as strings. eg. easier to match for formulas and stuff. 
+		the unit can then be done with a string ??? and is meta.
+
+	- we can have a flag on a parameter indicating whether it's editable.
+	- the icube interface to get calculated formulas, could have a meta description for the data, which can be added or empty. 
+---
+	It might make sense for the global model, eg. wafc to have a uniquely identified ll projectoin. make it easier for clipping type stuff.
+
+---
+	it should be quite easy to interpolate in validity. we have a stage and if it sees something isn't validity aligned
+		we interpolate it and return it. We don't have to expose that it's available in the criterias. Instead we just
+		honor the request for the validity. 
+
+
+----
+	the transaction boundaries for editing - should really be placed on the cube.
+
+	cube should wrap cube interface. eg. formulas, and interpolation for time, and combining of areas, and slices  etc.
+
+	it just needs a get_criterias. and get_grid.  
+---
+
+
+	Why do we even need the grid_aggregate_root. ???
+	Why not just inject the grid itself into the controllers and adaptors
+
+		eg. the cube/ and cube wrapper is the central model.	
+
+	or at least move it entirely within the grid_aggregate
+
+---
+done 
+	level component interface - this covers everything we need for level control for cube model, or analysis, or single grib from db etc. 
+		get_level()
+		get_available_levels()
+		get_standard_levels()
+
+
+	Do not use tags in the surface criteria.
+	**** Tags FORCE US TO USE and inherit from the generic Desc.  which is ugly because should be separate, in their tags. 
+---
+	We should change the surface_criteria to a specific grib_criteria, until we are certain about how it will o 
+		- eg. be specific until we know otherwise
+
+---
+
+	- I think the fundamental interface of the cube. is that it can provide a list of everything it
+	can calculate. but doesn't, unless specifically requested. that way it will work with analayis and formula etc.
+
+---
+	level stuff should be in level.h or level_desc.h to avoid having to associate crap.
+		- remember the level_editor knows nothing about anything other than the level.
+		- the matching of validity, is done in the adaptor wrapper.
+
+--
+	chnage name of surface.h to bitmap_surfae.h or just Renderable or bitmap_renderable.h    etc.
+		- it's too confusing.
+
+----
+	making the level, would be nice, then we can display it, in the gui. 
+		- note that separating out the gtk level editor view from the controller might be needed
+		- We need a level type in a separate file. independent of anything else.  
+
+----
+	the cube needs to combine area. this should be done at cube level, so it can be shared as a model. 
+		eg. import from grib. OSFM grid. then export as gribs.
+
+	- we need a better abstraction, of the cube to support analysis etc.
+	- also use of cube for roaming profile.
+	- also secondary derived formula. 	
+
+	ACTUALLY NO. We want separate Grib cube, versus Analysis cube. But loading and constructing into views is a composition job. 
+
+	Not sure. At some point. They are quite separate. then  
+
+	CubeAnalysis
+	Formula( CubeAnalysis)
+	LevelControl( CubeAnalys )
+	View( Formula )
+
+	etc. etc. 
+---
+
+	done	removed the gribs service
+--
+done. The big advantage  to having the view class, is 
+
+	// we can remove the services ref from delegated to stuff (not always - but often)
+	// and we can get rid of the key (the view is unique and becomes the key ). 
+	// can remove the root aggregate,  because we don't require the is_dirty() reference
+
+	// we were adding things to the post ss, just to keep ref alive, even though required no update . !!! 
+		// eg.  For the positions adaptor  we don't even need to update it . but we were registering it to a ss
+			to keep it alive. In fact it's not an adaptor at all, but a controller.  
+		- eg. we can use the parent for lifetime control
+
+	// it's not clear 
+
+--------------
+/*
+	We want a view structure. for the grid. 
+
+	- the input grid
+	- the specific contourer
+	- the contour values policy.
+	- the callbacks from the contourer
+	- the adaptors for  
+	- the style policy eg. value = modulo %  20, thick line
+	- perhaps meta stuff eg. change in validity or level. we don't care at the moment.
+
+	- and get rid of the keys.	
+	- these things ought to be able to be injected in. and delegated to.  eg. 
+	- and all the state for the above
+	- the grid can be injected in. eg. or factored to be a separate aggregate 
+	- and possibly add the event sourcing (doesn't matter). 
+
+
+	- it doesn't matter how we will ultimately sequence. We will work it out.	
+*/
+
+--------------
+
+	- we should avoid having to maintain service references in the app as well as the services class. change to 
+	use a ptr and then we don't care.  
+	- the services class is not really DI as each service ought to be passed explicitly, but it is helpful to avoid
+		having to pass too many dependencies when loading aggregates.
+
+--
+	isolines can work iwth boundaries and holes, just by expanding the size of the grid and setting the values
+	to - infinity etc.
+
+---
+	we need commands that run against the application/ and services. to load gribs etc.
+
+	remove the Surface from desc. Surface includes data, and is not generalized.    
+
+--------------
+- we need to be able to load a lot of gribs from a gts file. which means that the gts parsing code needs
+to be put in a common place.  also the streaming and non-streaming frame decoding. if we have an interface
+	for the extracted gribs, then this will enable constructing the pipeline a lot easier without doublehandling
+	buffers etc ? 
+
+// decoding a grib might be a common operation or decoding job. but loading from a gts dump file as a test, has to be 
+// a command that can be run. 
+
+
+- the grib decode and grib extract from gts are two separate operations, they really want to be kept separate.
+	What about a generic decode gts. with pluggable decode_grib and decode_synop etc interfaces. and then we 
+	can just fill in the grib one ??. 
+	- the gts header could be passed to the interface, along
+	- alternatively we have the gts decoders as common objects and just write a function to extract from gts. 
+
+- there is a lot of confusion with test code, and tool code, doing similar stuff. it's hard to identify binaries
+	in bin/linux etc.	
+
+
+
+--------------------------
+
+* add the logger to the services class, so that it's generally available
+
+I feel sure The renderer/ blitter is not quite correct,   if every object and it's background
+has to be blitted, in one go, then for isolines, this means a lot of huge squares.   
+	- we have to check.
+
+- We need to be able to draw each isoline (cheap), on a background surface and blit that.
+
+- The easiest mechanism is probably to make drawing the isolines a single render job. such
+that there is a single background.
+
+- We need to take a measure of total area blitted through all operations.
+
+-----------------------
+
+* Use an IBlit interface to the renderer expose_update, because it will save copying
+	into the temporary combine_buffer.
+
+* done (but not for all services) Get rid of the IKey for renderer. Instead just insert the item and retain a strong reference. 
+	we may want IKey for the update.preupdate, because many things will use this.
+
+* create a new test renderer use two buffer system with gtk bounds intersecitons 
+	(0) send list of invalide active regions
+	(1) on receiving list back, copy the background for the regions to the active buffer 
+	(2) draw the set of active objects
+	(3) blit the regions to the gtk server. 
+
+* get rid of ikey for some systems eg renderer. it simplifies no need for hashing, and
+	no need for dynamic downcast. 
+	perhaps some systems can still use the IKey where have to combine proj and agg. but
+	other systems don't 
+
+* done get rid of ui_events structs and use explicit method calls instead. we are just switching
+	on them at the moment.  
+
+* change ifdefs to pragmas, it is just so much more readable
+
+* logger, timer to use interfaces, not self pointers. grid_editor, position_editor, projector same
+
+* move in projection copied across from mingw3
+
+* geometry clean. Ought to be able to be applied quite easily as a pass, just taking into
+	account an active piece of geometry. should be placed in common, because its a
+	atomic procedure.
+
+* labels for contours
+
+* add line style,  
+
+* Use a wrapper around an aggregate, that delays propagation of invalid. For coupling
+	models together.
+ 
+
+* use an injected grid to widen the bounds, to avoid degenerate grid editing.
+
+* VERY important. If the grid edit always works from the same grid when moving. then we
+	should be able to precompute more things to handle the interpolation.
+	should make more stateful.
+
+* a section that's coupled with the surface
+
+* use real data grib or  analysis 
+
+
+* motion vectors. 
+
+* postscript/pdf render, in a separate method.
+
+
+Commercial 
+	- Motion vectors applied to model and to analysis.
+	- model edit and propagation. hydrostatic propagation.
+
+
+	- the importance of the forcaster.
+
+
