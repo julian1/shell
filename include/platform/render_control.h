@@ -151,9 +151,10 @@ struct RenderControl
 		cairo_t *cr = gdk_cairo_create( drawing_area.get_window()->gobj() );// drawable );
 
 		cairo_surface_t *surface = cairo_image_surface_create_for_data(
-					   data, CAIRO_FORMAT_ARGB32, rect.w, rect.h, surface_->width() * 4 );
+			data, CAIRO_FORMAT_ARGB32, rect.w, rect.h, surface_->width() * 4 );
 
-//					   data, CAIRO_FORMAT_RGB24, rect.w, rect.h, rect.w * 4 );
+//			data, CAIRO_FORMAT_RGB24, rect.w, rect.h, surface_->width() * 4 );
+//		data, CAIRO_FORMAT_RGB24, rect.w, rect.h, rect.w * 4 );
 
 		cairo_set_source_surface( cr, surface, rect.x, rect.y );
 		cairo_paint( cr );
