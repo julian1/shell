@@ -1,0 +1,20 @@
+
+
+
+$ ls external/linux/
+agg-2.4         boost_1_47_0          freetype-2.4.4          proj-4.6.1         shapelib-1.2.10.tar.gz
+agg-2.4.tar.gz  boost_1_47_0.tar.bz2  freetype-2.4.4.tar.bz2  proj-4.6.1.tar.gz  threadpool-0_2_5-src
+boost           freetype              proj                    shapelib-1.2.10    threadpool-0_2_5-src.zip
+
+mv external/ ../shell/ 
+
+except we probably have to build 
+---
+Deps,
+
+apt-get install libfreetype6-dev   for i fatal error: ft2build.h: No such file or directory
+
+apt-get install libpng-dev  for png.h
+
+apt-get install libgtkmm-3.0-dev
+
