@@ -1,0 +1,93 @@
+
+// instead of hooking the render job simply tell the renderer about the job , that doesn't subscribe.... 
+// this avoids the renderer having to subscribe to the object to detect an update 
+
+RenderJob
+{
+	bounding_box() ;
+	z_order();
+	render( surface ); 
+}
+
+renderer.add_job( x)
+
+renderer.update_job( x)		if the job has changed. eg. bounding box
+
+renderer.remove_job( x)
+
+
+-------
+	This is for propagating and sequencing event updates throught the system. 
+
+	Instead of this being done at the top of the code - where other gtk events work. 
+
+	I think it should be done in the renderer.  
+
+
+	- lots of controller actions - eg mouse events or animation due to timer.
+	- objects then get updated.
+	- this update notify events propagate to renderer which records them
+		renderer also pushes a custom message onto gtk that it needs an update 
+	
+	- renderer then recieves this update message, and will render all objects keeping
+	track of what it has to dom and inform X of regions that need updatinged
+	- X then will request bitmaps from renderer
+
+	Advantages
+		- single point of synchronization which is the end point of data flow
+		- the renderer is responsible for maintaining state and synchronizing with X server .
+		- it gobbles up lots of mouse move events.
+		
+--------	
+
+	- also we don't have to store all the elements  
+		add()
+		update()
+		change_z()
+
+	- instead we can just store render lists. 
+	- eg rather than store a flag on the object indicating it's updated
+	- we instead store a message that it's been updated. Or added or removed etc.
+
+	eg. 
+		renderer.add( c );			
+				this just stores a message in the renderer. 	
+				rather than an element. 
+
+				not sure.	if an item is added and removed. 
+		
+-----------
+
+	- Using straight c++ interfaces and with just & is very good.
+	- There's no reason somthing using an object should have to 
+	maintain a ref count as it's really not part of its responsibility. 
+
+	A( B & b)
+		: b( b)
+	{ } 
+
+	and virtual functions hide everything without using pimpl	
+
+	class A
+	{
+		virtual void m() = 0;
+	}	
+
+
+	After this we can use either.
+		- pimpl 
+		- external creation/destruction functions
+
+	The advantage that we don't care is good.
+
+	- But it makes stuff hard to instantiate. 
+		unless the creation and destruction functions are hidden.
+
+	We can't use new on an object without exposing the full object.
+
+-------
+
+
+
+
+
