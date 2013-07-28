@@ -1,0 +1,20 @@
+
+why did we choose to make the application an object
+
+rather than just assemble all the refs together in a big function ? 
+
+a long function bringing everything together is clearer and simpler,
+and can peform logic . 
+
+remember construction is fundamentally different, from the objects that
+talk to each other through references.
+
+eg.
+
+	A	a;
+	B	b( a)
+	C	c(a, b)
+	c.run();
+
+is very clear.
+
