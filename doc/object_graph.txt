@@ -1,4 +1,13 @@
 
+The reason we currently do it is because we have a bunch of event handlers that
+	are being caught on the application.
+
+	As a matter of design. we really have to move these inside their own classes that are responsible
+	for handling them. 
+	
+
+-----
+
 why did we choose to make the application an object
 
 rather than just assemble all the refs together in a big function ? 

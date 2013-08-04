@@ -388,7 +388,6 @@ struct Application
         drawing_area.set_double_buffered( false);
 
 
-
 		//drawing_area.set_size_request( 1000, 900);
 		drawing_area.set_size_request( 1000, 700);
 
@@ -506,6 +505,11 @@ struct Application
 	RenderControl		render_control; 
 
 
+	/*
+		We should not have all these event handlers here. 	
+			they should be being handled internally to 
+			responsible classes.
+	*/
 
 	bool on_motion_notify_event( GdkEventMotion *event )
     {
