@@ -209,104 +209,11 @@ private:
 
 
 
-
-
-
-
-
-
-
-static void test1( Services & services )
-{
-	/*
-		- this test should be a command that is run as a class aft. 
-
-		- and it should be run after the gui is loaded 
-	*/
-
-	// dynamic objects
-	ptr< IProjectionAggregateRoot>	projection_aggregate_root; 
-
-	ptr< IShapesAggregateRoot>		shapes_aggregate_root; 
-//	ptr< IGridAggregateRoot>		grid_aggregate_root; 
-	ptr< IRasterAggregateRoot>	raster_aggregate_root; 
-//	ptr< IAnimAggregateRoot>	anim_aggregate_root; 
-	ptr< IMapGridAggregateRoot>	mapgrid_aggregate_root; 
-
-	ptr< IProjectionAggregateRoot>	projection_aggregate_root_2; 
-
-
-
-	raster_aggregate_root = create_test_raster_aggregate_root();
-	mapgrid_aggregate_root = create_test_mapgrid_aggregate_root();
-	//anim_aggregate_root = create_test_anim_aggregate_root();	
-
-
-
-	ptr< ICube> cube1 = new MyTestCube ; //make_test_cube(); 
-
-	ptr< ICube> cube = new MyDelegatedCube ( cube1 ); 
-
-//	grid_aggregate_root  = make_test_grid_from_grib();
-
-#if 0
-	grid_aggregate_root = create_grid_aggregate_root(); 
-	grid_aggregate_root->set_grid( make_test_grid( 100, 100) ); 
-	agg::trans_affine	geo_ref; 
-	geo_ref *= agg::trans_affine_scaling( .7 );
-	grid_aggregate_root->set_geo_reference( geo_ref );
-#endif
-
-
-	shapes_aggregate_root = create_shapes_aggregate_root( );
-	load_test_shapes( "data/world_adm0.shp",  shapes_aggregate_root ); 
-
-
-
-	projection_aggregate_root = create_projection_aggregate_root(); 
-	// load_test_ortho_proj( projection_aggregate_root );
-	add_projection_aggregate_root( services, projection_aggregate_root ) ; 
-
-
-	add_mapgrid_aggregate_root( services, mapgrid_aggregate_root,  projection_aggregate_root ); 
-
-	add_raster_aggregate_root( services, raster_aggregate_root, projection_aggregate_root );
-
-	// adding the mapgrid to two projections fucks it up ...
-	load_shapes_layer ( services, shapes_aggregate_root, projection_aggregate_root  ); 
-
-
-	create_cube_view( services, cube, projection_aggregate_root ); 
-
-	
-	add_test_anim_layer( services ); 
-
-	//add_anim_aggregate_root( services,  anim_aggregate_root ); 
-
-
-
-	projection_aggregate_root_2 = create_projection_aggregate_root_2(); 
-
-	add_projection_aggregate_root( services, projection_aggregate_root_2 ) ; 
-
-	load_shapes_layer( services, shapes_aggregate_root, projection_aggregate_root_2  ); 
-
-	add_mapgrid_aggregate_root( services, mapgrid_aggregate_root,  projection_aggregate_root_2 ); 
-
-	create_cube_view( services, cube , projection_aggregate_root_2 ); 
-
-}
-;
-
-
 /*
 	- It is possible that our aggregate objects should actually become entities and the 
 	level of granularity is not right.
-
 	so the load_functions would work the same, 
-
 	So the aggregate could still be composed of any combination of entities as we like.
-
 */
 
 struct SignalImmediateUpdate 
@@ -415,6 +322,10 @@ struct RenderManager : SignalImmediateUpdate
 
 };
 
+/*
+	The goal here is to remove the signal_immediate_update
+	and instead have the render respond directly to update events.
+*/
 
 struct KeyboardManager
 {
@@ -533,220 +444,213 @@ struct MouseManager
 
 
 
+int main(int argc, char *argv[])
+{
+	// Assemble the graph
 
+	Gtk::Main kit( argc, argv);
+  
+	// complex objects are going to be a graph ... (or graph like) 
+
+	Gtk::Window			window;
+
+	Gtk::VBox			vbox; 
+	Gtk::HBox			hbox;		// horizontal menu strip
+
+
+	Gtk::DrawingArea	drawing_area; 	
+
+
+	Logger			logger( std::cout );
+
+	// if we gave these things full references, then we wouldn't
+	// need to maintain instances in the Application class scope ?? 
+
+	Renderer			renderer;
+	GridEditor			grid_editor;
+	PositionEditor		position_editor;
+
+
+
+	ptr< IFonts>		fonts( create_fonts_service( /* font dir */) );
+
+	ptr< ILabels>		labels( create_labels_service() );
+
+
+	ptr< ILayers>		layers( create_layers_service() );
+
+	ptr< ILevelController>	level_controller( create_level_controller_service() ); 
+	ptr< IValidController> valid_controller( create_valid_controller_service() ); 
+	//gribs_service( create_gribs_service( "data/sadis2g_soc_grib_dump.bin" ) ),
+
+	Services			services( 
+		*layers,
+//			*projector, 
+		*labels,
+		renderer, 
+
+		grid_editor, 
+		position_editor,
+		*fonts,
+	//	*gribs_service,
+		*level_controller,
+		*valid_controller
+	);
+
+
+	ModalControl		modal_control( services, hbox );
+
+	GUIValidController	gui_valid_controller( hbox, valid_controller ); 
+
+	GUILevelController	gui_level_controller( hbox, level_controller ); 
+
+	RenderControl	render_control( drawing_area, renderer );
+
+	RenderManager	render_manager( drawing_area, layers, labels, render_control );
+	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_manager  );
+	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor, render_manager  ); 
+
+
+	/////////////////
+
+	window.add( vbox );
+	
+	vbox.pack_start( hbox, Gtk::PACK_SHRINK  );
+
+	vbox.pack_start( drawing_area );
+
+	#ifndef GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
+		std::assert( 0);
+	#endif 
+
+	// Disable double buffering, otherwise gtk tries to update widget
+// contents from its internal offscreen buffer at the end of expose event
+	// this does inhibit gtk from drawing
+	drawing_area.set_double_buffered( false);
+
+
+	//drawing_area.set_size_request( 1000, 900);
+	drawing_area.set_size_request( 1000, 700);
+
+	drawing_area.set_events( 
+			Gdk::EXPOSURE_MASK 
+			| Gdk::POINTER_MOTION_MASK 
+			| Gdk::BUTTON_PRESS_MASK
+			| Gdk::BUTTON_RELEASE_MASK 
+			| Gdk::KEY_PRESS_MASK 
+			| Gdk::KEY_RELEASE_MASK
+	); 
+
+
+	window.set_title( "my app" );
+
+	window.show_all_children();
+
+
+	/// ********************************************************
+	// dynamic objects
+	ptr< IProjectionAggregateRoot>	projection_aggregate_root; 
+	ptr< IShapesAggregateRoot>		shapes_aggregate_root; 
+//	ptr< IGridAggregateRoot>		grid_aggregate_root; 
+	ptr< IRasterAggregateRoot>	raster_aggregate_root; 
+//	ptr< IAnimAggregateRoot>	anim_aggregate_root; 
+	ptr< IMapGridAggregateRoot>	mapgrid_aggregate_root; 
+	ptr< IProjectionAggregateRoot>	projection_aggregate_root_2; 
+	raster_aggregate_root = create_test_raster_aggregate_root();
+	mapgrid_aggregate_root = create_test_mapgrid_aggregate_root();
+	//anim_aggregate_root = create_test_anim_aggregate_root();	
+	ptr< ICube> cube1 = new MyTestCube ; //make_test_cube(); 
+	ptr< ICube> cube = new MyDelegatedCube ( cube1 ); 
+//	grid_aggregate_root  = make_test_grid_from_grib();
+
+#if 0
+	grid_aggregate_root = create_grid_aggregate_root(); 
+	grid_aggregate_root->set_grid( make_test_grid( 100, 100) ); 
+	agg::trans_affine	geo_ref; 
+	geo_ref *= agg::trans_affine_scaling( .7 );
+	grid_aggregate_root->set_geo_reference( geo_ref );
+#endif
+
+	shapes_aggregate_root = create_shapes_aggregate_root( );
+	load_test_shapes( "data/world_adm0.shp",  shapes_aggregate_root ); 
+
+	projection_aggregate_root = create_projection_aggregate_root(); 
+	// load_test_ortho_proj( projection_aggregate_root );
+	add_projection_aggregate_root( services, projection_aggregate_root ) ; 
+
+
+	add_mapgrid_aggregate_root( services, mapgrid_aggregate_root,  projection_aggregate_root ); 
+	add_raster_aggregate_root( services, raster_aggregate_root, projection_aggregate_root );
+
+	// adding the mapgrid to two projections fucks it up ...
+	load_shapes_layer ( services, shapes_aggregate_root, projection_aggregate_root  ); 
+	create_cube_view( services, cube, projection_aggregate_root ); 
+	add_test_anim_layer( services ); 
+	//add_anim_aggregate_root( services,  anim_aggregate_root ); 
+	projection_aggregate_root_2 = create_projection_aggregate_root_2(); 
+	add_projection_aggregate_root( services, projection_aggregate_root_2 ) ; 
+	load_shapes_layer( services, shapes_aggregate_root, projection_aggregate_root_2  ); 
+	add_mapgrid_aggregate_root( services, mapgrid_aggregate_root,  projection_aggregate_root_2 ); 
+	create_cube_view( services, cube , projection_aggregate_root_2 ); 
+
+	/// ********************************************************
+
+  Gtk::Main::run( window );
+  return 0;
+
+}
+
+
+
+
+
+
+	/*
+		extremely important.
+	
+		- Should the aggregate be able to be loaded more than once ????. Eg. with a separate projection. 
+		- The load function would then take the projection, rather than the aggregate.
+		- A bit like the way we factored out the services from the aggregate.
+
+		If the interaction code is in the adaptors, then yes ????.
+
+		Line color and style - need to be added, but projection clipping etc. 
+
+		Even if we can't do this. The Aggregate should NOT take a projection reference. Instead the 
+		load should take it, and associate it.
+
+		- if a localised projection wants different line/color then it can be placed
+
+		- Eg. View specific stuff is kept in the view adaptors, so the projection should be moved into it.
+
+		To make it easier, the class that does the proj probably needs to handle other things as well, . 
+		eg. to maintain the clip_path and perform the styling.    Eg to move the clip_path outside the aggregate.  
+	*/
+
+
+
+#if 0
 struct Application
 {
-
 //	typedef Application this_type; 
-
 	Application()	
 		: 
-		window(),
-		vbox(),
-		hbox(),
-		drawing_area(),
-		logger( std::cout ),
-
-		// if we gave these things full references, then we wouldn't
-		// need to maintain instances in the Application class scope ?? 
-
-		renderer( ),
-		//projector( create_projector_service() ),
-		grid_editor( ), 
-		position_editor(),
-		fonts( create_fonts_service( /* font dir */) ),
-		labels( create_labels_service() ),
-		layers( create_layers_service() ),
-		level_controller( create_level_controller_service() ), 
-		valid_controller( create_valid_controller_service() ), 
-		//gribs_service( create_gribs_service( "data/sadis2g_soc_grib_dump.bin" ) ),
-
-
-
-		services( 
-			*layers,
-//			*projector, 
-			*labels,
-			renderer, 
-
-			grid_editor, 
-			position_editor,
-			*fonts,
-		//	*gribs_service,
-			*level_controller,
-			*valid_controller
-		),
-
-
-		modal_control( services, hbox ),
-
-		gui_valid_controller( hbox, valid_controller ), 
-		gui_level_controller( hbox, level_controller ), 
-
-
-		render_control( drawing_area, renderer ),
-
-		render_manager( drawing_area, layers, labels, render_control ),
-		keyboard_manager( window, grid_editor, position_editor, render_manager  ),
-		mouse_manager( drawing_area, grid_editor, position_editor, render_manager  )
-
-
-
 		/*
 			- Very important. Rather than passing the IProjection we should pass the projection aggregate root.  
 			aggregates are permitted to trace other aggregate's references.
 			- We could factor out the services reference, by making the adaptor pass the services reference
 		*/
-	{ 
-
-		// complex objects are going to be a graph ... (or graph like) 
-
-		/////////////////
-
-		window.add( vbox );
-		
-		vbox.pack_start( hbox, Gtk::PACK_SHRINK  );
-
-		vbox.pack_start( drawing_area );
-
-		#ifndef GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
-			std::assert( 0);
-		#endif 
-
-        // Disable double buffering, otherwise gtk tries to update widget
-    // contents from its internal offscreen buffer at the end of expose event
-        // this does inhibit gtk from drawing
-        drawing_area.set_double_buffered( false);
-
-
-		//drawing_area.set_size_request( 1000, 900);
-		drawing_area.set_size_request( 1000, 700);
-
-		drawing_area.set_events( 
-                Gdk::EXPOSURE_MASK 
-                | Gdk::POINTER_MOTION_MASK 
-                | Gdk::BUTTON_PRESS_MASK
-                | Gdk::BUTTON_RELEASE_MASK 
-                | Gdk::KEY_PRESS_MASK 
-                | Gdk::KEY_RELEASE_MASK
-        ); 
-
-	
-		window.set_title( "my app" );
-
-		window.show_all_children();
-
-		/*
-			extremely important.
-		
-			- Should the aggregate be able to be loaded more than once ????. Eg. with a separate projection. 
-			- The load function would then take the projection, rather than the aggregate.
-			- A bit like the way we factored out the services from the aggregate.
-
-			If the interaction code is in the adaptors, then yes ????.
-
-			Line color and style - need to be added, but projection clipping etc. 
-
-			Even if we can't do this. The Aggregate should NOT take a projection reference. Instead the 
-			load should take it, and associate it.
-
-			- if a localised projection wants different line/color then it can be placed
-
-			- Eg. View specific stuff is kept in the view adaptors, so the projection should be moved into it.
-
-			To make it easier, the class that does the proj probably needs to handle other things as well, . 
-			eg. to maintain the clip_path and perform the styling.    Eg to move the clip_path outside the aggregate.  
-		*/
-
-	/*	
-		important - we can instantiate all this stuff only needing the services references, 
-		meaning it can be relocated anywhere.  
-	*/	
-
-	/*
-		ok, so we can't manage to show two mapgrid's at the same time.
-
-		Simply because the pointer values of the aggregate are the same ...	
-	*/
-
-		// schedule initial deadline timeout 
-		//Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & Application::on_timeout), 0 );
-
-
-		test1( services );
-	} 
-
-
-	Gtk::Window			window;
-	Gtk::VBox			vbox;
-	Gtk::HBox			hbox;		// horizontal menu strip
-
-	Gtk::DrawingArea	drawing_area; 	
-
-	Logger				logger; 
-
+	{ } 
 	// Jobs				jobs;
 	//	BitmapSurface				surface;
 	//	StyledContours		styled_contours;
-
 	//Contourer			contourer;
-
 	// if these are all services, they should be named as such ???
-	Renderer			renderer;
 	//ptr< IProjector>	projector;
-	GridEditor			grid_editor;
-	PositionEditor		position_editor;
-
-
-	ptr< IFonts>		fonts; 
-	ptr< ILabels>		labels; 
-	ptr< ILayers>		layers; 
-
-	ptr< ILevelController> level_controller;
-	ptr< IValidController> valid_controller;
-
 //	ptr< IGribsService>	gribs_service;  
-
 	//ShapesProvider		shapes_provider;
-	
-
-	Services			services; 
-
-
-	ModalControl		modal_control;
-
-	GUIValidController	gui_valid_controller;
-	GUILevelController	gui_level_controller;
-
-
-	RenderControl		render_control; 
-
-	RenderManager		render_manager; 
-	KeyboardManager		keyboard_manager;
-	MouseManager		mouse_manager;
-
-
-
-
-
 }; 
-
-
-
-
-int main(int argc, char *argv[])
-{
-
-
-  Gtk::Main kit( argc, argv);
-  
-  Application app; //std::cout, argc, argv);
-
-  Gtk::Main::run( app.window );
-  return 0;
-
-}
-
+#endif
 
 
 
