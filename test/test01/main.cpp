@@ -238,16 +238,11 @@ struct RenderManager : SignalImmediateUpdate
 		render_control( render_control ),
 		immediate_update_pending( true )
 	{
-	
 		immediate_update_pending = false;
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
 
-
 		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
 	}
-
-	
-
 
 	Gtk::DrawingArea	& drawing_area; 	
 	ptr< ILayers>		&	layers;			// should be removed ...
@@ -296,20 +291,10 @@ struct RenderManager : SignalImmediateUpdate
 		also post expose we always clear the pending flag, but the expose might be 
 		in response to a timer event, not immediate. 
 	*/
-	/*
-		when we do the update, no more events should be able to be processed until we get the expose. 
-		it is possible however, that events could be being exposed, which means the items in the
-		renderer could have changed.  been made active etc.
-	*/
+
 	void update( )
 	{
-
-		// models->update(); / 
-
 		layers->layer_update();
-
-		// perhaps remove . 
-		//projector->update();
 
 		labels->update(); 
 
@@ -317,9 +302,7 @@ struct RenderManager : SignalImmediateUpdate
 
 		// this should be delayed until the expose ? 
 		layers->post_layer_update();
-
 	}
-
 };
 
 /*
@@ -329,8 +312,6 @@ struct RenderManager : SignalImmediateUpdate
 
 struct KeyboardManager
 {
-
-
 	KeyboardManager( Gtk::Window & window ,
 		GridEditor		& grid_editor,
 		PositionEditor	& position_editor ,
