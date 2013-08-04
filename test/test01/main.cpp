@@ -309,15 +309,238 @@ static void test1( Services & services )
 
 */
 
+struct SignalImmediateUpdate 
+{
+	virtual void signal_immediate_update() = 0;
+};
+
+
+struct RenderManager : SignalImmediateUpdate 
+{
+
+	typedef RenderManager this_type; 
+
+	RenderManager( Gtk::DrawingArea	& drawing_area,  
+		ptr< ILayers>	&layers,
+		ptr< ILabels>	&labels, 
+		RenderControl	& render_control 
+   ) 	
+		: drawing_area( drawing_area ),
+		layers( layers),
+		labels( labels ),
+		render_control( render_control ),
+		immediate_update_pending( true )
+	{
+	
+		immediate_update_pending = false;
+		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
+
+
+		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
+	}
+
+	
+
+
+	Gtk::DrawingArea	& drawing_area; 	
+	ptr< ILayers>		&	layers;			// should be removed ...
+	ptr< ILabels>		&labels; 
+	RenderControl		& render_control ; 
+
+	bool	immediate_update_pending; 
+
+	void signal_immediate_update(  )
+	{
+		//grid_editor.signal_immediate_update( event );
+		//position_editor.signal_immediate_update( event );
+
+		if( ! immediate_update_pending )		
+		{							
+			immediate_update_pending = true;
+			Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::immediate_update ), 0 );
+		}
+	}
+
+	void immediate_update( )
+	{
+//		std::cout << "immediate update" << std::endl;
+		update();
+	}
+
+	void timer_update( )
+	{
+//		std::cout << "timer update" << std::endl;
+		update();
+		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
+	}
+
+	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
+	{
+
+//		std::cout << "expose event" << std::endl;
+
+		// both this class and the render_control hook this event.
+		// we do this to clear the flag after the expose event, in order to avoid scheduling another update, this
+		// prevents lagging as key and update events are processed, but the image never gets drawn 
+		immediate_update_pending = false;
+		return false; // don't presumpt the other handler
+	}
+	/*
+		also post expose we always clear the pending flag, but the expose might be 
+		in response to a timer event, not immediate. 
+	*/
+	/*
+		when we do the update, no more events should be able to be processed until we get the expose. 
+		it is possible however, that events could be being exposed, which means the items in the
+		renderer could have changed.  been made active etc.
+	*/
+	void update( )
+	{
+
+		// models->update(); / 
+
+		layers->layer_update();
+
+		// perhaps remove . 
+		//projector->update();
+
+		labels->update(); 
+
+		render_control.update();
+
+		// this should be delayed until the expose ? 
+		layers->post_layer_update();
+
+	}
+
+};
+
+
+struct KeyboardManager
+{
+
+
+	KeyboardManager( Gtk::Window & window ,
+		GridEditor		& grid_editor,
+		PositionEditor	& position_editor ,
+		SignalImmediateUpdate & signal_immediate_update
+	) : window( window ),
+		grid_editor( grid_editor),
+		position_editor( position_editor),
+		signal_immediate_update( signal_immediate_update )
+	{
+		typedef KeyboardManager this_type; 
+
+		window.signal_key_press_event() .connect( sigc::mem_fun( *this, &this_type::on_key_press_event));
+		window.signal_key_release_event() .connect( sigc::mem_fun( *this, &this_type::on_key_release_event));
+	}
+
+	Gtk::Window		& window ; 
+	GridEditor		& grid_editor;
+	PositionEditor	& position_editor;
+	SignalImmediateUpdate & signal_immediate_update; 
+
+
+	static int translate_code( unsigned code )
+	{
+		int ret = 0; 
+		switch( code)
+		{
+			// case GDK_Return: case GDK_Escape: case GDK_F1: etc
+			case GDK_KEY_Shift_L  :  ret = IMyEvents ::shift_key; break; 
+			case GDK_KEY_Control_L: ret = IMyEvents ::ctrl_key; break;
+			default: ret = code; break;
+		};
+		return ret; 
+	}
+	// now we want keyboard events. to enable pan
+	bool on_key_press_event( GdkEventKey* event )
+    {
+		/*
+		std::cout << "keypress event " << event->hardware_keycode << " " << char( event->hardware_keycode) << std::endl;
+		std::cout << "keypress event " << event->keyval << " " << char( event->keyval ) << std::endl;
+		*/
+
+		grid_editor.key_press( translate_code( event->keyval ) ); 
+		position_editor.key_press( translate_code( event->keyval ) ); 
+
+		signal_immediate_update.signal_immediate_update(  ); 
+		return false;
+	}
+	bool on_key_release_event(GdkEventKey* event )
+	{
+		grid_editor.key_release( translate_code( event->keyval ) ); 
+		position_editor.key_release( translate_code( event->keyval ) ); 
+
+		signal_immediate_update.signal_immediate_update(  ); 
+		return false;
+	}
+};
+
+
+struct MouseManager
+{
+	MouseManager( Gtk::DrawingArea	& drawing_area,
+		GridEditor		& grid_editor,
+		PositionEditor	& position_editor ,
+		SignalImmediateUpdate & signal_immediate_update
+	) 	
+		: drawing_area( drawing_area ),
+		grid_editor( grid_editor),
+		position_editor( position_editor),
+		signal_immediate_update( signal_immediate_update )
+	{
+		typedef MouseManager this_type; 
+
+		drawing_area.signal_motion_notify_event() .connect( sigc::mem_fun( *this, &this_type::on_motion_notify_event));
+		drawing_area.signal_button_press_event() .connect( sigc::mem_fun( *this, &this_type::on_button_press_event));
+		drawing_area.signal_button_release_event() .connect( sigc::mem_fun( *this, &this_type::on_button_release_event));
+	}
+
+	Gtk::DrawingArea	& drawing_area;
+	GridEditor		& grid_editor;
+	PositionEditor	& position_editor;
+	SignalImmediateUpdate & signal_immediate_update; 
+
+
+
+	bool on_motion_notify_event( GdkEventMotion *event )
+    {
+//		std::cout << "mouse move event" << std::endl;
+		grid_editor.mouse_move( event->x, event->y ); 
+		position_editor.mouse_move( event->x, event->y ); 
+		signal_immediate_update.signal_immediate_update(  ); 
+		return false;
+	}
+
+	bool on_button_press_event( GdkEventButton* event)
+	{
+		grid_editor.button_press( event->x, event->y ); 
+		position_editor.button_press( event->x, event->y ); 
+
+		signal_immediate_update.signal_immediate_update(  ); 
+		return false;   
+	}
+	bool on_button_release_event( GdkEventButton* event)
+	{
+		grid_editor.button_release( event->x, event->y ); 
+		position_editor.button_release( event->x, event->y ); 
+
+		signal_immediate_update.signal_immediate_update(  ); 
+		return false; 
+	}
+};
+
+
 
 
 struct Application
 {
 
-	typedef Application this_type; 
+//	typedef Application this_type; 
 
 	Application()	
-	: 
+		: 
 		window(),
 		vbox(),
 		hbox(),
@@ -338,6 +561,8 @@ struct Application
 		valid_controller( create_valid_controller_service() ), 
 		//gribs_service( create_gribs_service( "data/sadis2g_soc_grib_dump.bin" ) ),
 
+
+
 		services( 
 			*layers,
 //			*projector, 
@@ -352,14 +577,20 @@ struct Application
 			*valid_controller
 		),
 
+
 		modal_control( services, hbox ),
 
 		gui_valid_controller( hbox, valid_controller ), 
 		gui_level_controller( hbox, level_controller ), 
 
-		immediate_update_pending( true ),
 
-		render_control( drawing_area, renderer )
+		render_control( drawing_area, renderer ),
+
+		render_manager( drawing_area, layers, labels, render_control ),
+		keyboard_manager( window, grid_editor, position_editor, render_manager  ),
+		mouse_manager( drawing_area, grid_editor, position_editor, render_manager  )
+
+
 
 		/*
 			- Very important. Rather than passing the IProjection we should pass the projection aggregate root.  
@@ -403,14 +634,6 @@ struct Application
 	
 		window.set_title( "my app" );
 
-		typedef Application this_type; 
-
-		drawing_area.signal_motion_notify_event() .connect( sigc::mem_fun( *this, &this_type::on_motion_notify_event));
-		drawing_area.signal_button_press_event() .connect( sigc::mem_fun( *this, &this_type::on_button_press_event));
-		drawing_area.signal_button_release_event() .connect( sigc::mem_fun( *this, &this_type::on_button_release_event));
-		window.signal_key_press_event() .connect( sigc::mem_fun( *this, &this_type::on_key_press_event));
-		window.signal_key_release_event() .connect( sigc::mem_fun( *this, &this_type::on_key_release_event));
-
 		window.show_all_children();
 
 		/*
@@ -449,13 +672,6 @@ struct Application
 		// schedule initial deadline timeout 
 		//Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & Application::on_timeout), 0 );
 
-		immediate_update_pending = false;
-//		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::immediate_update ), 0 );
-		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
-
-
-		//drawing_area.signal_expose_event() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
-		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
 
 		test1( services );
 	} 
@@ -495,141 +711,20 @@ struct Application
 	
 
 	Services			services; 
+
+
 	ModalControl		modal_control;
 
 	GUIValidController	gui_valid_controller;
 	GUILevelController	gui_level_controller;
 
-	bool				immediate_update_pending; 
 
 	RenderControl		render_control; 
 
+	RenderManager		render_manager; 
+	KeyboardManager		keyboard_manager;
+	MouseManager		mouse_manager;
 
-	/*
-		We should not have all these event handlers here. 	
-			they should be being handled internally to 
-			responsible classes.
-	*/
-
-	bool on_motion_notify_event( GdkEventMotion *event )
-    {
-//		std::cout << "mouse move event" << std::endl;
-		grid_editor.mouse_move( event->x, event->y ); 
-		position_editor.mouse_move( event->x, event->y ); 
-		signal_immediate_update(  ); 
-		return false;
-	}
-	bool on_button_press_event( GdkEventButton* event)
-	{
-		grid_editor.button_press( event->x, event->y ); 
-		position_editor.button_press( event->x, event->y ); 
-		signal_immediate_update( ); 
-		return false;   
-	}
-	bool on_button_release_event( GdkEventButton* event)
-	{
-		grid_editor.button_release( event->x, event->y ); 
-		position_editor.button_release( event->x, event->y ); 
-		signal_immediate_update( );
-		return false; 
-	}
-	static int translate_code( unsigned code )
-	{
-		int ret = 0; 
-		switch( code)
-		{
-			// case GDK_Return: case GDK_Escape: case GDK_F1: etc
-			case GDK_KEY_Shift_L  :  ret = IMyEvents ::shift_key; break; 
-			case GDK_KEY_Control_L: ret = IMyEvents ::ctrl_key; break;
-			default: ret = code; break;
-		};
-		return ret; 
-	}
-	// now we want keyboard events. to enable pan
-	bool on_key_press_event( GdkEventKey* event )
-    {
-		/*
-		std::cout << "keypress event " << event->hardware_keycode << " " << char( event->hardware_keycode) << std::endl;
-		std::cout << "keypress event " << event->keyval << " " << char( event->keyval ) << std::endl;
-		*/
-
-		grid_editor.key_press( translate_code( event->keyval ) ); 
-		position_editor.key_press( translate_code( event->keyval ) ); 
-		signal_immediate_update( ); 
-		return false;
-	}
-	bool on_key_release_event(GdkEventKey* event )
-	{
-		grid_editor.key_release( translate_code( event->keyval ) ); 
-		position_editor.key_release( translate_code( event->keyval ) ); 
-		signal_immediate_update( ); 
-		return false;
-	}
-
-
-	void signal_immediate_update(  )
-	{
-		//grid_editor.signal_immediate_update( event );
-		//position_editor.signal_immediate_update( event );
-
-		if( ! immediate_update_pending )		
-		{							
-			immediate_update_pending = true;
-			Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & Application::immediate_update ), 0 );
-		}
-	}
-
-	void immediate_update( )
-	{
-//		std::cout << "immediate update" << std::endl;
-		update();
-	}
-
-	void timer_update( )
-	{
-//		std::cout << "timer update" << std::endl;
-		update();
-		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & Application::timer_update), 60 );
-	}
-
-	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
-	{
-
-//		std::cout << "expose event" << std::endl;
-
-		// both this class and the render_control hook this event.
-		// we do this to clear the flag after the expose event, in order to avoid scheduling another update, this
-		// prevents lagging as key and update events are processed, but the image never gets drawn 
-		immediate_update_pending = false;
-		return false; // don't presumpt the other handler
-	}
-	/*
-		also post expose we always clear the pending flag, but the expose might be 
-		in response to a timer event, not immediate. 
-	*/
-	/*
-		when we do the update, no more events should be able to be processed until we get the expose. 
-		it is possible however, that events could be being exposed, which means the items in the
-		renderer could have changed.  been made active etc.
-	*/
-	void update( )
-	{
-
-		// models->update(); / 
-
-		layers->layer_update();
-
-		// perhaps remove . 
-		//projector->update();
-
-		labels->update(); 
-
-		render_control.update();
-
-		// this should be delayed until the expose ? 
-		layers->post_layer_update();
-
-	}
 
 
 

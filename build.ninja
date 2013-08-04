@@ -142,9 +142,6 @@ build $builddir/test/test01/main.o:  cxx test/test01/main.cpp
 build $bindir/test01:           link $builddir/test/test01/main.o  $builddir/all.a
 
 
-# grib test 
-#build $builddir/test/data/main.o:  cxx test/data/main.cpp
-#build $bindir/test02:           link $builddir/test/data/main.o $builddir/data/grib_decode.o  $externaldir/boost/lib/libboost_test_exec_monitor.a
 
 ## tools
 build $bindir/tools/dump_reports2: link $builddir/tools/dump_reports2.o   
