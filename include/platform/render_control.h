@@ -24,13 +24,13 @@
 struct RenderControl
 {
 
-
 	RenderControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer )
 		: drawing_area( drawing_area),
 		renderer( renderer ),
 		timer()
 	{	}
-	Gtk::DrawingArea & drawing_area; 
+
+	Gtk::DrawingArea	& drawing_area; 
 	IRenderer			& renderer;
 
 	Timer				timer;		// used for animation, not performance, change name animation_timer

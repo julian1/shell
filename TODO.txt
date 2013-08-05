@@ -11,6 +11,11 @@ get rid of ptr< Layers>   it's ridiculous .
 dynamic objects should rely on add() remove() when they pass themselves 
 around.
 
+- even if we rely on the create() functions rather than pimpl, they shouldn't return ptr<T
+	> instead ptr<> should just be used in main() to avoid having to call destructors.
+
+- get rid of the paramsUpdate. if something wants timer events it can get them from the
+	timer interface.  
 
 
 ----------------------------------------------------------------------------------------------------------------
