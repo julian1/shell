@@ -17,6 +17,16 @@ around.
 - get rid of the paramsUpdate. if something wants timer events it can get them from the
 	timer interface.  
 
+- refactor the renderer not to use ptr<>. this means that it's no longer responsible
+	for keeping objects alive!!
+
+- subsystems should never has responsibility for memory managing stuff, which should
+	be done on the peer.
+
+- should never be static functions . operations like contouring should be classes 
+	implementing interfaces - probably stateless. that way we can pass them down, 
+	rather than editing source code deep.
+
 
 ----------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------

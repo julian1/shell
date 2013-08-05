@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <common/ptr.h> 
 #include <vector> 
 
 /*
@@ -30,8 +31,8 @@ struct Rect
 
 struct IRenderJob
 {
-	virtual void add_ref() = 0;
-	virtual void release() = 0;
+//	virtual void add_ref() = 0;
+//	virtual void release() = 0;
 
 	virtual void render ( BitmapSurface & surface, const UpdateParms & parms ) = 0 ; 
 
@@ -53,11 +54,13 @@ struct IRenderJob
 struct IRenderer 
 {
 
-	virtual void add( const ptr< IRenderJob> & job ) = 0; 
-	virtual void remove( const ptr< IRenderJob> & job ) = 0; 
+//	virtual void add( const ptr< IRenderJob> & job ) = 0; 
+//	virtual void remove( const ptr< IRenderJob> & job ) = 0; 
 
-//	virtual void add( const ptr< IKey> & key, const ptr< IRenderJob> & job ) = 0; 
-//	virtual void remove( const ptr< IKey> & key ) = 0; 
+	virtual void add( IRenderJob & job ) = 0; 
+	virtual void remove( IRenderJob & job ) = 0; 
+
+
 
 	virtual void resize( int x, int y ) = 0; 
 
@@ -77,11 +80,8 @@ struct Renderer  : IRenderer
 	Renderer();
 	~Renderer();
 
-	void add( const ptr< IRenderJob> & job ) ; 
-	void remove( const ptr< IRenderJob> & job ) ; 
-
-//	void add( const ptr< IKey> & key, const ptr< IRenderJob> & job );
-//	void remove( const ptr< IKey> & key );
+	void add( IRenderJob & job ) ;
+	void remove( IRenderJob & job ) ; 
 
 	void resize( int x, int y );
 
@@ -89,6 +89,7 @@ struct Renderer  : IRenderer
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
 	ptr< BitmapSurface> update_expose( const std::vector< Rect> & regions );
+
 private:
 	struct Inner *d;
 	Renderer( const Renderer & );

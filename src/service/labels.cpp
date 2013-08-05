@@ -10,6 +10,7 @@
 #include <common/quadtree.h>
 #include <service/labels.h>
 
+#include <iostream>
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -186,6 +187,12 @@ struct Labels : ILabels
 		*/
 
 		{
+			if( ! root )
+			{
+				std::cout << "WHAT IS THIS ? !!!" << std::endl; 
+				return;
+			}
+
 			// copy the quadtree ...
 			assert( root );
 			ptr< Node< int> > root2 = copy_tree( root );  

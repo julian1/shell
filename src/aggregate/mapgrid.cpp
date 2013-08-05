@@ -264,15 +264,13 @@ void add_mapgrid_aggregate_root( Services & services, const ptr< IMapGridAggrega
 	//void *key = (void *)seed ; 
 //	ptr< IKey> key = make_key( root, proj );
 
-	services.renderer.add( new Render( root, proj )); 
+	services.renderer.add( * new Render( root, proj )); 
 }
 
 void remove_mapgrid_aggregate_root( Services & services, const ptr< IMapGridAggregateRoot> & root, const ptr< IProjectionAggregateRoot> & proj)  
 {
 	assert( 0 );
 
-//	ptr< IKey> key = make_key( root, proj );
-//	services.renderer.remove( key);
 }
 
 

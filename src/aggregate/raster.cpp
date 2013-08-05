@@ -292,24 +292,16 @@ ptr< IKey> make_key( const ptr< A> & a, const ptr< B> & b)
 
 
 void add_raster_aggregate_root( Services & services, const ptr< IRasterAggregateRoot> & root , const ptr< IProjectionAggregateRoot> & projection_aggregate )
-//void add_raster_aggregate_root( Services & services, const ptr< IRasterAggregateRoot> & root, const ptr< IProjection> & proj, const agg::path_storage & limb  )
 {
-	//std::cout << "add raster agg root" << std::endl;
-
-	//ptr< IKey> key = make_key( root, projection_aggregate ); 
-	//void *key = &*root;
-
-	services.renderer.add( new RenderJob( root, projection_aggregate ) ); 
+	services.renderer.add( * new RenderJob( root, projection_aggregate ) ); 
 
 }
 
 void remove_raster_aggregate_root( Services & services, const ptr< IRasterAggregateRoot> & root, const ptr< IProjectionAggregateRoot> & projection_aggregate  )
 {
 	assert( 0 ); 
-	//ptr< IKey> key = make_key( root, projection_aggregate ); 
-	//void *key = &*root;
 
-//	services.renderer.remove( key); 
+
 }
 
 

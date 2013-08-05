@@ -198,16 +198,16 @@ struct PositionEditorJobProjection : /* IPositionEditorJob,*/ IXControlPointCall
 	{ 
 	
 
-		services.renderer.add( top_left  );
+		services.renderer.add( *top_left  );
 		services.position_editor.add( top_left );
 
-		services.renderer.add( top_right  );
+		services.renderer.add( *top_right  );
 		services.position_editor.add( top_right );
 
-		services.renderer.add( bottom_left  );
+		services.renderer.add( *bottom_left  );
 		services.position_editor.add( bottom_left );
 
-		services.renderer.add( bottom_right  );
+		services.renderer.add( *bottom_right  );
 		services.position_editor.add( bottom_right );
 /**/
 	} 
@@ -215,16 +215,16 @@ struct PositionEditorJobProjection : /* IPositionEditorJob,*/ IXControlPointCall
 	~PositionEditorJobProjection()
 	{
 
-		services.renderer.remove( top_left );
+		services.renderer.remove( *top_left );
 		services.position_editor.remove( top_left );
 
-		services.renderer.remove( top_right );
+		services.renderer.remove( *top_right );
 		services.position_editor.remove( top_right );
 
-		services.renderer.remove( bottom_left );
+		services.renderer.remove( *bottom_left );
 		services.position_editor.remove( bottom_left );
 
-		services.renderer.remove( bottom_right );
+		services.renderer.remove( *bottom_right );
 		services.position_editor.remove( bottom_right );
 
 	}

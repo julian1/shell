@@ -208,13 +208,13 @@ struct MyLayer : ILayerJob
 	void load() 
 	{
 		services.layers.add( ptr< ILayerJob>( this) ); 
-		services.renderer.add( render_anim ); 
+		services.renderer.add( * render_anim ); 
 		services.position_editor.add(  position_editor );
 	}
 	void unload() 
 	{
 		services.position_editor.remove(  position_editor );
-		services.renderer.remove( render_anim ); 
+		services.renderer.remove( * render_anim ); 
 		services.layers.remove( ptr< ILayerJob>( this) ); 
 	}
 	void add_ref() { } 

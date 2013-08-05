@@ -314,8 +314,7 @@ struct IControlPointCallback
 
 struct ControlPoint 
 	: IPositionEditorJob, 
-	IRenderJob//, 
-//	IKey 
+	IRenderJob 
 {
 	ControlPoint( IControlPointCallback & callback )
 		: count( 0),
@@ -457,33 +456,33 @@ struct PositionsController :  /*ILayerJob, */ IControlPointCallback
 		bottom_left =  new ControlPoint( *this ) ; 
 		bottom_right =  new ControlPoint( *this ) ; 
 
-		services.renderer.add( top_left  );
+		services.renderer.add( *top_left  );
 		services.position_editor.add( top_left );
 
-		services.renderer.add( top_right  );
+		services.renderer.add( *top_right  );
 		services.position_editor.add( top_right );
 
-		services.renderer.add( bottom_left  );
+		services.renderer.add( *bottom_left  );
 		services.position_editor.add( bottom_left );
 
-		services.renderer.add( bottom_right  );
+		services.renderer.add( *bottom_right  );
 		services.position_editor.add( bottom_right );
 	} 
+
 	~PositionsController()
 	{
 
-		services.renderer.remove( top_left );
+		services.renderer.remove( *top_left );
 		services.position_editor.remove( top_left );
 
-		services.renderer.remove( top_right );
+		services.renderer.remove( *top_right );
 		services.position_editor.remove( top_right );
 
-		services.renderer.remove( bottom_left );
+		services.renderer.remove( *bottom_left );
 		services.position_editor.remove( bottom_left );
 
-		services.renderer.remove( bottom_right );
+		services.renderer.remove( *bottom_right );
 		services.position_editor.remove( bottom_right );
-
 	}
 
 	unsigned					count;
@@ -870,7 +869,7 @@ struct ContoursController :  /*ILayerJob,*/ IContourCallback
 
 //		ptr< IKey>	key = make_key(  o ); 
 
-		services.renderer.add(  o );
+		services.renderer.add(  *o );
 		//services.projector.add_project_job( key, o ); 
 	} 
 
@@ -913,7 +912,7 @@ struct ContoursController :  /*ILayerJob,*/ IContourCallback
 //				remove_contour_( contour );
 		//		ptr< IKey>	key = make_key(  contour ); 
 
-				services.renderer.remove( contour );
+				services.renderer.remove( *contour );
 		//		services.projector.remove_project_job( key );
 
 			}

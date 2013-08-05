@@ -446,6 +446,9 @@ struct MouseManager
 
 
 
+
+
+
 int main(int argc, char *argv[])
 {
 	// Assemble the graph
@@ -549,6 +552,7 @@ int main(int argc, char *argv[])
 
 	window.show_all_children();
 
+#if 1
 
 	/// ********************************************************
 	// dynamic objects
@@ -595,6 +599,11 @@ int main(int argc, char *argv[])
 	load_shapes_layer( services, shapes_aggregate_root, projection_aggregate_root_2  ); 
 	add_mapgrid_aggregate_root( services, mapgrid_aggregate_root,  projection_aggregate_root_2 ); 
 	create_cube_view( services, cube , projection_aggregate_root_2 ); 
+
+#endif
+
+	// adding the mapgrid to two projections fucks it up ...
+//	add_test_anim_layer( services ); 
 
 	/// ********************************************************
 

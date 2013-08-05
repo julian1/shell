@@ -465,8 +465,8 @@ struct ShapesLayer : ILayerJob, IShapesObserve
 
 		shapes.insert( w );
 
-		services.renderer.add(  w );
-		services.labels.add(  w );
+	//	services.renderer.add(  *w );
+//		services.labels.add(  w );
 	}
 
 	void remove_shape( const ptr< ISimpleShape > & shape ) 

@@ -9,7 +9,6 @@
 	and receiving of the expose event.
 */
 
-#include <common/ptr.h> 
 #include <service/renderer.h> 
 
 #include <common/surface.h>
@@ -33,7 +32,7 @@
 
 namespace { 
 
-static bool compare_z_order( const ptr< IRenderJob> & a, const ptr< IRenderJob>  & b )
+static bool compare_z_order( IRenderJob *a, IRenderJob * b )
 {
 	// should also put the force() criteria into the sort to displace the order.
 
@@ -48,7 +47,7 @@ static bool compare_z_order( const ptr< IRenderJob> & a, const ptr< IRenderJob> 
 //typedef boost::unordered_map< ptr< IKey> , ptr< IRenderJob>, Hash, Pred >		objects_t;
 //typedef boost::unordered_multimap< ptr< IKey> , ptr< IRenderJob>, Hash, Pred >		objects_t;
 
-typedef std::set<  ptr< IRenderJob> >	objects_t;
+typedef std::set<  IRenderJob * >	objects_t;
 	
 
 };
@@ -63,7 +62,7 @@ struct Inner
 
 	//private:
 	//unsigned		count;
-	std::vector< ptr< IRenderJob> >	passive_set;	
+	std::vector< IRenderJob * >	passive_set;	
 
 	BitmapSurface					passive_surface;	
 	BitmapSurface					active_surface ;
@@ -94,25 +93,26 @@ Renderer::~Renderer()
 
 
 
-void Renderer::add( const ptr< IRenderJob> & job ) 
-//void Renderer::add( const ptr< IKey> & key, const ptr< IRenderJob>  & job )
-{ 
-	assert( d->jobs.find( job) == d->jobs.end() ); 
 
-	d->jobs.insert( job );
+void Renderer::add( IRenderJob & job ) 
+{ 
+	assert( d->jobs.find( &job) == d->jobs.end() ); 
+
+	d->jobs.insert( &job );
 } 
 
-void Renderer::remove( const ptr< IRenderJob> & job ) 
-//void Renderer::remove( const ptr< IKey> & key )
+void Renderer::remove( IRenderJob & job ) 
 { 
-	assert( d->jobs.find( job) != d->jobs.end() ); 
+	assert( d->jobs.find( &job) != d->jobs.end() ); 
 
-	d->jobs.erase( job );
+	d->jobs.erase( &job );
 } 
 
 
 static void draw_rect( BitmapSurface::rbase_type	& rbase, const Rect & rect, const agg::rgba8 & color  )
 { 
+	// helper function
+
 	//BitmapSurface::rbase_type	& rbase = active_surface->rbase(); 
 	// std::cout << "line " << rect.x << " " << rect.y << " " << rect.w << " " << rect.h << std::endl;
 
@@ -146,7 +146,7 @@ void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & i
 
 	bool require_passive_redraw = false;
 
-	std::vector< ptr< IRenderJob> >		active_set;	
+	std::vector< IRenderJob * >		active_set;	
 
 
 	// collect elements into a set of sorted jobs
@@ -155,11 +155,11 @@ void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & i
 
 	active_set.clear();
 
-	std::vector< ptr< IRenderJob> >	current_set;
+	std::vector< IRenderJob * >	current_set;
 
 	// add the set of passive jobs for this render round
 //	foreach( objects_t::value_type & pair , d->jobs )
-	foreach( const ptr< IRenderJob > & job , d->jobs )
+	foreach( IRenderJob * job , d->jobs )
 	{
 //		const ptr< IRenderJob>  & job = pair.second; 
 		int z = job->get_z_order(); 
@@ -185,7 +185,7 @@ void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & i
 	// check if any jobs have invalid flag set.
 	if( ! require_passive_redraw)
 	{	
-		foreach( const ptr< IRenderJob> & job, current_set ) 
+		foreach( const IRenderJob * job, current_set ) 
 		{
 			if( job->get_invalid() )
 			{
@@ -217,13 +217,16 @@ void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & i
 
 //			std::cout << "@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;	
 //			std::cout << "has changed - redrawing passive "  << passive_set.size() << std::endl; 
+
+
+		// WHY DO WE HAVE AN OPERATION LIKE THIS ?
 		
 		// clear the buffer ...
 		d->passive_surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
 
 		// this has to be the passive set, to respect the z_order, otherwise we would have to re-sort
 
-		foreach( const ptr< IRenderJob> & job, d->passive_set )
+		foreach( IRenderJob *job, d->passive_set )
 		{
 			job->render( d->passive_surface, parms ) ;
 		}
@@ -249,7 +252,7 @@ void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & i
 	// ok, we have to keep a list of active regions ...	
 
 	// invalidate the active items
-	foreach( const ptr< IRenderJob> & job, active_set )
+	foreach( IRenderJob *job, active_set )
 	{
 		double x1, x2, y1, y2; 
 		job->get_bounds( &x1, &y1, &x2, &y2 ) ;  
@@ -270,7 +273,7 @@ void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & i
 	}
 
 
-	foreach( const ptr< IRenderJob> & job, active_set )
+	foreach( IRenderJob *job, active_set )
 	{
 		job->render( d->active_surface, parms ); 
 	}
