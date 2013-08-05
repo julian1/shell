@@ -23,34 +23,19 @@
 
 struct RenderControl
 {
-	// the motivation for this class is to separate the actual renderering performed by the renderer, 
-	// with the OS specific blitting and general ui updating events 
 
-	// in reality we want events to be delegated to the renderer, and the
-	// renderer would manipulate the size. because the renderer has to know the
-	// or else we would just inject width and height, and the renderer would 
-	// examine.	 
 
-	typedef RenderControl this_type; 
-
-	RenderControl( Gtk::DrawingArea	& drawing_area, IRenderer &renderer )
-		: drawing_area( drawing_area ),
+	RenderControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer )
+		: drawing_area( drawing_area),
 		renderer( renderer ),
 		timer()
-	{	
-
-		//drawing_area.signal_expose_event() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
-		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
-		drawing_area.signal_size_allocate() .connect( sigc::mem_fun( *this, &this_type::on_size_allocate_event));
-	}
-
-	Gtk::DrawingArea	& drawing_area; 	
+	{	}
+	Gtk::DrawingArea & drawing_area; 
 	IRenderer			& renderer;
 
+	Timer				timer;		// used for animation, not performance, change name animation_timer
 
-	Timer				timer;	// used for animation, not performance, change name animation_timer
-
-	void on_size_allocate_event( Gtk::Allocation& allocation)
+	void resize( Gtk::Allocation& allocation)
 	{
 		renderer.resize( allocation.get_width(), allocation.get_height() ) ; 
 	} 
@@ -80,8 +65,7 @@ struct RenderControl
 		}
 	}
 
-	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
-//	bool on_expose_event( GdkEventExpose* event)
+	void blit_stuff( const Cairo::RefPtr<Cairo::Context>& cr )
 	{
 
 		std::vector< Rect> regions; 
@@ -133,7 +117,7 @@ struct RenderControl
 		{
 			blit_buffer( drawing_area, rect, surface ); 
 		}
-        return false;   // dont presumpt
+   //     return false;   // dont presumpt
 	}
 
 

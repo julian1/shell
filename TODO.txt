@@ -4,6 +4,14 @@ Get rid of ref counting altogether
 there's also no reason layers should be ref counted 
 
 
+get rid of ptr< Layers>   it's ridiculous .  
+	if it's dynamic then there should only be a single real reference for it  
+	- and it should be being pushed
+
+dynamic objects should rely on add() remove() when they pass themselves 
+around.
+
+
 
 ----------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------

@@ -236,17 +236,18 @@ struct RenderManager : SignalImmediateUpdate
 		layers( layers),
 		labels( labels ),
 		render_control( render_control ),
-		immediate_update_pending( true )
+		immediate_update_pending( false )
 	{
-		immediate_update_pending = false;
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
 
 		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
+
+		drawing_area.signal_size_allocate() .connect( sigc::mem_fun( *this, &this_type::on_size_allocate_event));
 	}
 
 	Gtk::DrawingArea	& drawing_area; 	
-	ptr< ILayers>		&	layers;			// should be removed ...
-	ptr< ILabels>		&labels; 
+	ptr< ILayers>		& layers;			// should be removed ...
+	ptr< ILabels>		& labels; 
 	RenderControl		& render_control ; 
 
 	bool	immediate_update_pending; 
@@ -263,7 +264,12 @@ struct RenderManager : SignalImmediateUpdate
 		}
 	}
 
-	void immediate_update( )
+	/*
+		this timer update stuff can be factored out later, when 
+		the renderer is capable of doing things.
+	*/
+
+	void immediate_update()
 	{
 //		std::cout << "immediate update" << std::endl;
 		update();
@@ -276,14 +282,27 @@ struct RenderManager : SignalImmediateUpdate
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
 	}
 
+	void on_size_allocate_event( Gtk::Allocation& allocation)
+	{
+
+		render_control.resize( allocation ) ; 
+	}
+	
+
 	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
 	{
+		// this is really crappy. this event is already being caught elsewher 
+
 
 //		std::cout << "expose event" << std::endl;
 
 		// both this class and the render_control hook this event.
 		// we do this to clear the flag after the expose event, in order to avoid scheduling another update, this
 		// prevents lagging as key and update events are processed, but the image never gets drawn 
+
+
+		render_control.blit_stuff( cr ); 
+
 		immediate_update_pending = false;
 		return false; // don't presumpt the other handler
 	}
@@ -294,6 +313,8 @@ struct RenderManager : SignalImmediateUpdate
 
 	void update( )
 	{
+
+		// what does this even do ???
 		layers->layer_update();
 
 		labels->update(); 
@@ -488,6 +509,7 @@ int main(int argc, char *argv[])
 	RenderControl	render_control( drawing_area, renderer );
 
 	RenderManager	render_manager( drawing_area, layers, labels, render_control );
+
 	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_manager  );
 	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor, render_manager  ); 
 
