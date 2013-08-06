@@ -169,14 +169,11 @@ struct RenderAnim : IRenderJob
 		agg::conv_stroke< path_reader>	stroke( reader );
 		stroke.width( 1); 
 #endif
-
 		agg::scanline_p8                sl;
 		agg::rasterizer_scanline_aa<>   ras;
 		ras.add_path( stroke );
 
-		// agg::rgba8       c( 0xff, 0, 0);
-		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0, 0xff, 0 ) );
-//		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0xff, 0xff, 0, 0xff) );
+		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0xff, 0, 0 ) );
 	}
 
 	bool get_invalid() const 

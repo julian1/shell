@@ -11,6 +11,11 @@ get rid of ptr< Layers>   it's ridiculous .
 dynamic objects should rely on add() remove() when they pass themselves 
 around.
 
+- get rid of modal control. 
+	a subsystem can expose object to allow it to coexist peacefully with other subsystems
+	when a subsystem decides it's working with an object i think it should take 
+		control of events - eg. cancelling propegation or something.
+
 - even if we rely on the create() functions rather than pimpl, they shouldn't return ptr<T
 	> instead ptr<> should just be used in main() to avoid having to call destructors.
 

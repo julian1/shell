@@ -30,11 +30,6 @@ struct BitmapSurface
 
 	typedef agg::pixfmt_bgra32					pixfmt_type;
 	
-	//typedef agg::pixfmt_rgba32					pixfmt_type;
-
-//	typedef agg::pixfmt_argb32					pixfmt_type;
-// either argb32 is incorrect
-
 	typedef agg::renderer_base< pixfmt_type>	rbase_type;
 
 private:
