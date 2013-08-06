@@ -175,8 +175,8 @@ struct RenderAnim : IRenderJob
 		ras.add_path( stroke );
 
 		// agg::rgba8       c( 0xff, 0, 0);
-//		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0, 0, 0xff ) );
-		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0, 0, 0xff, 0xff) );
+		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0, 0xff, 0 ) );
+//		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0xff, 0xff, 0, 0xff) );
 	}
 
 	bool get_invalid() const 

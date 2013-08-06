@@ -218,12 +218,11 @@ void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & i
 //			std::cout << "@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;	
 //			std::cout << "has changed - redrawing passive "  << passive_set.size() << std::endl; 
 
-
 		// WHY DO WE HAVE AN OPERATION LIKE THIS ?
+		// Rendering the background ought to be a job 
 		
 		// clear the buffer ...
 	//	d->passive_surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
-		d->passive_surface.rbase().clear( agg::rgba8( 0xff, 0, 0) );
 
 		// this has to be the passive set, to respect the z_order, otherwise we would have to re-sort
 

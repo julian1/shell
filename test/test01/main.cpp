@@ -469,19 +469,8 @@ struct ClearBackground : IRenderJob, IResizable
 	void render ( BitmapSurface & surface, const UpdateParms & parms ) 
 	{
 		std::cout << "$$$$$$$$$$$$ clearing background" << std::endl;
-		std::cout << "bounds " << w << " " << h << std::endl;
 
-		// perhaps it's working but there are copy problems 
-
-		std::cout << "width " << surface.rbase().width() << std::endl;
-
-//		surface.rbase().clear( agg::rgba8( 0xff, 0x0, 0x0 ) );
-
-//		surface.rbase().clear(agg::rgba8(255, 255, 255));	// white works
-//		surface.rbase().clear(agg::rgba8(255, 0, 0, 255 ));	// another color doesn't
-//		surface.rbase().clear(agg::rgba( 1, 0, 0 ));	// another color doesn't
-//		surface.rbase().copy_hline( 0, 1 , w, agg::rgba8( 0xff, 0x0, 0x0 ) );	
-
+		surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
 		dirty = false;
 	} 
 
