@@ -222,7 +222,8 @@ void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & i
 		// WHY DO WE HAVE AN OPERATION LIKE THIS ?
 		
 		// clear the buffer ...
-		d->passive_surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
+	//	d->passive_surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
+		d->passive_surface.rbase().clear( agg::rgba8( 0xff, 0, 0) );
 
 		// this has to be the passive set, to respect the z_order, otherwise we would have to re-sort
 
@@ -316,12 +317,16 @@ ptr< BitmapSurface> Renderer::update_expose( const std::vector< Rect> & invalid_
 
 //	std::cout << "here1 " << combine_surface->width() << " " << combine_surface->height() << std::endl;
 #if 1
+
+//	std::cout << "active_rects " << d->active_rects.size() << std::endl;
+
 	// for each region, draw a square
 	// foreach( const Rect & rect, invalid_regions )
 	foreach( const Rect & rect, d->active_rects )
 	{
 		Rect	a( rect.x, rect.y, rect.w -1, rect.h - 1); 	
-		draw_rect( d->combine_surface->rbase(), a, agg::rgba8( 0, 0, 0) ); 
+		//draw_rect( d->combine_surface->rbase(), a, agg::rgba8( 0, 0, 0) ); 
+		draw_rect( d->combine_surface->rbase(), a, agg::rgba8( 0xff, 0, 0) ); 
 	}
 #endif
 

@@ -31,11 +31,7 @@ struct Rect
 
 struct IRenderJob
 {
-//	virtual void add_ref() = 0;
-//	virtual void release() = 0;
-
 	virtual void render ( BitmapSurface & surface, const UpdateParms & parms ) = 0 ; 
-
 	// virtual void render_ps ( std::ostream & surface, const UpdateParms & parms ) = 0 ; 
 
 	// change name get_render_z_order(), to distinguish from label_z_order ? 

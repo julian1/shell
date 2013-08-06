@@ -129,6 +129,11 @@ struct RenderAnim : IRenderJob
 		agg::path_storage path = root->get_path();		// this is inefficient, make it const and put a reader over it.
 
 		bounding_rect_single( path, 0, x1, y1, x2, y2);	
+
+		*x1 -= 2; 
+		*y1 -= 2; 
+		*x2 += 2; 
+		*y2 += 2; 
 	}
 
 
@@ -170,7 +175,8 @@ struct RenderAnim : IRenderJob
 		ras.add_path( stroke );
 
 		// agg::rgba8       c( 0xff, 0, 0);
-		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0, 0, 0xff ) );
+//		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0, 0, 0xff ) );
+		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0, 0, 0xff, 0xff) );
 	}
 
 	bool get_invalid() const 

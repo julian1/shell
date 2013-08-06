@@ -189,7 +189,7 @@ struct Labels : ILabels
 		{
 			if( ! root )
 			{
-				std::cout << "WHAT IS THIS ? !!!" << std::endl; 
+				//std::cout << "WHAT IS THIS ? !!!" << std::endl; 
 				return;
 			}
 

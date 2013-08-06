@@ -35,9 +35,9 @@ struct RenderControl
 
 	Timer				timer;		// used for animation, not performance, change name animation_timer
 
-	void resize( Gtk::Allocation& allocation)
+	void resize( int w, int h )
 	{
-		renderer.resize( allocation.get_width(), allocation.get_height() ) ; 
+		renderer.resize( w, h ); 
 	} 
 
 	/*

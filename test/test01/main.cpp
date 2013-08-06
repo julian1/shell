@@ -216,13 +216,18 @@ private:
 	So the aggregate could still be composed of any combination of entities as we like.
 */
 
-struct SignalImmediateUpdate 
+struct ISignalImmediateUpdate 
 {
 	virtual void signal_immediate_update() = 0;
 };
 
+struct IResizable
+{
+	virtual void resize( int w, int h ) = 0; 
+};
 
-struct RenderManager : SignalImmediateUpdate 
+
+struct RenderManager : ISignalImmediateUpdate 
 {
 
 	typedef RenderManager this_type; 
@@ -230,12 +235,15 @@ struct RenderManager : SignalImmediateUpdate
 	RenderManager( Gtk::DrawingArea	& drawing_area,  
 		ptr< ILayers>	&layers,
 		ptr< ILabels>	&labels, 
-		RenderControl	& render_control 
+		RenderControl	& render_control ,
+		IResizable		& resizable
+
    ) 	
 		: drawing_area( drawing_area ),
 		layers( layers),
 		labels( labels ),
 		render_control( render_control ),
+		resizable( resizable),
 		immediate_update_pending( false )
 	{
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
@@ -249,6 +257,7 @@ struct RenderManager : SignalImmediateUpdate
 	ptr< ILayers>		& layers;			// should be removed ...
 	ptr< ILabels>		& labels; 
 	RenderControl		& render_control ; 
+	IResizable			& resizable; 
 
 	bool	immediate_update_pending; 
 
@@ -284,8 +293,10 @@ struct RenderManager : SignalImmediateUpdate
 
 	void on_size_allocate_event( Gtk::Allocation& allocation)
 	{
-
-		render_control.resize( allocation ) ; 
+		int w = allocation.get_width(); 
+		int h = allocation.get_height(); 
+		render_control.resize( w, h ) ; 
+		resizable.resize( w, h ) ; 
 	}
 	
 
@@ -336,7 +347,7 @@ struct KeyboardManager
 	KeyboardManager( Gtk::Window & window ,
 		GridEditor		& grid_editor,
 		PositionEditor	& position_editor ,
-		SignalImmediateUpdate & signal_immediate_update
+		ISignalImmediateUpdate & signal_immediate_update
 	) : window( window ),
 		grid_editor( grid_editor),
 		position_editor( position_editor),
@@ -351,7 +362,7 @@ struct KeyboardManager
 	Gtk::Window		& window ; 
 	GridEditor		& grid_editor;
 	PositionEditor	& position_editor;
-	SignalImmediateUpdate & signal_immediate_update; 
+	ISignalImmediateUpdate & signal_immediate_update; 
 
 
 	static int translate_code( unsigned code )
@@ -396,7 +407,7 @@ struct MouseManager
 	MouseManager( Gtk::DrawingArea	& drawing_area,
 		GridEditor		& grid_editor,
 		PositionEditor	& position_editor ,
-		SignalImmediateUpdate & signal_immediate_update
+		ISignalImmediateUpdate & signal_immediate_update
 	) 	
 		: drawing_area( drawing_area ),
 		grid_editor( grid_editor),
@@ -413,7 +424,7 @@ struct MouseManager
 	Gtk::DrawingArea	& drawing_area;
 	GridEditor		& grid_editor;
 	PositionEditor	& position_editor;
-	SignalImmediateUpdate & signal_immediate_update; 
+	ISignalImmediateUpdate & signal_immediate_update; 
 
 
 
@@ -445,6 +456,66 @@ struct MouseManager
 };
 
 
+
+struct ClearBackground : IRenderJob, IResizable
+{
+	ClearBackground() 
+	: w( 0), h( 0), dirty( true )
+	{ } 
+
+	int w, h;
+	bool dirty;
+
+	void render ( BitmapSurface & surface, const UpdateParms & parms ) 
+	{
+		std::cout << "$$$$$$$$$$$$ clearing background" << std::endl;
+		std::cout << "bounds " << w << " " << h << std::endl;
+
+		// perhaps it's working but there are copy problems 
+
+		std::cout << "width " << surface.rbase().width() << std::endl;
+
+//		surface.rbase().clear( agg::rgba8( 0xff, 0x0, 0x0 ) );
+
+//		surface.rbase().clear(agg::rgba8(255, 255, 255));	// white works
+//		surface.rbase().clear(agg::rgba8(255, 0, 0, 255 ));	// another color doesn't
+//		surface.rbase().clear(agg::rgba( 1, 0, 0 ));	// another color doesn't
+//		surface.rbase().copy_hline( 0, 1 , w, agg::rgba8( 0xff, 0x0, 0x0 ) );	
+
+		dirty = false;
+	} 
+
+	// change name get_render_z_order(), to distinguish from label_z_order ? 
+	int get_z_order() const 
+	{
+		return -1;
+	} 
+
+	// no change in z_order, but mandates that there is a one-off change for update round
+	bool get_invalid() const 
+	{
+		return dirty; 
+	}
+	// might actually want to be a vector< Rect> that gets populated, which would allow for multiple items 
+	// or else a referse interface
+	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
+	{
+		std::cout << "bounds " << w << " " << h << std::endl;
+		*x1 = 0; *y1 = 0; 
+		*x2 = w; *y2 = h;
+		// we don't know the bounds ...
+		// unless we pass it in
+	}  
+
+	// overide
+	void resize( int w_, int h_ ) 
+	{
+		// reather than query the renderer we'll just maintain state here
+		w = w_; 
+		h = h_; 
+		dirty = true;
+	} 
+};
 
 
 
@@ -511,7 +582,10 @@ int main(int argc, char *argv[])
 
 	RenderControl	render_control( drawing_area, renderer );
 
-	RenderManager	render_manager( drawing_area, layers, labels, render_control );
+
+	ClearBackground		clear_background;
+
+	RenderManager	render_manager( drawing_area, layers, labels, render_control, clear_background );
 
 	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_manager  );
 	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor, render_manager  ); 
@@ -557,7 +631,7 @@ int main(int argc, char *argv[])
 	/// ********************************************************
 	// dynamic objects
 	ptr< IProjectionAggregateRoot>	projection_aggregate_root; 
-	ptr< IShapesAggregateRoot>		shapes_aggregate_root; 
+//	ptr< IShapesAggregateRoot>		shapes_aggregate_root; 
 //	ptr< IGridAggregateRoot>		grid_aggregate_root; 
 	ptr< IRasterAggregateRoot>	raster_aggregate_root; 
 //	ptr< IAnimAggregateRoot>	anim_aggregate_root; 
@@ -578,8 +652,8 @@ int main(int argc, char *argv[])
 	grid_aggregate_root->set_geo_reference( geo_ref );
 #endif
 
-	shapes_aggregate_root = create_shapes_aggregate_root( );
-	load_test_shapes( "data/world_adm0.shp",  shapes_aggregate_root ); 
+//	shapes_aggregate_root = create_shapes_aggregate_root( );
+//	load_test_shapes( "data/world_adm0.shp",  shapes_aggregate_root ); 
 
 	projection_aggregate_root = create_projection_aggregate_root(); 
 	// load_test_ortho_proj( projection_aggregate_root );
@@ -590,20 +664,23 @@ int main(int argc, char *argv[])
 	add_raster_aggregate_root( services, raster_aggregate_root, projection_aggregate_root );
 
 	// adding the mapgrid to two projections fucks it up ...
-	load_shapes_layer ( services, shapes_aggregate_root, projection_aggregate_root  ); 
+//	load_shapes_layer ( services, shapes_aggregate_root, projection_aggregate_root  ); 
+
 	create_cube_view( services, cube, projection_aggregate_root ); 
 	add_test_anim_layer( services ); 
 	//add_anim_aggregate_root( services,  anim_aggregate_root ); 
 	projection_aggregate_root_2 = create_projection_aggregate_root_2(); 
 	add_projection_aggregate_root( services, projection_aggregate_root_2 ) ; 
-	load_shapes_layer( services, shapes_aggregate_root, projection_aggregate_root_2  ); 
+//	load_shapes_layer( services, shapes_aggregate_root, projection_aggregate_root_2  ); 
 	add_mapgrid_aggregate_root( services, mapgrid_aggregate_root,  projection_aggregate_root_2 ); 
 	create_cube_view( services, cube , projection_aggregate_root_2 ); 
 
 #endif
 
+	renderer.add( clear_background );
+
 	// adding the mapgrid to two projections fucks it up ...
-//	add_test_anim_layer( services ); 
+	//add_test_anim_layer( services ); 
 
 	/// ********************************************************
 
