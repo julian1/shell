@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include <common/timer.h>
-
 #include <set> 
 #include <gtkmm.h>
 
@@ -35,13 +33,13 @@ struct Animation : IAnimation
 	typedef std::set< IAnimationJob *>	jobs_t;
 	jobs_t								jobs;
 
-	Animation (  )  
-		: timer()
-	{  
-		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
-	}	
+	int									tick_interval;
 
-	Timer				timer;		// Must remove used for animation, not performance, change name animation_timer
+	Animation (  )  
+		: tick_interval( 60 )
+	{  
+		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), tick_interval );
+	}	
 
 	void timer_update( )
 	{
@@ -55,7 +53,7 @@ struct Animation : IAnimation
 			job->tick() ;
 		}
 
-		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
+		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), tick_interval );
 	}
 
 	void add( IAnimationJob & job ) 

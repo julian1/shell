@@ -16,11 +16,10 @@
 
 #include <common/ui_events.h>
 #include <common/logger.h>
+#include <common/timer.h>
 
 #include <service/fonts.h>
 #include <service/labels.h>
-//#include <service/projector.h>
-//#include <service/layers.h>
 
 #include <service/animation.h>
 #include <service/services.h>
