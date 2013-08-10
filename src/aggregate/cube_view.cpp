@@ -298,11 +298,11 @@ struct ControlPoint;
 
 struct IControlPointCallback
 {
-	virtual void move( const ptr< ControlPoint> & sender,  int x1_, int y1_, int x2_, int y2_ ) = 0;
+	virtual void move( ControlPoint & sender,  int x1_, int y1_, int x2_, int y2_ ) = 0;
 	// control passes from the IRenderJob, therefore it's easier to request the position, although
 	// it's not tell don't ask.
 
-	virtual void get_position( const ptr< ControlPoint> & sender, double * x, double * y ) = 0;  
+	virtual void get_position( ControlPoint & sender, double * x, double * y ) = 0;  
 //	virtual void get_position( struct ControlPoint & sender, double * x, double * y ) = 0; 
 
 
@@ -330,8 +330,6 @@ struct ControlPoint
 	agg::path_storage			path;	
 	bool						position_editor_active;
 
-	void add_ref()  { ++count; } 
-	void release()  { if( --count == 0) delete this; } 
 
 	void pre_render() {  }
 /*
@@ -355,7 +353,7 @@ struct ControlPoint
 		double r = 5; 
 		double x = 0, y = 0; 
 	
-		callback.get_position( this, &x, &y ); 
+		callback.get_position( *this, &x, &y ); 
 		agg::ellipse e( x, y, r, r, (int) 10);
 		path.remove_all();	
 		path.concat_path(  e);	
@@ -399,7 +397,7 @@ struct ControlPoint
 	// IPositionEditorJob
 	void move( int x1_, int y1_, int x2_, int y2_ )  
 	{
-		callback.move( this , x1_, y1_, x2_, y2_ ) ;
+		callback.move( *this , x1_, y1_, x2_, y2_ ) ;
 	}
 
 	void set_active( bool active_ ) 
@@ -457,32 +455,32 @@ struct PositionsController :  /*ILayerJob, */ IControlPointCallback
 		bottom_right =  new ControlPoint( *this ) ; 
 
 		services.renderer.add( *top_left  );
-		services.position_editor.add( top_left );
+		services.position_editor.add( *top_left );
 
 		services.renderer.add( *top_right  );
-		services.position_editor.add( top_right );
+		services.position_editor.add( *top_right );
 
 		services.renderer.add( *bottom_left  );
-		services.position_editor.add( bottom_left );
+		services.position_editor.add( *bottom_left );
 
 		services.renderer.add( *bottom_right  );
-		services.position_editor.add( bottom_right );
+		services.position_editor.add( *bottom_right );
 	} 
 
 	~PositionsController()
 	{
 
 		services.renderer.remove( *top_left );
-		services.position_editor.remove( top_left );
+		services.position_editor.remove( *top_left );
 
 		services.renderer.remove( *top_right );
-		services.position_editor.remove( top_right );
+		services.position_editor.remove( *top_right );
 
 		services.renderer.remove( *bottom_left );
-		services.position_editor.remove( bottom_left );
+		services.position_editor.remove( *bottom_left );
 
 		services.renderer.remove( *bottom_right );
-		services.position_editor.remove( bottom_right );
+		services.position_editor.remove( *bottom_right );
 	}
 
 	unsigned					count;
@@ -490,10 +488,10 @@ struct PositionsController :  /*ILayerJob, */ IControlPointCallback
 	ptr< GridHelper>	root; 
 	ptr< IProjection>			grid_projection ;
 
-	ptr< ControlPoint>	top_left; 
-	ptr< ControlPoint>	top_right; 
-	ptr< ControlPoint>	bottom_left; 
-	ptr< ControlPoint>	bottom_right; 
+	ControlPoint *	top_left; 
+	ControlPoint *	top_right; 
+	ControlPoint *	bottom_left; 
+	ControlPoint *	bottom_right; 
 
 	void add_ref() { ++count; } 
 	void release() { if( --count == 0) delete this; } 
@@ -511,24 +509,24 @@ struct PositionsController :  /*ILayerJob, */ IControlPointCallback
 		root->set_active( active ); 
 	} 
 
-	void get_position( const ptr< ControlPoint> & sender, double * x, double * y ) 
+	void get_position( ControlPoint & sender, double * x, double * y ) 
 	{
-		if( sender == top_left )
+		if( &sender == top_left )
 		{
 			*x = 0;
 			*y = 0; 
 		}
-		else if( sender == top_right )
+		else if( &sender == top_right )
 		{
 			*x = root->get_grid()->width(); 
 			*y = 0; 
 		}
-		else if( sender == bottom_left )
+		else if( &sender == bottom_left )
 		{
 			*x = 0;
 			*y = root->get_grid()->height(); 
 		}
-		else if( sender == bottom_right )
+		else if( &sender == bottom_right )
 		{
 			*x = root->get_grid()->width(); 
 			*y = root->get_grid()->height(); 
@@ -540,7 +538,7 @@ struct PositionsController :  /*ILayerJob, */ IControlPointCallback
 
 
 	// callback
-	void move( const ptr< ControlPoint> & sender,  int x1_, int y1_, int x2_, int y2_ ) 
+	void move( ControlPoint & sender,  int x1_, int y1_, int x2_, int y2_ ) 
 	{
 		// means we have correctly hittested
 		// grid projection just takes us to the affine space
@@ -558,26 +556,26 @@ struct PositionsController :  /*ILayerJob, */ IControlPointCallback
 		*/
 		agg::trans_affine	x;
 
-		if( sender == top_left )
+		if( &sender == top_left )
 		{
 			// centre the rhs on the 0 origin
 			x *= agg::trans_affine_translation( - w, -h);			
 			x *= agg::trans_affine_scaling( (-dx + w ) / w , (-dy + h) / h );
 			x *= agg::trans_affine_translation( + w, + h );			
 		}
-		else if( sender == top_right )
+		else if( &sender == top_right )
 		{
 			x *= agg::trans_affine_translation( 0, -h);			
 			x *= agg::trans_affine_scaling( (dx + w ) / w , (-dy + h) / h );
 			x *= agg::trans_affine_translation( 0, + h );			
 		}
-		else if( sender == bottom_left )
+		else if( &sender == bottom_left )
 		{
 			x *= agg::trans_affine_translation( - w, 0);			
 			x *= agg::trans_affine_scaling( (-dx + w ) / w , (+dy + h) / h );
 			x *= agg::trans_affine_translation( + w, 0 );			
 		}
-		else if( sender == bottom_right)
+		else if( &sender == bottom_right)
 		{
 			//x *= agg::trans_affine_translation( 0, 0);			
 			x *= agg::trans_affine_scaling( (dx + w ) / w , ( dy + h) / h );

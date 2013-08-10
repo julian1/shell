@@ -198,7 +198,7 @@ private:
 
 
 /*
-	The goal here is to remove the signal_immediate_update
+	The goal here is to remove the render_control
 	and instead have the render respond directly to update events.
 */
 
@@ -207,11 +207,11 @@ struct KeyboardManager
 	KeyboardManager( Gtk::Window & window ,
 		GridEditor		& grid_editor,
 		PositionEditor	& position_editor ,
-		ISignalImmediateUpdate & signal_immediate_update
+		IRenderControl & render_control
 	) : window( window ),
 		grid_editor( grid_editor),
 		position_editor( position_editor),
-		signal_immediate_update( signal_immediate_update )
+		render_control( render_control )
 	{
 		typedef KeyboardManager this_type; 
 
@@ -222,7 +222,7 @@ struct KeyboardManager
 	Gtk::Window		& window ; 
 	GridEditor		& grid_editor;
 	PositionEditor	& position_editor;
-	ISignalImmediateUpdate & signal_immediate_update; 
+	IRenderControl & render_control; 
 
 
 	static int translate_code( unsigned code )
@@ -248,7 +248,7 @@ struct KeyboardManager
 		grid_editor.key_press( translate_code( event->keyval ) ); 
 		position_editor.key_press( translate_code( event->keyval ) ); 
 
-		signal_immediate_update.signal_immediate_update(  ); 
+		render_control.signal_immediate_update(  ); 
 		return false;
 	}
 	bool on_key_release_event(GdkEventKey* event )
@@ -256,7 +256,7 @@ struct KeyboardManager
 		grid_editor.key_release( translate_code( event->keyval ) ); 
 		position_editor.key_release( translate_code( event->keyval ) ); 
 
-		signal_immediate_update.signal_immediate_update(  ); 
+		render_control.signal_immediate_update(  ); 
 		return false;
 	}
 };
@@ -267,12 +267,12 @@ struct MouseManager
 	MouseManager( Gtk::DrawingArea	& drawing_area,
 		GridEditor		& grid_editor,
 		PositionEditor	& position_editor ,
-		ISignalImmediateUpdate & signal_immediate_update
+		IRenderControl & render_control
 	) 	
 		: drawing_area( drawing_area ),
 		grid_editor( grid_editor),
 		position_editor( position_editor),
-		signal_immediate_update( signal_immediate_update )
+		render_control( render_control )
 	{
 		typedef MouseManager this_type; 
 
@@ -284,7 +284,7 @@ struct MouseManager
 	Gtk::DrawingArea	& drawing_area;
 	GridEditor		& grid_editor;
 	PositionEditor	& position_editor;
-	ISignalImmediateUpdate & signal_immediate_update; 
+	IRenderControl & render_control; 
 
 
 
@@ -293,7 +293,7 @@ struct MouseManager
 //		std::cout << "mouse move event" << std::endl;
 		grid_editor.mouse_move( event->x, event->y ); 
 		position_editor.mouse_move( event->x, event->y ); 
-		signal_immediate_update.signal_immediate_update(  ); 
+		render_control.signal_immediate_update(  ); 
 		return false;
 	}
 
@@ -302,7 +302,7 @@ struct MouseManager
 		grid_editor.button_press( event->x, event->y ); 
 		position_editor.button_press( event->x, event->y ); 
 
-		signal_immediate_update.signal_immediate_update(  ); 
+		render_control.signal_immediate_update(  ); 
 		return false;   
 	}
 	bool on_button_release_event( GdkEventButton* event)
@@ -310,7 +310,7 @@ struct MouseManager
 		grid_editor.button_release( event->x, event->y ); 
 		position_editor.button_release( event->x, event->y ); 
 
-		signal_immediate_update.signal_immediate_update(  ); 
+		render_control.signal_immediate_update(  ); 
 		return false; 
 	}
 };
@@ -393,7 +393,17 @@ int main(int argc, char *argv[])
 	// if we gave these things full references, then we wouldn't
 	// need to maintain instances in the Application class scope ?? 
 
-	Renderer			renderer;
+	char				buf[ sizeof( RenderControl ) ];
+	RenderControl		& render_control = *(RenderControl *)(void *)buf;
+
+	Renderer			renderer( render_control );
+	new( buf ) RenderControl( drawing_area, renderer );
+
+	//RenderControl		render_control( drawing_area, renderer );
+
+	// ok,, 
+
+
 	Animation			animation; 
 
 	GridEditor			grid_editor;
@@ -432,14 +442,10 @@ int main(int argc, char *argv[])
 
 	GUILevelController	gui_level_controller( hbox, level_controller ); 
 
-//	RenderControl	render_control( drawing_area, renderer );
-
-
 	ClearBackground		clear_background;
 
 	// labels needs to be given the renderer so that it can get a pre_render step
 
-	RenderControl	render_control( drawing_area, renderer );
 
 	RenderSizeControl render_size_control( drawing_area, renderer, clear_background );
 

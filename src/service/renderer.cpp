@@ -54,15 +54,18 @@ typedef std::set<  IRenderJob * >	objects_t;
 
 struct Inner
 {
-	Inner()
-		: passive_surface(),
+	Inner(  IRenderControl & render_control )
+		: render_control( render_control),
+		passive_surface(),
 		active_surface( ) ,
 		combine_surface( new BitmapSurface )
 	{ } 
 
+	IRenderControl					& render_control; 
+
 	//private:
 	//unsigned		count;
-	std::vector< IRenderJob * >	passive_set;	
+	std::vector< IRenderJob * >		passive_set;	
 
 	BitmapSurface					passive_surface;	
 	BitmapSurface					active_surface ;
@@ -77,9 +80,12 @@ struct Inner
 };
 
 
-Renderer::Renderer()
-	: d( new Inner )
+	
+Renderer::Renderer( IRenderControl & render_control )
+	: d( new Inner( render_control)  )
 { 
+	// don't use render_control yet!!! it has not been instantiated!! 
+
 	// clear the buffer ...
 //		surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
 } 
@@ -93,6 +99,18 @@ Renderer::~Renderer()
 
 
 
+void Renderer::notify( IRenderJob & job ) 
+{
+	assert( d->jobs.find( &job) != d->jobs.end() ); 
+
+	std::cout << "render got notify" << std::endl;
+
+	d->render_control.signal_immediate_update(); 
+
+
+
+//	d->jobs.insert( &job );
+}
 
 void Renderer::add( IRenderJob & job ) 
 { 

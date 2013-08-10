@@ -8,9 +8,13 @@ when the grid notifies, everything can get updated.
 
 -----
 
+VERY IMPORTANT - the aggregate as something that has a single unit of 
+	lifetime is perfect for c++ style composing of objects rather than new
+	and ref counting.
+
 done - Get rid of ref counting altogether. 
 
-
+the peer class is also like a factory
 
 
 there's also no reason layers should be ref counted 
@@ -20,7 +24,7 @@ get rid of updateParms in the renderer - it's not the place
 get rid of ptr< Layers>   it's ridiculous .  
 
 	VERY IMPORTANT - if something needs pre_render() and po	st_render()
-		like labelling etc.
+		like labelling etc.render_control
 	then it can create a dummy render job .  		
 		- it's almost certainly related to rendering anyway.
 				

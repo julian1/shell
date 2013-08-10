@@ -10,16 +10,12 @@
 	contour
 */
 
-#include <common/ptr.h> 
 
 #include <common/ui_events.h> 
 
 
 struct IPositionEditorJob
 {
-	virtual void add_ref() = 0;
-	virtual void release() = 0;
-
 	// - return distance so that position editor can choose when several options 
 	// - this can handle its own projection needs, and a projection wrapper can 
 	// be added. also georef etc. eg. it can delegate
@@ -45,8 +41,8 @@ struct IPositionEditorJob
 
 struct IPositionEditor
 {
-	virtual void add( const ptr< IPositionEditorJob>  & job ) = 0; 
-	virtual void remove( const ptr< IPositionEditorJob>  & job ) = 0; 
+	virtual void add(  IPositionEditorJob & job ) = 0; 
+	virtual void remove( IPositionEditorJob  & job ) = 0; 
 
 	// REMOVE Me !!! or place out
 	// should not be here. put in modal contrl.
@@ -63,8 +59,8 @@ struct PositionEditor : IPositionEditor, IMyEvents
 
 	// IPositionEditor
 	// change names to just add_job() and remove_job()
-	void add( const ptr< IPositionEditorJob>  & job ) ; 
-	void remove( const ptr< IPositionEditorJob>  & job ) ; 
+	void add( IPositionEditorJob  & job ) ; 
+	void remove( IPositionEditorJob  & job ) ; 
 
 
 	// REMOVE Me !!! or place out

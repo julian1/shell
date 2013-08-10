@@ -44,99 +44,65 @@ static double pointToLineDistance( double Ax, double Ay,  double Bx, double By, 
 
 
 
-struct AnimAggregateRoot : IAnimAggregateRoot
+#if 0
+struct AnimAggregateRoot 
 {
 	AnimAggregateRoot(  )
-		: count( 0)
-		//: services( services),
-		//projection( projection)
-	{ }  
+	{ 
+			}  
 
-	unsigned			count;
 
-	agg::path_storage	test_animation;
-	bool				test_animation_active;
-	//ptr< IProjection>	projection;					// another aggregate, or wrapper around the aggregate
+};
+#endif
 
-	void add_ref() 
-	{
-		++count;
-	}
-	void release() 
-	{
-		if( --count == 0)
-			delete this;
-	}
+struct MyObject ; 
 
-	const agg::path_storage & get_path() const 
-	{
-		return test_animation;
-	}
-
-	void set_path( const agg::path_storage & _ ) 
-	{
-		test_animation = _;
-	}
-
-	void set_active( bool _ ) 
-	{
-		test_animation_active = _;	
-	}
-
-	bool get_active() const 
-	{
-		return test_animation_active;	
-	}
+struct IMyPeer
+{
+	virtual void add( MyObject & o ) = 0;
+	virtual void notify( MyObject & o ) = 0;
+	
 };
 
 
-ptr< IAnimAggregateRoot> create_test_anim_aggregate_root()
+struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob 
 {
-	ptr< AnimAggregateRoot>  o = new AnimAggregateRoot ;
+	// assemble the state
 
-	agg::rounded_rect   r( 20, 20, 100, 100, 10);
-/*
-	o->test_animation.move_to( 20, 20 ); 
-	o->test_animation.line_to( 100, 20 ); 
-	o->test_animation.line_to( 100, 100 ); 
-	o->test_animation.line_to( 20, 100 ); 
-	o->test_animation.close_polygon(); 
-*/
+	MyObject( IMyPeer & peer )
+		: peer( peer), 
+		offset( 0),
+		dt( 0),
+		test_animation_active( false )
+	{ 
+		agg::rounded_rect   r( 20, 20, 100, 100, 10);
 
-	o->test_animation.free_all();
-	o->test_animation.concat_path( r);
+		path.free_all();
+		path.concat_path( r);
+	}  
 
-	o->test_animation_active = false;
-	return o;
-}
+	IMyPeer				& peer; 
 
+	double				offset; 
+	int					dt; 
+	agg::path_storage	path; 
+	bool				test_animation_active;
 
-struct PositionEditorAnim : IPositionEditorJob
-{
-	// we may want to wrap the root , that's what the root is for. 
-
-	PositionEditorAnim( const ptr< IAnimAggregateRoot> & root )
-		: count( 0),
-		root( root)
-	{ } 
-
-	~PositionEditorAnim() 
-	{ }
-
-	unsigned				count;
-	ptr< IAnimAggregateRoot> root;
-
-	void add_ref() { ++count; } 
-	void release() { if( --count == 0) delete this; } 
+	void notify()
+	{
+		peer.notify( *this );
+	}
 
 
+	// IPositionEditorJob
+	void add_ref()  { } 
+	void release()  { } 
 
 	// - return distance so that position editor can choose when several options 
 	// - this can handle its own projection needs, and a projection wrapper can 
 	// be added. also georef etc. eg. it can delegate
 	double hit_test( unsigned x, unsigned y ) 
 	{
-		agg::path_storage	path = root->get_path();
 		path_seg_adaptor< agg::path_storage> segs( path  );
 		double dist = 1234;
 		int cmd;
@@ -150,12 +116,11 @@ struct PositionEditorAnim : IPositionEditorJob
 	}
 	void set_active( bool active_ ) 
 	{
-		root->set_active( active_ );
-
+		test_animation_active = active_;	
+		notify();
 	}
 	void set_position_active( bool ) 
-	{
-	} 	
+	{ } 	
 
 	void move( int x1, int y1, int x2, int y2 ) 
 	{
@@ -165,43 +130,35 @@ struct PositionEditorAnim : IPositionEditorJob
 		agg::trans_affine	affine;
 		affine *= agg::trans_affine_translation( dx, dy );
 
-		agg::path_storage path = root->get_path();
-		path.transform( affine );	
-		root->set_path( path );
+		agg::path_storage tmp = path ; 
+		tmp.transform( affine );	
+		path = tmp; 
+
+		notify();
 	}
 
 	void finish_edit() 
 	{
 		// make the model fire an event 
-
 	}
-};
+	
+	
+	// IAnimationJob 
+
+	void animate( int dt_ ) 
+	{
+		std::cout << "whoot we are getting an animation event " << dt_ << std::endl;
+		dt = dt_; 
+		notify();
+	}
 
 
-struct RenderAnim : IRenderJob, IAnimationJob 
-{
-	RenderAnim( const ptr< IAnimAggregateRoot> & root )// agg::path_storage & path, bool & active )
-		: count( 0),
-		root( root),
-		offset( 0),
-		dt( 0)
-	{ } 
-
-	unsigned					count;	
-	ptr< IAnimAggregateRoot>	root;
-	double						offset; 
-	int						dt; 
-
-	void add_ref() { ++count; } 
-	void release() { if( --count == 0) delete this; } 
+	// IRenderJob 
 
 	void pre_render() {  }
 
 	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
 	{
-		
-		agg::path_storage path = root->get_path();		// this is inefficient, make it const and put a reader over it.
-
 		bounding_rect_single( path, 0, x1, y1, x2, y2);	
 
 		*x1 -= 2; 
@@ -209,22 +166,12 @@ struct RenderAnim : IRenderJob, IAnimationJob
 		*x2 += 2; 
 		*y2 += 2; 
 	}
-
 	
-	void animate( int dt_ ) 
-	{
-
-		std::cout << "whoot we are getting an animation event " << dt_ << std::endl;
-		dt = dt_; 
-	}
-
 
 	void render ( BitmapSurface & surface ) 
 	{
 		//std::cout << "render test job " << parms.dt << std::endl;
 
-		agg::path_storage path = root->get_path();		// this is inefficient.
-														// fix it.
 //		path_reader	reader( root->get_path() );
 
 		offset += dt * 0.020;
@@ -243,7 +190,7 @@ struct RenderAnim : IRenderJob, IAnimationJob
 
 		stroke_type             stroke( d); 
 
-		if( root->get_active() )
+		if( test_animation_active  )
 			stroke.width( 4);
 		else	
 			stroke.width( 2);
@@ -272,6 +219,78 @@ struct RenderAnim : IRenderJob, IAnimationJob
 
 };
 
+
+
+
+// when we create the object ...
+// why not let the individual objects register what they want ...
+
+// there's a problem if the top level object doesn't implement all the interfaces...
+// any point in the object has to be able to pass itself ...
+
+// the root needs to broadcast the event ... 
+// peer.notify( *this );
+
+// notify has to be able to be broadcast to everyone ...
+
+
+struct MyPeer : IMyPeer
+{
+	MyPeer ( Services & services )
+		: services( services)
+	{ } 
+
+	Services & services;
+
+	void create_object()
+	{
+		MyObject *o = new MyObject( *this ); 
+		add( *o );	// object could also add itself ...
+					// would be consistent with the destructor ...
+	}
+
+	void delete_object()
+	{
+		// could use this... but probably better to rely on the 
+		// destructor
+		// since the entire point is broadcast from the object itself.
+	}
+
+	void add( MyObject & o )  
+	{
+		services.renderer.add( o );
+		services.position_editor.add( o );
+		services.animation.add( o );
+	}
+
+	void remove( MyObject & o )  
+	{
+		services.renderer.remove( o );
+		services.position_editor.remove( o );
+		services.animation.remove( o );
+	}
+
+	void notify( MyObject & o)
+	{
+		services.renderer.notify( o );
+	}
+};
+
+
+}; // anon namespace
+
+void add_test_anim_layer( Services & services )
+{
+	MyPeer *peer = new MyPeer( services ); 	
+	peer->create_object(); 
+}
+
+
+
+
+
+#if 0
+////
 
 
 struct MyLayer //: ILayerJob 
@@ -315,14 +334,14 @@ struct MyLayer //: ILayerJob
 */
 	std::string get_name() { return "anim"; }
 };
-
-
-}; // anon namespace
+#endif
 
 
 //ptr< IAnimAggregateRoot> create_test_anim_aggregate_root(); 
 
 // It should also be loaded into the layers ...
+
+#if 0
 
 void add_test_anim_layer( Services & services )
 {
@@ -332,7 +351,7 @@ void add_test_anim_layer( Services & services )
 	layer->load();
 
 };
-
+#endif
 
 #if 0
 

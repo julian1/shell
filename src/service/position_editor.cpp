@@ -2,6 +2,8 @@
 #include <service/position_editor.h>
 #include <common/ui_events.h>
 
+#include <iostream>
+#include <cassert>
 #include <set>
 //#include <boost/unordered_map.hpp>
 #include <boost/foreach.hpp>
@@ -14,7 +16,7 @@ namespace {
 
 //typedef boost::unordered_map< ptr< IKey> , ptr< IPositionEditorJob>, Hash, Pred >  objects_t;
 
-typedef std::set<  ptr< IPositionEditorJob> >	objects_t;
+typedef std::set<  IPositionEditorJob * >	objects_t;
 
 
 };
@@ -36,7 +38,7 @@ struct PositionEditorImpl
 									// it's really not an object, it's an abstraction job
 
 	// the problem with weak references is that it's not possible to test them.
-	ptr< IPositionEditorJob > active_object; 
+	IPositionEditorJob  * active_object; 
 
 	int mouse_down_x; 
 	int mouse_down_y; 
@@ -57,14 +59,14 @@ PositionEditor::~PositionEditor()
 
 
 
-void PositionEditor::add(  const ptr< IPositionEditorJob>  & job )
+void PositionEditor::add(  IPositionEditorJob  & job )
 { 
-	d->objects.insert( job ); //std::make_pair( key, job ));
+	d->objects.insert( & job ); //std::make_pair( key, job ));
 } 
 
-void PositionEditor::remove( const ptr< IPositionEditorJob>  & job )
+void PositionEditor::remove( IPositionEditorJob  & job )
 { 
-	d->objects.erase( job );
+	d->objects.erase( & job );
 } 
 
 
@@ -96,10 +98,10 @@ void PositionEditor::button_press( unsigned x, unsigned y )
 
 	// find the closest object
 	// loop and his hittest and find best object / job
-	ptr< IPositionEditorJob> closest_object = NULL; 
+	IPositionEditorJob * closest_object = NULL; 
 	double closest_dist = 1234; 
 //	foreach( const objects_t::value_type & object, d->objects )
-	foreach( const ptr< IPositionEditorJob> & job, d->objects )
+	foreach( IPositionEditorJob * job, d->objects )
 	{
 		//IPositionEditorJob & job = * object.second ;
 		double dist = job->hit_test( x, y ); 
@@ -156,7 +158,7 @@ void PositionEditor::set_active( bool active_ )
 	int sz = d->objects.size(); 
 
 	// alert all components	
-	foreach( const ptr< IPositionEditorJob>  & job , d->objects )
+	foreach( IPositionEditorJob  * job , d->objects )
 	{
 		assert( sz == d->objects.size() ); 
 //		const ptr< IPositionEditorJob>   & job = object.second ;

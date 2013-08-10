@@ -25,12 +25,8 @@
 
 */
 
-struct ISignalImmediateUpdate 
-{
-	virtual void signal_immediate_update() = 0;
-};
 
-struct RenderControl : ISignalImmediateUpdate
+struct RenderControl : IRenderControl 
 {
 	typedef RenderControl this_type; 
 

@@ -201,16 +201,16 @@ struct PositionEditorJobProjection : /* IPositionEditorJob,*/ IXControlPointCall
 	
 
 		services.renderer.add( *top_left  );
-		services.position_editor.add( top_left );
+		services.position_editor.add( *top_left );
 
 		services.renderer.add( *top_right  );
-		services.position_editor.add( top_right );
+		services.position_editor.add( *top_right );
 
 		services.renderer.add( *bottom_left  );
-		services.position_editor.add( bottom_left );
+		services.position_editor.add( *bottom_left );
 
 		services.renderer.add( *bottom_right  );
-		services.position_editor.add( bottom_right );
+		services.position_editor.add( *bottom_right );
 /**/
 	} 
 
@@ -218,16 +218,16 @@ struct PositionEditorJobProjection : /* IPositionEditorJob,*/ IXControlPointCall
 	{
 
 		services.renderer.remove( *top_left );
-		services.position_editor.remove( top_left );
+		services.position_editor.remove( *top_left );
 
 		services.renderer.remove( *top_right );
-		services.position_editor.remove( top_right );
+		services.position_editor.remove( *top_right );
 
 		services.renderer.remove( *bottom_left );
-		services.position_editor.remove( bottom_left );
+		services.position_editor.remove( *bottom_left );
 
 		services.renderer.remove( *bottom_right );
-		services.position_editor.remove( bottom_right );
+		services.position_editor.remove( *bottom_right );
 
 	}
  
@@ -235,10 +235,10 @@ struct PositionEditorJobProjection : /* IPositionEditorJob,*/ IXControlPointCall
 
 	ptr< IProjectionAggregateRoot>	root;
 
-	ptr< XControlPoint> top_left; 
-	ptr< XControlPoint> top_right; 
-	ptr< XControlPoint> bottom_left; 
-	ptr< XControlPoint> bottom_right; 
+	XControlPoint *top_left; 
+	XControlPoint *top_right; 
+	XControlPoint *bottom_left; 
+	XControlPoint *bottom_right; 
 
 #if 0
 	void set_position_active( bool active ) 

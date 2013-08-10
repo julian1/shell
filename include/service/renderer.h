@@ -59,7 +59,7 @@ struct IRenderer
 
 	virtual void add( IRenderJob & job ) = 0; 
 	virtual void remove( IRenderJob & job ) = 0; 
-
+	virtual void notify( IRenderJob & job ) = 0; 
 
 
 	virtual void resize( int x, int y ) = 0; 
@@ -74,13 +74,21 @@ struct IRenderer
 };
 
 
+struct IRenderControl 
+{
+	virtual void signal_immediate_update() = 0;
+};
+
+
+
 struct Renderer  : IRenderer
 {
-	Renderer();
+	Renderer( IRenderControl & render_control );
 	~Renderer();
 
 	void add( IRenderJob & job ) ;
-	void remove( IRenderJob & job ) ; 
+	void remove( IRenderJob & job ); 
+	void notify( IRenderJob & job );  
 
 	void resize( int x, int y );
 
