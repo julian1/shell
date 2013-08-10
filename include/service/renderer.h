@@ -81,6 +81,11 @@ struct Renderer  : IRenderer
 
 	void resize( int x, int y );
 
+	/*
+		these two methods need should be combined .
+	
+	*/
+
 	void update_render( const UpdateParms & parms, std::vector< Rect> & regions );
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
