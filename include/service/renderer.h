@@ -27,10 +27,15 @@ struct Rect
 };
 
 
+struct RenderParams
+{
+	int dt; 
+};
+
 
 struct IRenderJob
 {
-	virtual void render ( BitmapSurface & surface) = 0 ; 
+	virtual void render ( BitmapSurface & surface, RenderParams & render_params) = 0 ; 
 	// virtual void render_ps ( std::ostream & surface ) = 0 ; 
 
 	// change name get_render_z_order(), to distinguish from label_z_order ? 
@@ -46,7 +51,7 @@ struct IRenderJob
 	// called before all render calls.
 	// VERY Ihooked MPORTANT - use this for co-ordianting cross layer actions like label positioning  
 	// this will most likely be used by a service 
-	virtual void pre_render() = 0;
+	virtual void pre_render( RenderParams & render_params ) = 0;
 };
 
 
@@ -67,23 +72,21 @@ struct IRenderer
 	// update is now a sequence
 	// return the list of regions that must be updated (they may overlap)
 	// and set some state for update2
-	virtual void update_render( std::vector< Rect> & regions ) = 0;  
+	virtual void render_and_invalidate( std::vector< Rect> & regions ) = 0;  
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
 	virtual ptr< BitmapSurface> update_expose( const std::vector< Rect> & regions ) = 0;  
 };
 
+// this definition shouldn't be here...
+// should only be a struct
 
-struct IRenderControl 
-{
-	virtual void signal_immediate_update() = 0;
-};
-
-
+struct IRenderControl;
+struct Timer;
 
 struct Renderer  : IRenderer
 {
-	Renderer( IRenderControl & render_control );
+	Renderer( IRenderControl & render_control, Timer & timer  );
 	~Renderer();
 
 	void add( IRenderJob & job ) ;
@@ -94,10 +97,12 @@ struct Renderer  : IRenderer
 
 	/*
 		these two methods need should be combined .
-	
 	*/
 
-	void update_render( std::vector< Rect> & regions );
+	// Rather than returning a set of regions, why don't we pass an interface for what needs
+	// to be invalidated ...
+
+	void render_and_invalidate( std::vector< Rect> & regions );
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
 	ptr< BitmapSurface> update_expose( const std::vector< Rect> & regions );

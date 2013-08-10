@@ -40,28 +40,13 @@ static double pointToLineDistance( double Ax, double Ay,  double Bx, double By, 
 	return std::abs((Px - Ax) * (By - Ay) - (Py - Ay) * (Bx - Ax)) / normalLength;
 }
 
-
-
-
-
-#if 0
-struct AnimAggregateRoot 
-{
-	AnimAggregateRoot(  )
-	{ 
-			}  
-
-
-};
-#endif
-
 struct MyObject ; 
 
 struct IMyPeer
 {
 	virtual void add( MyObject & o ) = 0;
 	virtual void notify( MyObject & o ) = 0;
-	
+	virtual void remove( MyObject & o ) = 0;
 };
 
 
@@ -92,11 +77,6 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	{
 		peer.notify( *this );
 	}
-
-
-	// IPositionEditorJob
-	void add_ref()  { } 
-	void release()  { } 
 
 	// - return distance so that position editor can choose when several options 
 	// - this can handle its own projection needs, and a projection wrapper can 
@@ -142,18 +122,17 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		// make the model fire an event 
 	}
 	
-	
 	// IAnimationJob 
-	void animate( int dt_ ) 
+	void tick() 
 	{
 		//std::cout << "whoot we are getting an animation event " << dt_ << std::endl;
-		dt = dt_; 
+		// we notify that our state has changed even if we haven't calculated it
+		// yet.
 		notify();
 	}
 
-
 	// IRenderJob 
-	void pre_render() 
+	void pre_render( RenderParams & render_params ) 
 	{  }
 
 	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
@@ -173,13 +152,12 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		return 100;
 	}; 
 
-	void render ( BitmapSurface & surface ) 
+	void render ( BitmapSurface & surface, RenderParams & render_params ) 
 	{
-		//std::cout << "render test job " << parms.dt << std::endl;
+		// std::cout << "render test job " << parms.dt << std::endl;
+		// path_reader	reader( root->get_path() );
 
-//		path_reader	reader( root->get_path() );
-
-		offset += dt * 0.020;
+		offset += render_params.dt * 0.020;
 
 		if( offset > 20)  
 			offset -= 20;
@@ -215,8 +193,6 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		assert( 0);	// shouldn't ever be called because at 100
 		return false;
 	}	
-	
-
 };
 
 
@@ -233,9 +209,25 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 
 // notify has to be able to be broadcast to everyone ...
 
+/*
+	It's not clear what the implications are for organizing the code ...
+	an object has to expose all it's interfaces as a block ...
+
+	Actually it's fine... if we want a subobject to be able to broadcast
+	a change event then we just pass down a single interface with a method
+	notify that can do the job of delegating back to the peer.
+	
+	Or we just put a couple of overload methods on the IPeer class 
+	eg
+		notify( MyObject &)
+		notify( explicit system )
+	and then pass that down.
+*/
 
 struct MyPeer : IMyPeer
 {
+	// peer is a lot like a factory
+
 	MyPeer ( Services & services )
 		: services( services)
 	{ } 
@@ -258,6 +250,7 @@ struct MyPeer : IMyPeer
 
 	void add( MyObject & o )  
 	{
+		// they all get the right interfaces which is very nice...
 		services.renderer.add( o );
 		services.position_editor.add( o );
 		services.animation.add( o );
@@ -279,90 +272,11 @@ struct MyPeer : IMyPeer
 
 }; // anon namespace
 
-void add_test_anim_layer( Services & services )
+void add_animation_object( Services & services )
 {
 	MyPeer *peer = new MyPeer( services ); 	
 	peer->create_object(); 
 }
-
-
-
-
-
-#if 0
-////
-
-
-struct MyLayer //: ILayerJob 
-{
-	Services & services;  
-	ptr< RenderAnim>			render_anim;
-	ptr< PositionEditorAnim>	position_editor; 
-
-	MyLayer( 
-		Services			& services,
-		const ptr< RenderAnim>			render_anim,
-		const ptr< PositionEditorAnim>	position_editor ) 
-		: services( services) ,
-		render_anim( render_anim ),
-		position_editor( position_editor )
-	{ } 
-
-
-	void load() 
-	{
-//		services.layers.add( ptr< ILayerJob>( this) ); 
-		services.renderer.add( * render_anim ); 
-
-		services.animation.add( * render_anim );
-		services.position_editor.add(  position_editor );
-	}
-	void unload() 
-	{
-		services.position_editor.remove(  position_editor );
-
-		services.animation.remove( * render_anim );
-		services.renderer.remove( * render_anim ); 
-//		services.layers.remove( ptr< ILayerJob>( this) ); 
-	}
-	void add_ref() { } 
-	void release() { } 
-
-/*
-	void layer_update( ) { }   
-	void post_layer_update( ) { }   
-*/
-	std::string get_name() { return "anim"; }
-};
-#endif
-
-
-//ptr< IAnimAggregateRoot> create_test_anim_aggregate_root(); 
-
-// It should also be loaded into the layers ...
-
-#if 0
-
-void add_test_anim_layer( Services & services )
-{
-	ptr< IAnimAggregateRoot> root = create_test_anim_aggregate_root();	
-
-	MyLayer * layer = new MyLayer ( services, new RenderAnim( root ), new  PositionEditorAnim ( root ) ); 
-	layer->load();
-
-};
-#endif
-
-#if 0
-
-//void add_anim_aggregate_root( Services & services, const ptr< IAnimAggregateRoot> & root )
-
-void remove_anim_aggregate_root( Services & services, const ptr< IAnimAggregateRoot> & root )
-{
-	assert( 0 ); 
-}
-#endif
-
 
 
 

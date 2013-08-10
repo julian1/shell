@@ -44,7 +44,7 @@ struct Render : IRenderJob
 	void release() { if( --count == 0 ) delete this; } 
 
 
-	void pre_render() { } 
+	void pre_render( RenderParams & render_params  ) { } 
 
 	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
 	{
@@ -61,7 +61,7 @@ struct Render : IRenderJob
 
 
 
-	void render ( BitmapSurface & surface ) 
+	void render ( BitmapSurface & surface, RenderParams & render_params ) 
 	{
 		agg::path_storage path;		// this is inefficient. (but we have to copy, because we are going to transform).
 									// it should be cached. 

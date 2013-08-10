@@ -12,29 +12,37 @@ VERY IMPORTANT - the aggregate as something that has a single unit of
 	lifetime is perfect for c++ style composing of objects rather than new
 	and ref counting.
 
-done - Get rid of ref counting altogether. 
-
-the peer class is also like a factory
-
-
-there's also no reason layers should be ref counted 
-
-get rid of updateParms in the renderer - it's not the place
-
-get rid of ptr< Layers>   it's ridiculous .  
-
-	VERY IMPORTANT - if something needs pre_render() and po	st_render()
+VERY IMPORTANT - if something needs pre_render() and po	st_render()
 		like labelling etc.render_control
 	then it can create a dummy render job .  		
+		and handle pre_render
 		- it's almost certainly related to rendering anyway.
-				
+	the peer class is also like a factory
 
-	if it's dynamic then there should only be a single real reference for it  
-	- and it should be being pushed
+VERY IMPORTANT
+	everything to do with drawing, like querying bounds etc and drawing
+	should be taking place synchronously.
 
-	- If something needs a pre-render pass then it can just be put
-			on the render_job	
-	
+VERY INTERETSING
+	- A layer can be added or removed, and the items in a layer can be added or removed 
+	- can they both work with the same system? 	
+
+
+done - Get rid of ref counting altogether. 
+
+	done - there's also no reason layers should be ref counted 
+
+we need to introduce the timer back, but I think it belongs properly
+	in the actual renderer. 
+
+done get rid of updateParms in the renderer - it's not the place
+
+done get rid of ptr< Layers>   it's ridiculous .  
+
+- Rather than getting the renderer to return a set of regions, why don't we pass an 
+	interface for what needs invalidated ...
+
+
 
 dynamic objects should rely on add() remove() when they pass themselves 
 around.

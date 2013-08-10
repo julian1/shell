@@ -183,7 +183,6 @@ struct ShapeAdaptor : IRenderJob//, ILabelJob
 	void release() { if( --count == 0) delete this; } 
 
 
-	void pre_render() {  }
 
 	// ok, it is not anti aliased, because it's being drawn for every shape 
 	// we need to find the centre of the shape, etc and then draw it. 
@@ -255,7 +254,10 @@ struct ShapeAdaptor : IRenderJob//, ILabelJob
 		bounding_rect_single( projected_path , 0, x1, y1, x2, y2);	
 	}		
 
-	void render ( BitmapSurface & surface ) 
+	void pre_render( RenderParams & render_params) 
+	{  }
+
+	void render ( BitmapSurface & surface, RenderParams & render_params) 
 	{
 		// path_reader	reader( path );
 		// agg::conv_stroke< agg::path_storage >	stroke( path );

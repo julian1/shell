@@ -95,7 +95,6 @@ struct XControlPoint : IPositionEditorJob, IRenderJob//, IKey
 */
 
 
-	void pre_render() {  }
 
 	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
 	{
@@ -113,8 +112,11 @@ struct XControlPoint : IPositionEditorJob, IRenderJob//, IKey
 		}
 	}	
 
+	void pre_render( RenderParams & render_params) 
+	{  }
+
 	// IRenderJob
-	void render( BitmapSurface & surface ) 
+	void render( BitmapSurface & surface, RenderParams & render_params ) 
 	{
 		// remember the path is used for both, render and hittesting. 
 		// we calculate at render time.

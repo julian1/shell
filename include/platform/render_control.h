@@ -25,6 +25,11 @@
 
 */
 
+struct IRenderControl 
+{
+	virtual void signal_immediate_update() = 0;
+};
+
 
 struct RenderControl : IRenderControl 
 {
@@ -58,7 +63,7 @@ struct RenderControl : IRenderControl
 
 		std::vector< Rect> regions; 
 
-		renderer.update_render( regions ) ; 
+		renderer.render_and_invalidate( regions ) ; 
 
 		foreach( const Rect & rect, regions)
 		{

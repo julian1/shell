@@ -12,7 +12,9 @@
 #include <service/renderer.h> 
 
 #include <common/surface.h>
+#include <common/timer.h>
 
+#include <platform/render_control.h>   // bit messy, when only need render_control interface
 
 #include <algorithm>
 #include <vector>
@@ -54,14 +56,16 @@ typedef std::set<  IRenderJob * >	objects_t;
 
 struct Inner
 {
-	Inner(  IRenderControl & render_control )
+	Inner(  IRenderControl & render_control, Timer & timer  )
 		: render_control( render_control),
+		timer( timer),
 		passive_surface(),
 		active_surface( ) ,
 		combine_surface( new BitmapSurface )
 	{ } 
 
 	IRenderControl					& render_control; 
+	Timer							& timer;
 
 	//private:
 	//unsigned		count;
@@ -81,8 +85,8 @@ struct Inner
 
 
 	
-Renderer::Renderer( IRenderControl & render_control )
-	: d( new Inner( render_control)  )
+Renderer::Renderer( IRenderControl & render_control, Timer & timer  )
+	: d( new Inner( render_control, timer)  )
 { 
 	// don't use render_control yet!!! it has not been instantiated!! 
 
@@ -160,9 +164,16 @@ void Renderer::resize( int w, int h )
 } 
 
 
-void Renderer::update_render( std::vector< Rect> & invalid_regions ) 
+void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions ) 
 { 
 	assert( invalid_regions.empty() );
+
+
+	RenderParams		render_params;
+	render_params.dt = d->timer.elapsed();
+	d->timer.restart();
+
+
 
 	bool require_passive_redraw = false;
 
@@ -178,10 +189,8 @@ void Renderer::update_render( std::vector< Rect> & invalid_regions )
 	std::vector< IRenderJob * >	current_set;
 
 	// add the set of passive jobs for this render round
-//	foreach( objects_t::value_type & pair , d->jobs )
 	foreach( IRenderJob * job , d->jobs )
 	{
-//		const ptr< IRenderJob>  & job = pair.second; 
 		int z = job->get_z_order(); 
 		if(  z < 100 )
 		{
@@ -248,7 +257,7 @@ void Renderer::update_render( std::vector< Rect> & invalid_regions )
 
 		foreach( IRenderJob *job, d->passive_set )
 		{
-			job->render( d->passive_surface ) ;
+			job->render( d->passive_surface, render_params ) ;
 		}
 
 	}
@@ -293,9 +302,10 @@ void Renderer::update_render( std::vector< Rect> & invalid_regions )
 	}
 
 
+	// render the active set
 	foreach( IRenderJob *job, active_set )
 	{
-		job->render( d->active_surface ); 
+		job->render( d->active_surface, render_params ); 
 	}
 
 } 
@@ -340,7 +350,6 @@ ptr< BitmapSurface> Renderer::update_expose( const std::vector< Rect> & invalid_
 //	std::cout << "active_rects " << d->active_rects.size() << std::endl;
 
 	// for each region, draw a square
-	// foreach( const Rect & rect, invalid_regions )
 	foreach( const Rect & rect, d->active_rects )
 	{
 		Rect	a( rect.x, rect.y, rect.w -1, rect.h - 1); 	

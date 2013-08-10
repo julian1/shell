@@ -13,7 +13,7 @@
 
 struct IAnimationJob 
 {
-	virtual void animate( int dt ) = 0; 
+	virtual void tick() = 0; 
 
 };
 
@@ -27,7 +27,7 @@ struct IAnimation
 struct Animation : IAnimation 
 {
 	// this needs to synchronize with drawing queue stalls, and not just queue timing events 
-	// i think it's alright if it just calls it's own function
+	// i think this will synchronize with drawing queue stalls okif it just calls it's own function
 	// change name to something like animation manager
 
 	typedef Animation this_type; 
@@ -45,15 +45,14 @@ struct Animation : IAnimation
 
 	void timer_update( )
 	{
-//		std::cout << "timer update" << std::endl;
-//		render_control.update();
+		//		std::cout << "timer update" << std::endl;
 
-		unsigned elapsed = timer.elapsed();
-		timer.restart();
+		// It's not possible to put the timer here, because
+		// other things force rendering and not just timer ticks
 
 		foreach( IAnimationJob *job, jobs )
 		{
-			job->animate( elapsed ) ;
+			job->tick() ;
 		}
 
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );

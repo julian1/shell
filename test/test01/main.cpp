@@ -266,13 +266,11 @@ struct MouseManager
 {
 	MouseManager( Gtk::DrawingArea	& drawing_area,
 		GridEditor		& grid_editor,
-		PositionEditor	& position_editor ,
-		IRenderControl & render_control
+		PositionEditor	& position_editor
 	) 	
 		: drawing_area( drawing_area ),
 		grid_editor( grid_editor),
-		position_editor( position_editor),
-		render_control( render_control )
+		position_editor( position_editor)
 	{
 		typedef MouseManager this_type; 
 
@@ -284,16 +282,12 @@ struct MouseManager
 	Gtk::DrawingArea	& drawing_area;
 	GridEditor		& grid_editor;
 	PositionEditor	& position_editor;
-	IRenderControl & render_control; 
-
-
 
 	bool on_motion_notify_event( GdkEventMotion *event )
     {
 //		std::cout << "mouse move event" << std::endl;
 		grid_editor.mouse_move( event->x, event->y ); 
 		position_editor.mouse_move( event->x, event->y ); 
-		render_control.signal_immediate_update(  ); 
 		return false;
 	}
 
@@ -301,16 +295,12 @@ struct MouseManager
 	{
 		grid_editor.button_press( event->x, event->y ); 
 		position_editor.button_press( event->x, event->y ); 
-
-		render_control.signal_immediate_update(  ); 
 		return false;   
 	}
 	bool on_button_release_event( GdkEventButton* event)
 	{
 		grid_editor.button_release( event->x, event->y ); 
 		position_editor.button_release( event->x, event->y ); 
-
-		render_control.signal_immediate_update(  ); 
 		return false; 
 	}
 };
@@ -326,9 +316,9 @@ struct ClearBackground : IRenderJob, IResizable
 	int w, h;
 	bool dirty;
 
-	void pre_render() { } 
+	void pre_render( RenderParams & render_params ) { } 
 
-	void render ( BitmapSurface & surface ) 
+	void render ( BitmapSurface & surface, RenderParams & render_params  ) 
 	{
 		std::cout << "$$$$$$$$$$$$ clearing background" << std::endl;
 
@@ -393,16 +383,17 @@ int main(int argc, char *argv[])
 	// if we gave these things full references, then we wouldn't
 	// need to maintain instances in the Application class scope ?? 
 
+	Timer				timer;
+
+	// use placement new trick to instantiate Renderer and RenderControl
+	// with references to each other
 	char				buf[ sizeof( RenderControl ) ];
 	RenderControl		& render_control = *(RenderControl *)(void *)buf;
 
-	Renderer			renderer( render_control );
+	Renderer			renderer( render_control, timer );
 	new( buf ) RenderControl( drawing_area, renderer );
 
 	//RenderControl		render_control( drawing_area, renderer );
-
-	// ok,, 
-
 
 	Animation			animation; 
 
@@ -453,7 +444,8 @@ int main(int argc, char *argv[])
 	//TimingManager	timing_manager( render_control ); 
 
 	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_control  );
-	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor, render_control  ); 
+
+	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor ); 
 
 
 	/////////////////
@@ -544,8 +536,8 @@ int main(int argc, char *argv[])
 
 	renderer.add( clear_background );
 
-	// adding the mapgrid to two projections fucks it up ...
-	add_test_anim_layer( services ); 
+	// add a test object	
+	add_animation_object( services ); 
 
 	/// ********************************************************
 
@@ -556,146 +548,5 @@ int main(int argc, char *argv[])
 
 
 
-
-
-
-	/*
-		extremely important.
-	
-		- Should the aggregate be able to be loaded more than once ????. Eg. with a separate projection. 
-		- The load function would then take the projection, rather than the aggregate.
-		- A bit like the way we factored out the services from the aggregate.
-
-		If the interaction code is in the adaptors, then yes ????.
-
-		Line color and style - need to be added, but projection clipping etc. 
-
-		Even if we can't do this. The Aggregate should NOT take a projection reference. Instead the 
-		load should take it, and associate it.
-
-		- if a localised projection wants different line/color then it can be placed
-
-		- Eg. View specific stuff is kept in the view adaptors, so the projection should be moved into it.
-
-		To make it easier, the class that does the proj probably needs to handle other things as well, . 
-		eg. to maintain the clip_path and perform the styling.    Eg to move the clip_path outside the aggregate.  
-	*/
-
-
-
-#if 0
-struct Application
-{
-//	typedef Application this_type; 
-	Application()	
-		: 
-		/*
-			- Very important. Rather than passing the IProjection we should pass the projection aggregate root.  
-			aggregates are permitted to trace other aggregate's references.
-			- We could factor out the services reference, by making the adaptor pass the services reference
-		*/
-	{ } 
-	// Jobs				jobs;
-	//	BitmapSurface				surface;
-	//	StyledContours		styled_contours;
-	//Contourer			contourer;
-	// if these are all services, they should be named as such ???
-	//ptr< IProjector>	projector;
-//	ptr< IGribsService>	gribs_service;  
-	//ShapesProvider		shapes_provider;
-}; 
-#endif
-
-
-
-
-#if 0
-	static void blit_buffer( Gtk::DrawingArea & drawing_area, unsigned width, unsigned height, const unsigned char * buf )
-	{
-		// this function should be changed to actually take a ptr< surface> and pos, not a raw buf.
-		// pixbuf is client side/ pixmap is server side. 
-
-		// gtk primatives are probably pretty fast since gdk will manage its own XImage on server ?
-		// in any case is a lot better than pixmap
-		gdk_draw_rgb_32_image (
-			drawing_area.get_window()->gobj(),
-			drawing_area.get_style()->gobj()->fg_gc[ GTK_STATE_NORMAL],
-			0, 0,
-//					buffer->width(), buffer->height(),
-			width, height, 
-			GDK_RGB_DITHER_NONE,
-			//(const guchar *) buffer->xptr(),
-			(const guchar *) buf,
-			//buffer->width() * 4
-			width * 4
-		);      
-	}
-
-
-
-	static void invalidate( Gtk::DrawingArea & drawing_area )
-	{
-		// force redraw 
-		Glib::RefPtr<Gdk::Window> win = drawing_area.get_window();
-		if ( win)
-		{
-			gdk_window_invalidate_rect( win->gobj(), NULL, FALSE); 
-		}
-		else { 
-			//      std::cout << "no win ?" << "\n";
-		}
-	}
-
-#endif
-
-
-#if 0
-// there are far to many buffers ...
-//		std::cout << "blit buffer " << rect.x << " " << rect.y << "  " << rect.w << " " << rect.h << std::endl;
-
-		// ok, we are actually going to have to copy the buffer here, which is a mess
-		BitmapSurface		dst( rect.w, rect.h ); 
-
-		copy_region( *surface, rect.x, rect.y, rect.w, rect.h, dst, 0, 0 ); 
-	
-		// OK HANG ON WE DON'T NEED THE COPY HERE .......
-		// this function takes a stride argument
-
-		gdk_draw_rgb_32_image (
-			drawing_area.get_window()->gobj(),
-			drawing_area.get_style()->gobj()->fg_gc[ GTK_STATE_NORMAL],
-			rect.x, rect.y,
-			rect.w, rect.h, 
-			GDK_RGB_DITHER_NONE,
-			//(const guchar *) buffer->xptr(),
-			(const guchar *) dst.buf(),
-			//buffer->width() * 4
-			dst.width() * 4
-		);      
-#endif
-
-#if 0
-		agg::rendering_buffer   rbuf( 
-			src.buf() + (y * src.width() * 4) + (x * 4),			// beginning of buf 
-			w, h, 
-			(-flip_y) * src.width() * 4 ); 
-#endif
-	/*
-		static void update( IUpdate *n, std::map< IUpdate *, std::vector< IUpdate *> > & deps )
-		{
-			// OK, the deps are all recorded already ... 
-			// but we cannot clear the dirty flags - because an input may be used for more than one dep .
-			assert( n);
-			// find deps for this node 
-			const std::vector< IUpdate *>	& v = deps[ n ] ; 
-			foreach( IUpdate *d, v)
-			{
-				// update them
-				update( d, deps );
-			}
-			// now update this node	
-			n->update();
-		} 
-	*/
 
 

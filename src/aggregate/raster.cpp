@@ -51,8 +51,8 @@ struct RenderJob : IRenderJob
 
 	void add_ref() { ++count; } 
 	void release() { if( --count == 0) delete this; } 
-
-	void pre_render() {  }
+	
+	void pre_render(RenderParams & render_params) {  }
 
 	void blend( BitmapSurface::rbase_type & dst, int x_, int y_, int len, agg::int8u *covers ) const
 	{
@@ -159,7 +159,7 @@ struct RenderJob : IRenderJob
 	}
 
 
-	void render ( BitmapSurface & surface ) 
+	void render ( BitmapSurface & surface, RenderParams & render_params ) 
 	{
 //		std::cout << "whoot render raster" << std::endl;
 //		return;
