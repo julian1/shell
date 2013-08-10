@@ -202,6 +202,7 @@ struct IResizable
 	actually not sure. 
 */
 
+
 struct RenderManager : ISignalImmediateUpdate 
 {
 
@@ -221,7 +222,6 @@ struct RenderManager : ISignalImmediateUpdate
 		resizable( resizable),
 		immediate_update_pending( false )
 	{
-		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
 
 		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
 
@@ -236,10 +236,15 @@ struct RenderManager : ISignalImmediateUpdate
 
 	bool	immediate_update_pending; 
 
+	// Maybe we should move the timer event out of here...
+	
+	// and make it a dedicated thing.
+
+
+
 	void signal_immediate_update(  )
 	{
 		//grid_editor.signal_immediate_update( event );
-		//position_editor.signal_immediate_update( event );
 
 		if( ! immediate_update_pending )		
 		{							
@@ -253,18 +258,19 @@ struct RenderManager : ISignalImmediateUpdate
 		the renderer is capable of doing things.
 	*/
 
+	/*
+		Ok, i think that we can pull the timer out, because it's not firing every 
+		60ms. instead it's firing 60ms after the last draw.
+
+		No - because the timer has to call update() directly.
+	*/
+
 	void immediate_update()
 	{
 //		std::cout << "immediate update" << std::endl;
 		update();
 	}
 
-	void timer_update( )
-	{
-//		std::cout << "timer update" << std::endl;
-		update();
-		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
-	}
 
 	void on_size_allocate_event( Gtk::Allocation& allocation)
 	{
@@ -280,16 +286,6 @@ struct RenderManager : ISignalImmediateUpdate
 
 	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
 	{
-		// this is really crappy. this event is already being caught elsewher 
-
-
-//		std::cout << "expose event" << std::endl;
-
-		// both this class and the render_control hook this event.
-		// we do this to clear the flag after the expose event, in order to avoid scheduling another update, this
-		// prevents lagging as key and update events are processed, but the image never gets drawn 
-
-
 		render_control.blit_stuff( cr ); 
 
 		immediate_update_pending = false;
@@ -313,6 +309,30 @@ struct RenderManager : ISignalImmediateUpdate
 		// this should be delayed until the expose ? 
 		layers->post_layer_update();
 	}
+};
+
+struct TimingManager 
+{
+	typedef TimingManager this_type; 
+
+	TimingManager ( RenderManager & render_manager, Gtk::DrawingArea	& drawing_area )  
+		: drawing_area( drawing_area),
+		render_manager( render_manager )
+	{  
+		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
+	}	
+
+	Gtk::DrawingArea & drawing_area;
+	RenderManager & render_manager; 
+
+	void timer_update( )
+	{
+//		std::cout << "timer update" << std::endl;
+		render_manager.update();
+
+		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
+	}
+
 };
 
 

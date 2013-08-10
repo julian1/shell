@@ -434,6 +434,7 @@ int main(int argc, char *argv[])
 	ClearBackground		clear_background;
 
 	RenderManager	render_manager( drawing_area, layers, labels, render_control, clear_background );
+	TimingManager	timing_manager( render_manager, drawing_area ); 
 
 	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_manager  );
 	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor, render_manager  ); 
