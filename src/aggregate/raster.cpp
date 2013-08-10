@@ -159,7 +159,7 @@ struct RenderJob : IRenderJob
 	}
 
 
-	void render ( BitmapSurface & surface, const UpdateParms & parms ) 
+	void render ( BitmapSurface & surface ) 
 	{
 //		std::cout << "whoot render raster" << std::endl;
 //		return;

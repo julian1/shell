@@ -114,7 +114,7 @@ struct XControlPoint : IPositionEditorJob, IRenderJob//, IKey
 	}	
 
 	// IRenderJob
-	void render( BitmapSurface & surface, const UpdateParms & parms /* x, y */ ) 
+	void render( BitmapSurface & surface ) 
 	{
 		// remember the path is used for both, render and hittesting. 
 		// we calculate at render time.

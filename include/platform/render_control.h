@@ -1,13 +1,9 @@
 
 #pragma once
 
-#include <common/ptr.h>
-#include <common/timer.h>
-#include <common/update.h>
 #include <common/surface.h>
 
 #include <service/renderer.h>
-
 #include <service/labels.h>
 
 #include <gtkmm.h>
@@ -41,7 +37,6 @@ struct RenderControl : ISignalImmediateUpdate
 	RenderControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer )
 		: drawing_area( drawing_area),
 		renderer( renderer ),
-		timer(),
 		immediate_update_pending( false )
 	{	
 		drawing_area.signal_draw().connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
@@ -49,7 +44,6 @@ struct RenderControl : ISignalImmediateUpdate
 
 	Gtk::DrawingArea	& drawing_area; 
 	IRenderer			& renderer;
-	Timer				timer;		// Must remove used for animation, not performance, change name animation_timer
 	bool				immediate_update_pending; 
 
 	void signal_immediate_update(  )
@@ -66,14 +60,9 @@ struct RenderControl : ISignalImmediateUpdate
 		// labels should be updated by a prerender job 
 		// labels->update(); 
 
-		unsigned elapsed = timer.elapsed();
-		timer.restart();
-		UpdateParms	parms;
-		parms.dt = elapsed; 
-
 		std::vector< Rect> regions; 
 
-		renderer.update_render( parms, regions ) ; 
+		renderer.update_render( regions ) ; 
 
 		foreach( const Rect & rect, regions)
 		{
@@ -212,7 +201,6 @@ struct RenderSizeControl
 	{
 		int w = allocation.get_width(); 
 		int h = allocation.get_height(); 
-		//render_control.resize( w, h ) ; 
 
 		// eg. the background object ...
 		// wouldn't it be better if the renderer had an event itself ??
@@ -222,31 +210,5 @@ struct RenderSizeControl
 	}
 };
 
-
-
-struct TimingManager 
-{
-	// this needs to synchronize with drawing queue stalls, and not just queue timing events 
-	// i think it's alright if it just calls it's own function
-	// change name to something like animation manager
-
-	typedef TimingManager this_type; 
-
-	TimingManager ( RenderControl & render_control )  
-		: render_control( render_control )
-	{  
-		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
-	}	
-
-	RenderControl & render_control; 
-
-	void timer_update( )
-	{
-//		std::cout << "timer update" << std::endl;
-		render_control.update();
-
-		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
-	}
-};
 
 

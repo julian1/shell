@@ -372,7 +372,7 @@ struct ControlPoint
 		// we should adjust the rect by the maximum stroke.
 	} 
 
-	void render( BitmapSurface & surface, const UpdateParms & parms /* x, y */ ) 
+	void render( BitmapSurface & surface )
 	{
 		if( ! position_editor_active )
 			return ;
@@ -772,7 +772,7 @@ struct Contour : IRenderJob // , IProjectJob
 
 	}
 
-	void render ( BitmapSurface & surface, const UpdateParms & parms ) 
+	void render ( BitmapSurface & surface )
 	{
 
 

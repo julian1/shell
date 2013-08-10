@@ -140,7 +140,7 @@ void Renderer::resize( int w, int h )
 } 
 
 
-void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & invalid_regions ) 
+void Renderer::update_render( std::vector< Rect> & invalid_regions ) 
 { 
 	assert( invalid_regions.empty() );
 
@@ -228,7 +228,7 @@ void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & i
 
 		foreach( IRenderJob *job, d->passive_set )
 		{
-			job->render( d->passive_surface, parms ) ;
+			job->render( d->passive_surface ) ;
 		}
 
 	}
@@ -275,7 +275,7 @@ void Renderer::update_render(  const UpdateParms & parms, std::vector< Rect> & i
 
 	foreach( IRenderJob *job, active_set )
 	{
-		job->render( d->active_surface, parms ); 
+		job->render( d->active_surface ); 
 	}
 
 } 

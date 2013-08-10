@@ -30,6 +30,7 @@
 */
 
 struct IRenderer;
+struct IAnimation;
 struct IGridEditor;	
 struct IPositionEditor;
 struct IFonts;
@@ -49,6 +50,7 @@ struct Services
 		// primary view stuff
 		ILabels		& labels ,
 		IRenderer	& renderer,
+		IAnimation	& animation,
 
 		// secondary controllers / services
 		IGridEditor	& grid_editor,
@@ -60,6 +62,7 @@ struct Services
 	:
 		labels( labels ),
 		renderer( renderer), 
+		animation( animation ),
 
 		grid_editor( grid_editor ),
 		position_editor( position_editor ),
@@ -70,7 +73,7 @@ struct Services
 	
 	ILabels		& labels; 
 	IRenderer	& renderer; 
-
+	IAnimation	& animation;
 
 	IGridEditor	& grid_editor;
 	IPositionEditor	& position_editor;

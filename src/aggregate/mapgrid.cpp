@@ -61,7 +61,7 @@ struct Render : IRenderJob
 
 
 
-	void render ( BitmapSurface & surface, const UpdateParms & parms ) 
+	void render ( BitmapSurface & surface ) 
 	{
 		agg::path_storage path;		// this is inefficient. (but we have to copy, because we are going to transform).
 									// it should be cached. 

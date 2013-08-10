@@ -14,7 +14,6 @@
 
 struct IKey;
 struct BitmapSurface;
-struct UpdateParms;
 
 
 
@@ -31,8 +30,8 @@ struct Rect
 
 struct IRenderJob
 {
-	virtual void render ( BitmapSurface & surface, const UpdateParms & parms ) = 0 ; 
-	// virtual void render_ps ( std::ostream & surface, const UpdateParms & parms ) = 0 ; 
+	virtual void render ( BitmapSurface & surface) = 0 ; 
+	// virtual void render_ps ( std::ostream & surface ) = 0 ; 
 
 	// change name get_render_z_order(), to distinguish from label_z_order ? 
 	virtual int get_z_order() const = 0; 
@@ -68,11 +67,10 @@ struct IRenderer
 	// update is now a sequence
 	// return the list of regions that must be updated (they may overlap)
 	// and set some state for update2
-	virtual void update_render( const UpdateParms & parms, std::vector< Rect> & regions ) = 0;  
+	virtual void update_render( std::vector< Rect> & regions ) = 0;  
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
 	virtual ptr< BitmapSurface> update_expose( const std::vector< Rect> & regions ) = 0;  
-	//	virtual void update( const UpdateParms & parms ) = 0; 
 };
 
 
@@ -91,7 +89,7 @@ struct Renderer  : IRenderer
 	
 	*/
 
-	void update_render( const UpdateParms & parms, std::vector< Rect> & regions );
+	void update_render( std::vector< Rect> & regions );
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
 	ptr< BitmapSurface> update_expose( const std::vector< Rect> & regions );

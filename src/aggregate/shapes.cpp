@@ -255,7 +255,7 @@ struct ShapeAdaptor : IRenderJob//, ILabelJob
 		bounding_rect_single( projected_path , 0, x1, y1, x2, y2);	
 	}		
 
-	void render ( BitmapSurface & surface, const UpdateParms & parms ) 
+	void render ( BitmapSurface & surface ) 
 	{
 		// path_reader	reader( path );
 		// agg::conv_stroke< agg::path_storage >	stroke( path );

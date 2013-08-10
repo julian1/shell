@@ -22,6 +22,7 @@
 //#include <service/projector.h>
 //#include <service/layers.h>
 
+#include <service/animation.h>
 #include <service/services.h>
 
 
@@ -327,7 +328,7 @@ struct ClearBackground : IRenderJob, IResizable
 
 	void pre_render() { } 
 
-	void render ( BitmapSurface & surface, const UpdateParms & parms ) 
+	void render ( BitmapSurface & surface ) 
 	{
 		std::cout << "$$$$$$$$$$$$ clearing background" << std::endl;
 
@@ -393,6 +394,8 @@ int main(int argc, char *argv[])
 	// need to maintain instances in the Application class scope ?? 
 
 	Renderer			renderer;
+	Animation			animation; 
+
 	GridEditor			grid_editor;
 	PositionEditor		position_editor;
 
@@ -412,6 +415,7 @@ int main(int argc, char *argv[])
 //			*projector, 
 		*labels,
 		renderer, 
+		animation,
 
 		grid_editor, 
 		position_editor,
@@ -440,7 +444,7 @@ int main(int argc, char *argv[])
 	RenderSizeControl render_size_control( drawing_area, renderer, clear_background );
 
 
-	TimingManager	timing_manager( render_control ); 
+	//TimingManager	timing_manager( render_control ); 
 
 	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_control  );
 	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor, render_control  ); 
