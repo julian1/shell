@@ -103,11 +103,9 @@ void Renderer::notify( IRenderJob & job )
 {
 	assert( d->jobs.find( &job) != d->jobs.end() ); 
 
-	std::cout << "render got notify" << std::endl;
+	//std::cout << "render got notify" << std::endl;
 
 	d->render_control.signal_immediate_update(); 
-
-
 
 //	d->jobs.insert( &job );
 }
@@ -117,6 +115,8 @@ void Renderer::add( IRenderJob & job )
 	assert( d->jobs.find( &job) == d->jobs.end() ); 
 
 	d->jobs.insert( &job );
+
+	d->render_control.signal_immediate_update(); 
 } 
 
 void Renderer::remove( IRenderJob & job ) 
@@ -124,6 +124,8 @@ void Renderer::remove( IRenderJob & job )
 	assert( d->jobs.find( &job) != d->jobs.end() ); 
 
 	d->jobs.erase( &job );
+
+	d->render_control.signal_immediate_update(); 
 } 
 
 

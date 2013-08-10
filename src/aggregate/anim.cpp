@@ -144,18 +144,17 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	
 	
 	// IAnimationJob 
-
 	void animate( int dt_ ) 
 	{
-		std::cout << "whoot we are getting an animation event " << dt_ << std::endl;
+		//std::cout << "whoot we are getting an animation event " << dt_ << std::endl;
 		dt = dt_; 
 		notify();
 	}
 
 
 	// IRenderJob 
-
-	void pre_render() {  }
+	void pre_render() 
+	{  }
 
 	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
 	{
@@ -167,6 +166,12 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		*y2 += 2; 
 	}
 	
+	int get_z_order() const 
+	{
+		// should delegate to the root. because z_order is 
+		// animation job ...
+		return 100;
+	}; 
 
 	void render ( BitmapSurface & surface ) 
 	{
@@ -210,12 +215,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		assert( 0);	// shouldn't ever be called because at 100
 		return false;
 	}	
-	int get_z_order() const 
-	{
-		// should delegate to the root. because z_order is 
-		// animation job ...
-		return 100;
-	}; 
+	
 
 };
 
