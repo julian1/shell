@@ -25,11 +25,6 @@ struct ISignalImmediateUpdate
 	virtual void signal_immediate_update() = 0;
 };
 
-struct IResizable
-{
-	virtual void resize( int w, int h ) = 0; 
-};
-
 
 
 struct RenderControl : ISignalImmediateUpdate
@@ -37,35 +32,25 @@ struct RenderControl : ISignalImmediateUpdate
 
 	typedef RenderControl this_type; 
 
-	RenderControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer, IResizable	& resizable )
+	RenderControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer )
 		: drawing_area( drawing_area),
 		renderer( renderer ),
-		resizable( resizable),
 		timer(),
 		immediate_update_pending( false )
 	{	
 
 		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
 
-		drawing_area.signal_size_allocate() .connect( sigc::mem_fun( *this, &this_type::on_size_allocate_event));
-
-
 	}
 
 	Gtk::DrawingArea	& drawing_area; 
 	IRenderer			& renderer;
-	IResizable			& resizable; 
-
-	Timer				timer;		// used for animation, not performance, change name animation_timer
-
-
-	bool	immediate_update_pending; 
+	Timer				timer;		// Must remove used for animation, not performance, change name animation_timer
+	bool				immediate_update_pending; 
 
 
 	void signal_immediate_update(  )
 	{
-		//grid_editor.signal_immediate_update( event );
-
 		if( ! immediate_update_pending )		
 		{							
 			immediate_update_pending = true;
@@ -73,59 +58,9 @@ struct RenderControl : ISignalImmediateUpdate
 		}
 	}
 
-	void on_size_allocate_event( Gtk::Allocation& allocation)
-	{
-		int w = allocation.get_width(); 
-		int h = allocation.get_height(); 
-		//render_control.resize( w, h ) ; 
-
-		// eg. the background object ...
-		// wouldn't it be better if the renderer had an event itself ??
-		resizable.resize( w, h ) ; 
-
-		renderer.resize( w, h ); 
-	}
-
-	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
-	{
-		blit_stuff( cr ); 
-
-		immediate_update_pending = false;
-		return false; // don't presumpt the other handler
-	}
-	/*
-		also post expose we always clear the pending flag, but the expose might be 
-		in response to a timer event, not immediate. 
-	*/
-
-#if 0
-	void update( )
-	{
-		// this is called by 
-		/*
-			EXTREMELY IMPORTANT - 			
-			If something needs a pre-render pass then it can just create
-			a dummy render_job and intercept pre_render 
-		*/
-		render_control.update();
-	}
-
-	void resize( int w, int h )
-	{
-		renderer.resize( w, h ); 
-	} 
-#endif
-
-	/*
-		- ok, previosly the dispatch, was quite fast. and it generated an event that was pushed on the queue, 
-		therefore it didn't slow anything 
-		- i think what we need is to create a message to update, so that it ends up on the back of the queue, not the front. 
-		We have to run update, in order to know what areas to invalidate. but jjjjjjjjjjjjjjjj 
-	*/
-
-
 	void update()
 	{
+		// labels should be updated by a prerender job 
 		// labels->update(); 
 
 		unsigned elapsed = timer.elapsed();
@@ -143,9 +78,16 @@ struct RenderControl : ISignalImmediateUpdate
 		}
 	}
 
+	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
+	{
+		blit_stuff( cr ); 
+
+		immediate_update_pending = false;
+		return false; // don't presumpt the other handler
+	}
+
 	void blit_stuff( const Cairo::RefPtr<Cairo::Context>& cr )
 	{
-
 		std::vector< Rect> regions; 
 
 		std::vector< Cairo::Rectangle > rectangles;
@@ -179,7 +121,6 @@ struct RenderControl : ISignalImmediateUpdate
 		// get the rendered regions	
 		ptr< BitmapSurface> surface = renderer.update_expose( regions ); 
 
-
 		int region_area = 0; 
 		foreach( const Rect & region, regions)
 		{
@@ -188,14 +129,11 @@ struct RenderControl : ISignalImmediateUpdate
 		double percent = double( region_area) / ( surface->width() * surface->height() ) * 100.; 
 
 		// std::cout << "-------- blitting regions " << regions.size() << " percent " << percent << std::endl;
-
-
 		// and blit them
 		foreach( const Rect & rect, regions )
 		{
 			blit_buffer( drawing_area, rect, surface ); 
 		}
-   //     return false;   // dont presumpt
 	}
 
 
@@ -248,8 +186,46 @@ struct RenderControl : ISignalImmediateUpdate
 		//      std::cout << "no win ?" << "\n";
 		}
 	}
-
 };
+
+
+
+struct IResizable
+{
+	virtual void resize( int w, int h ) = 0; 
+};
+
+struct RenderSizeControl 
+{
+	typedef RenderSizeControl this_type; 
+
+	RenderSizeControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer, IResizable	& resizable )
+		: drawing_area( drawing_area),
+		renderer( renderer ),
+		resizable( resizable)
+	{	
+
+		drawing_area.signal_size_allocate() .connect( sigc::mem_fun( *this, &this_type::on_size_allocate_event));
+	}
+
+	Gtk::DrawingArea	& drawing_area; 
+	IRenderer			& renderer;
+	IResizable			& resizable; 
+
+	void on_size_allocate_event( Gtk::Allocation& allocation)
+	{
+		int w = allocation.get_width(); 
+		int h = allocation.get_height(); 
+		//render_control.resize( w, h ) ; 
+
+		// eg. the background object ...
+		// wouldn't it be better if the renderer had an event itself ??
+		resizable.resize( w, h ) ; 
+
+		renderer.resize( w, h ); 
+	}
+};
+
 
 
 /*

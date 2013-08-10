@@ -435,7 +435,10 @@ int main(int argc, char *argv[])
 
 	// labels needs to be given the renderer so that it can get a pre_render step
 
-	RenderControl	render_control( drawing_area, renderer , clear_background );
+	RenderControl	render_control( drawing_area, renderer );
+
+	RenderSizeControl render_size_control( drawing_area, renderer, clear_background );
+
 
 	TimingManager	timing_manager( render_control ); 
 
