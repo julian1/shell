@@ -28,17 +28,13 @@
 /*
 	OK, I think these need to be split between updating services and non-updating services.
 */
-//#include <common/ptr.h>
 
 struct IRenderer;
-//struct IProjector;	
 struct IGridEditor;	
 struct IPositionEditor;
 struct IFonts;
 struct ILabels;
-//struct ILayers;
 
-//struct IGribsService; 
 struct ILevelController; 
 struct IValidController ; 
 
@@ -51,7 +47,6 @@ struct Services
 {
 	Services( 
 		// primary view stuff
-//		ILayers		& layers , 
 		ILabels		& labels ,
 		IRenderer	& renderer,
 
@@ -59,24 +54,20 @@ struct Services
 		IGridEditor	& grid_editor,
 		IPositionEditor	& position_editor,
 		IFonts		& fonts ,
-//		IGribsService & gribs_service,
 		ILevelController & level_controller,
 		IValidController  & valid_controller
 	)
 	:
-//		layers( layers ), 
 		labels( labels ),
 		renderer( renderer), 
 
 		grid_editor( grid_editor ),
 		position_editor( position_editor ),
 		fonts( fonts),
-//		gribs_service( gribs_service ),
 		level_controller( level_controller),
 		valid_controller( valid_controller )
 	{ } 
 	
-//	ILayers		& layers;
 	ILabels		& labels; 
 	IRenderer	& renderer; 
 
@@ -84,7 +75,6 @@ struct Services
 	IGridEditor	& grid_editor;
 	IPositionEditor	& position_editor;
 	IFonts		& fonts ; 
-//	IGribsService & gribs_service;
 	ILevelController & level_controller; 
 	IValidController  & valid_controller; 
 };

@@ -19,17 +19,23 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+/*
+	OK, so we need two things, 
+	(1) we need the animation component being updated in an animationjob  
+
+	(2) we need the animanted object to be able to broadcast a change notify event
+	
+	(3) we need the renderer to be in contact with the render control.
+
+*/
 
 struct ISignalImmediateUpdate 
 {
 	virtual void signal_immediate_update() = 0;
 };
 
-
-
 struct RenderControl : ISignalImmediateUpdate
 {
-
 	typedef RenderControl this_type; 
 
 	RenderControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer )
@@ -38,16 +44,13 @@ struct RenderControl : ISignalImmediateUpdate
 		timer(),
 		immediate_update_pending( false )
 	{	
-
-		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
-
+		drawing_area.signal_draw().connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
 	}
 
 	Gtk::DrawingArea	& drawing_area; 
 	IRenderer			& renderer;
 	Timer				timer;		// Must remove used for animation, not performance, change name animation_timer
 	bool				immediate_update_pending; 
-
 
 	void signal_immediate_update(  )
 	{
@@ -136,14 +139,10 @@ struct RenderControl : ISignalImmediateUpdate
 		}
 	}
 
-
-
 	/*
 		ok, there is a problem at the moment. we do the update() sequence as part of the expose.  	 
 		but we want the update(), to trigger the expose.
 	*/
-
-
 	static void blit_buffer( Gtk::DrawingArea & drawing_area, const Rect & rect, ptr< BitmapSurface> & surface_ )
 	{
 		unsigned char *data = surface_->buf() + (rect.y * surface_->width() * 4) + (rect.x * 4); // beginning of buf 
@@ -157,8 +156,6 @@ struct RenderControl : ISignalImmediateUpdate
 		cairo_paint( cr );
 		cairo_destroy( cr );
 		cairo_surface_destroy( surface );
-
-
 #if 0
 		gdk_draw_rgb_32_image (
 			drawing_area.get_window()->gobj(),
@@ -171,7 +168,6 @@ struct RenderControl : ISignalImmediateUpdate
 		); 
 #endif
 	}
-
 
 	static void invalidate( Gtk::DrawingArea & drawing_area, unsigned x, unsigned y, unsigned w, unsigned h )
 	{
@@ -225,46 +221,6 @@ struct RenderSizeControl
 		renderer.resize( w, h ); 
 	}
 };
-
-
-
-/*
-	- It is possible that our aggregate objects should actually become entities and the 
-	level of granularity is not right.
-	so the load_functions would work the same, 
-	So the aggregate could still be composed of any combination of entities as we like.
-*/
-
-
-/*
-	This RenderManager class can be removed, when we get the 
-	
-	RenderControl class working better.
-
-	actually not sure. 
-*/
-
-#if 0
-struct RenderManager : ISignalImmediateUpdate 
-{
-
-
-	RenderManager( Gtk::DrawingArea	& drawing_area,  
-		RenderControl	& render_control 
-
-   ) 	
-		: drawing_area( drawing_area ),
-		render_control( render_control ),
-		resizable( resizable),
-	{
-
-	}
-
-	Gtk::DrawingArea	& drawing_area; 	
-	RenderControl		& render_control ; 
-};
-
-#endif
 
 
 
