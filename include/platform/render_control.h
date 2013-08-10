@@ -313,16 +313,18 @@ struct RenderManager : ISignalImmediateUpdate
 
 struct TimingManager 
 {
+	// this needs to synchronize with drawing queue stalls, and not just queue timing events 
+	// i think it's alright if it just calls it's own function
+	// change name to something like animation manager
+
 	typedef TimingManager this_type; 
 
-	TimingManager ( RenderManager & render_manager, Gtk::DrawingArea	& drawing_area )  
-		: drawing_area( drawing_area),
-		render_manager( render_manager )
+	TimingManager ( RenderManager & render_manager )  
+		: render_manager( render_manager )
 	{  
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
 	}	
 
-	Gtk::DrawingArea & drawing_area;
 	RenderManager & render_manager; 
 
 	void timer_update( )
