@@ -1,5 +1,14 @@
 
-Get rid of ref counting altogether
+grid -> pushed into grid editor
+	 -> pushed into presentation/rendering service with projection and style properties.
+	 -> style properties pushed into a service to handle that.	
+	 -> pushed into a lifetime manager. (not sure) 
+
+when the grid notifies, everything can get updated. 
+
+-----
+
+Get rid of ref counting altogether. 
 
 there's also no reason layers should be ref counted 
 
@@ -10,6 +19,9 @@ get rid of ptr< Layers>   it's ridiculous .
 
 dynamic objects should rely on add() remove() when they pass themselves 
 around.
+
+- we should combine the area and the z_order to indicate that we retrieve both
+	at the same time.
 
 - get rid of modal control. 
 	a subsystem can expose object to allow it to coexist peacefully with other subsystems
