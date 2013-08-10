@@ -18,6 +18,13 @@ there's also no reason layers should be ref counted
 get rid of updateParms in the renderer - it's not the place
 
 get rid of ptr< Layers>   it's ridiculous .  
+
+	VERY IMPORTANT - if something needs pre_render() and po	st_render()
+		like labelling etc.
+	then it can create a dummy render job .  		
+		- it's almost certainly related to rendering anyway.
+				
+
 	if it's dynamic then there should only be a single real reference for it  
 	- and it should be being pushed
 

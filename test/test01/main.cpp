@@ -433,7 +433,9 @@ int main(int argc, char *argv[])
 
 	ClearBackground		clear_background;
 
-	RenderManager	render_manager( drawing_area, labels, render_control, clear_background );
+	// labels needs to be given the renderer so that it can get a pre_render step
+
+	RenderManager	render_manager( drawing_area, render_control, clear_background );
 	TimingManager	timing_manager( render_manager ); 
 
 	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_manager  );

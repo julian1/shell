@@ -208,13 +208,11 @@ struct RenderManager : ISignalImmediateUpdate
 	typedef RenderManager this_type; 
 
 	RenderManager( Gtk::DrawingArea	& drawing_area,  
-		ptr< ILabels>	&labels, 
 		RenderControl	& render_control ,
 		IResizable		& resizable
 
    ) 	
 		: drawing_area( drawing_area ),
-		labels( labels ),
 		render_control( render_control ),
 		resizable( resizable),
 		immediate_update_pending( false )
@@ -226,17 +224,12 @@ struct RenderManager : ISignalImmediateUpdate
 	}
 
 	Gtk::DrawingArea	& drawing_area; 	
-	ptr< ILabels>		& labels; 
 	RenderControl		& render_control ; 
 	IResizable			& resizable; 
 
 	bool	immediate_update_pending; 
 
-	// Maybe we should move the timer event out of here...
 	
-	// and make it a dedicated thing.
-
-
 
 	void signal_immediate_update(  )
 	{
@@ -245,16 +238,9 @@ struct RenderManager : ISignalImmediateUpdate
 		if( ! immediate_update_pending )		
 		{							
 			immediate_update_pending = true;
-			Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::immediate_update ), 0 );
+			Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::update ), 0 );
 		}
 	}
-
-	void immediate_update()
-	{
-//		std::cout << "immediate update" << std::endl;
-		update();
-	}
-
 
 	void on_size_allocate_event( Gtk::Allocation& allocation)
 	{
@@ -266,7 +252,6 @@ struct RenderManager : ISignalImmediateUpdate
 		// wouldn't it be better if the renderer had an event itself ??
 		resizable.resize( w, h ) ; 
 	}
-	
 
 	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
 	{
@@ -282,22 +267,17 @@ struct RenderManager : ISignalImmediateUpdate
 
 	void update( )
 	{
+		// this is called by 
+
 		/*
 			EXTREMELY IMPORTANT - 			
-
 			If something needs a pre-render pass then it can just create
 			a dummy render_job and intercept pre_render 
 		*/
 
-		// what does this even do ???
-	//	layers->layer_update();
-
-		labels->update(); 
+//		labels->update(); 
 
 		render_control.update();
-
-		// this should be delayed until the expose ? 
-	//	layers->post_layer_update();
 	}
 };
 
