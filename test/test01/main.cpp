@@ -428,18 +428,19 @@ int main(int argc, char *argv[])
 
 	GUILevelController	gui_level_controller( hbox, level_controller ); 
 
-	RenderControl	render_control( drawing_area, renderer );
+//	RenderControl	render_control( drawing_area, renderer );
 
 
 	ClearBackground		clear_background;
 
 	// labels needs to be given the renderer so that it can get a pre_render step
 
-	RenderManager	render_manager( drawing_area, render_control, clear_background );
-	TimingManager	timing_manager( render_manager ); 
+	RenderControl	render_control( drawing_area, renderer , clear_background );
 
-	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_manager  );
-	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor, render_manager  ); 
+	TimingManager	timing_manager( render_control ); 
+
+	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_control  );
+	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor, render_control  ); 
 
 
 	/////////////////

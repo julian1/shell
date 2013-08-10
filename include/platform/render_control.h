@@ -20,26 +20,101 @@
 #define foreach BOOST_FOREACH
 
 
+struct ISignalImmediateUpdate 
+{
+	virtual void signal_immediate_update() = 0;
+};
+
+struct IResizable
+{
+	virtual void resize( int w, int h ) = 0; 
+};
 
 
-struct RenderControl
+
+struct RenderControl : ISignalImmediateUpdate
 {
 
-	RenderControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer )
+	typedef RenderControl this_type; 
+
+	RenderControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer, IResizable	& resizable )
 		: drawing_area( drawing_area),
 		renderer( renderer ),
-		timer()
-	{	}
+		resizable( resizable),
+		timer(),
+		immediate_update_pending( false )
+	{	
+
+		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
+
+		drawing_area.signal_size_allocate() .connect( sigc::mem_fun( *this, &this_type::on_size_allocate_event));
+
+
+	}
 
 	Gtk::DrawingArea	& drawing_area; 
 	IRenderer			& renderer;
+	IResizable			& resizable; 
 
 	Timer				timer;		// used for animation, not performance, change name animation_timer
+
+
+	bool	immediate_update_pending; 
+
+
+	void signal_immediate_update(  )
+	{
+		//grid_editor.signal_immediate_update( event );
+
+		if( ! immediate_update_pending )		
+		{							
+			immediate_update_pending = true;
+			Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::update ), 0 );
+		}
+	}
+
+	void on_size_allocate_event( Gtk::Allocation& allocation)
+	{
+		int w = allocation.get_width(); 
+		int h = allocation.get_height(); 
+		//render_control.resize( w, h ) ; 
+
+		// eg. the background object ...
+		// wouldn't it be better if the renderer had an event itself ??
+		resizable.resize( w, h ) ; 
+
+		renderer.resize( w, h ); 
+	}
+
+	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
+	{
+		blit_stuff( cr ); 
+
+		immediate_update_pending = false;
+		return false; // don't presumpt the other handler
+	}
+	/*
+		also post expose we always clear the pending flag, but the expose might be 
+		in response to a timer event, not immediate. 
+	*/
+
+#if 0
+	void update( )
+	{
+		// this is called by 
+		/*
+			EXTREMELY IMPORTANT - 			
+			If something needs a pre-render pass then it can just create
+			a dummy render_job and intercept pre_render 
+		*/
+		render_control.update();
+	}
 
 	void resize( int w, int h )
 	{
 		renderer.resize( w, h ); 
 	} 
+#endif
 
 	/*
 		- ok, previosly the dispatch, was quite fast. and it generated an event that was pushed on the queue, 
@@ -51,6 +126,8 @@ struct RenderControl
 
 	void update()
 	{
+		// labels->update(); 
+
 		unsigned elapsed = timer.elapsed();
 		timer.restart();
 		UpdateParms	parms;
@@ -182,16 +259,6 @@ struct RenderControl
 	So the aggregate could still be composed of any combination of entities as we like.
 */
 
-struct ISignalImmediateUpdate 
-{
-	virtual void signal_immediate_update() = 0;
-};
-
-struct IResizable
-{
-	virtual void resize( int w, int h ) = 0; 
-};
-
 
 /*
 	This RenderManager class can be removed, when we get the 
@@ -201,85 +268,29 @@ struct IResizable
 	actually not sure. 
 */
 
-
+#if 0
 struct RenderManager : ISignalImmediateUpdate 
 {
 
-	typedef RenderManager this_type; 
 
 	RenderManager( Gtk::DrawingArea	& drawing_area,  
-		RenderControl	& render_control ,
-		IResizable		& resizable
+		RenderControl	& render_control 
 
    ) 	
 		: drawing_area( drawing_area ),
 		render_control( render_control ),
 		resizable( resizable),
-		immediate_update_pending( false )
 	{
 
-		drawing_area.signal_draw() .connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
-
-		drawing_area.signal_size_allocate() .connect( sigc::mem_fun( *this, &this_type::on_size_allocate_event));
 	}
 
 	Gtk::DrawingArea	& drawing_area; 	
 	RenderControl		& render_control ; 
-	IResizable			& resizable; 
-
-	bool	immediate_update_pending; 
-
-	
-
-	void signal_immediate_update(  )
-	{
-		//grid_editor.signal_immediate_update( event );
-
-		if( ! immediate_update_pending )		
-		{							
-			immediate_update_pending = true;
-			Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::update ), 0 );
-		}
-	}
-
-	void on_size_allocate_event( Gtk::Allocation& allocation)
-	{
-		int w = allocation.get_width(); 
-		int h = allocation.get_height(); 
-		render_control.resize( w, h ) ; 
-
-		// eg. the background object ...
-		// wouldn't it be better if the renderer had an event itself ??
-		resizable.resize( w, h ) ; 
-	}
-
-	bool on_expose_event( const Cairo::RefPtr<Cairo::Context>& cr )
-	{
-		render_control.blit_stuff( cr ); 
-
-		immediate_update_pending = false;
-		return false; // don't presumpt the other handler
-	}
-	/*
-		also post expose we always clear the pending flag, but the expose might be 
-		in response to a timer event, not immediate. 
-	*/
-
-	void update( )
-	{
-		// this is called by 
-
-		/*
-			EXTREMELY IMPORTANT - 			
-			If something needs a pre-render pass then it can just create
-			a dummy render_job and intercept pre_render 
-		*/
-
-//		labels->update(); 
-
-		render_control.update();
-	}
 };
+
+#endif
+
+
 
 struct TimingManager 
 {
@@ -289,18 +300,18 @@ struct TimingManager
 
 	typedef TimingManager this_type; 
 
-	TimingManager ( RenderManager & render_manager )  
-		: render_manager( render_manager )
+	TimingManager ( RenderControl & render_control )  
+		: render_control( render_control )
 	{  
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
 	}	
 
-	RenderManager & render_manager; 
+	RenderControl & render_control; 
 
 	void timer_update( )
 	{
 //		std::cout << "timer update" << std::endl;
-		render_manager.update();
+		render_control.update();
 
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
 	}
