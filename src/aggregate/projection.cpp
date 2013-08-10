@@ -12,7 +12,6 @@
 #include <service/position_editor.h>
 #include <service/renderer.h>
 
-#include <service/layers.h>
 
 
 #include <agg_trans_affine.h>
@@ -94,6 +93,9 @@ struct XControlPoint : IPositionEditorJob, IRenderJob//, IKey
 		return ( this == &*arg ); 
 	} 
 */
+
+
+	void pre_render() {  }
 
 	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
 	{
@@ -921,7 +923,7 @@ struct ProjectionAggregateRoot : IProjectionAggregateRoot
 /*
 	Get rid of this class. 
 */
-struct ProjectionLayer : ILayerJob
+struct ProjectionLayer //: ILayerJob
 {
 	ProjectionLayer(  const ptr< IProjectionAggregateRoot> & root )
 		: count( 0),
@@ -929,11 +931,14 @@ struct ProjectionLayer : ILayerJob
 	{ } 
 	void add_ref() { ++count; } 
 	void release() { if( --count == 0) delete this; } 
+
+/*
 	void layer_update() { } 
 	void post_layer_update()
 	{
 		root->clear_invalid(); 
 	}
+*/
 
 	std::string get_name() { return "projection control points?"; }
 
@@ -963,7 +968,7 @@ void add_projection_aggregate_root( Services & services, const ptr< IProjectionA
 //	services.post.add( root, new ProjectionLayer( root )); 
 
 
-	services.layers.add(  new ProjectionLayer( root )); 
+	//services.layers.add(  new ProjectionLayer( root )); 
 
 }
 

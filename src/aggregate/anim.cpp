@@ -3,7 +3,6 @@
 
 
 #include <service/services.h>
-#include <service/layers.h>
 #include <service/position_editor.h>
 #include <service/renderer.h>
 
@@ -123,6 +122,8 @@ struct RenderAnim : IRenderJob
 	void add_ref() { ++count; } 
 	void release() { if( --count == 0) delete this; } 
 
+	void pre_render() {  }
+
 	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
 	{
 		
@@ -192,7 +193,7 @@ struct RenderAnim : IRenderJob
 
 
 
-struct MyLayer : ILayerJob 
+struct MyLayer //: ILayerJob 
 {
 	Services & services;  
 	ptr< RenderAnim>			render_anim;
@@ -210,7 +211,7 @@ struct MyLayer : ILayerJob
 
 	void load() 
 	{
-		services.layers.add( ptr< ILayerJob>( this) ); 
+//		services.layers.add( ptr< ILayerJob>( this) ); 
 		services.renderer.add( * render_anim ); 
 		services.position_editor.add(  position_editor );
 	}
@@ -218,16 +219,16 @@ struct MyLayer : ILayerJob
 	{
 		services.position_editor.remove(  position_editor );
 		services.renderer.remove( * render_anim ); 
-		services.layers.remove( ptr< ILayerJob>( this) ); 
+//		services.layers.remove( ptr< ILayerJob>( this) ); 
 	}
 	void add_ref() { } 
 	void release() { } 
 
+/*
 	void layer_update( ) { }   
 	void post_layer_update( ) { }   
-
+*/
 	std::string get_name() { return "anim"; }
-
 };
 
 

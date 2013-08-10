@@ -13,7 +13,6 @@
 #include <service/fonts.h>
 #include <service/labels.h>
 
-#include <service/layers.h>
 
 //#include <common/path_seg_adaptor.h>
 #include <common/path_reader.h>
@@ -146,7 +145,7 @@ struct ShapesAggregateRoot : IShapesAggregateRoot
 
 
 
-struct ShapeAdaptor : IRenderJob, ILabelJob 
+struct ShapeAdaptor : IRenderJob//, ILabelJob 
 {
 	// handle projection, label and render.
 
@@ -183,6 +182,9 @@ struct ShapeAdaptor : IRenderJob, ILabelJob
 	void add_ref() { ++count; } 
 	void release() { if( --count == 0) delete this; } 
 
+
+	void pre_render() {  }
+
 	// ok, it is not anti aliased, because it's being drawn for every shape 
 	// we need to find the centre of the shape, etc and then draw it. 
 
@@ -190,6 +192,8 @@ struct ShapeAdaptor : IRenderJob, ILabelJob
 	// which makes the coordination a bit complicated.
 
 	// ok, ut just requires that the projection, be synchronized. 
+
+
 
 	template< class T> 
 	static void centre_of_poly( /*const*/ T &in, double *ex, double *ey )
@@ -393,6 +397,8 @@ struct ShapeAdaptor : IRenderJob, ILabelJob
 	};
 
 
+
+#if 0
 	void layer_update() 
 	{ 
 		// eg. now we do the projection in the layer update.
@@ -413,13 +419,15 @@ struct ShapeAdaptor : IRenderJob, ILabelJob
 		projection_aggregate->clear_invalid();
 	}
 
+#endif
+
 };
 
 
 
 
 
-struct ShapesLayer : ILayerJob, IShapesObserve
+struct ShapesLayer : /*ILayerJob,*/ IShapesObserve
 {
 
 	ShapesLayer( Services & services, const ptr< IShapesAggregateRoot> & root, const ptr< IProjectionAggregateRoot> & projection_aggregate )
@@ -437,7 +445,7 @@ struct ShapesLayer : ILayerJob, IShapesObserve
 
 	void load()
 	{
-		services.layers.add( ptr< ILayerJob>( this ) ); 
+//		services.layers.add( ptr< ILayerJob>( this ) ); 
 		root->subscribe( *this );
 	}	
 
@@ -484,6 +492,7 @@ struct ShapesLayer : ILayerJob, IShapesObserve
 	
 	} 
 
+#if 0
 	void layer_update() 
 	{ 
 		/*
@@ -505,6 +514,7 @@ struct ShapesLayer : ILayerJob, IShapesObserve
 			adaptor->post_layer_update(); 
 		}
 	} 
+#endif
 
 	std::string get_name() { return "shapes"; }
 };

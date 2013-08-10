@@ -36,7 +36,7 @@ struct IGridEditor;
 struct IPositionEditor;
 struct IFonts;
 struct ILabels;
-struct ILayers;
+//struct ILayers;
 
 //struct IGribsService; 
 struct ILevelController; 
@@ -51,7 +51,7 @@ struct Services
 {
 	Services( 
 		// primary view stuff
-		ILayers		& layers , 
+//		ILayers		& layers , 
 		ILabels		& labels ,
 		IRenderer	& renderer,
 
@@ -64,7 +64,7 @@ struct Services
 		IValidController  & valid_controller
 	)
 	:
-		layers( layers ), 
+//		layers( layers ), 
 		labels( labels ),
 		renderer( renderer), 
 
@@ -76,7 +76,7 @@ struct Services
 		valid_controller( valid_controller )
 	{ } 
 	
-	ILayers		& layers;
+//	ILayers		& layers;
 	ILabels		& labels; 
 	IRenderer	& renderer; 
 

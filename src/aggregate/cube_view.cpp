@@ -23,7 +23,6 @@
 //#include <service/projector.h>
 #include <service/renderer.h>
 #include <service/grid_editor.h>
-#include <service/layers.h>
 #include <service/level_controller.h>
 #include <service/valid_controller.h>
 
@@ -334,6 +333,7 @@ struct ControlPoint
 	void add_ref()  { ++count; } 
 	void release()  { if( --count == 0) delete this; } 
 
+	void pre_render() {  }
 /*
   	std::size_t hash()		
 	{ 
@@ -749,6 +749,10 @@ struct Contour : IRenderJob // , IProjectJob
 		ok, this is not so hot, because it is going to generate a bounding rect for every single contour
 		which could be expensive.
 	*/	
+
+
+	void pre_render() {  }
+
 	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
 	{
 		 //bounding_rect_single( path_reader( projected_path), 0, x1, y1, x2, y2);	
@@ -1189,8 +1193,8 @@ private:
 struct ViewLayer 
 	: IGridEditorJob, 
 	ILevelControllerJob  ,
-	IValidControllerJob  ,
-	ILayerJob 
+	IValidControllerJob  //,
+//	ILayerJob 
 {
 	ViewLayer ( 
 		const ptr< ContoursController> 			& contours_controller,
@@ -1251,11 +1255,11 @@ struct ViewLayer
 
 
 
-
+/*
 	// ILayerJob delegation
 	void layer_update( ) { contours_controller->layer_update(); }  
 	void post_layer_update( ) { contours_controller->post_layer_update(); }  
-
+*/
 
 	std::string get_name() { return "cube view"; }
 
@@ -1328,7 +1332,7 @@ void create_cube_view( Services & services, const ptr< ICube> & cube , const ptr
 
 
 	// the loading and unloading could be put in the actual view class ...
-	services.layers.add( view ); 
+	//services.layers.add( view ); 
 	services.grid_editor.add(  view  ); 
 	services.level_controller.add( view );
 	services.valid_controller.add( view );

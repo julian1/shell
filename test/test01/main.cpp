@@ -20,7 +20,7 @@
 #include <service/fonts.h>
 #include <service/labels.h>
 //#include <service/projector.h>
-#include <service/layers.h>
+//#include <service/layers.h>
 
 #include <service/services.h>
 
@@ -325,6 +325,8 @@ struct ClearBackground : IRenderJob, IResizable
 	int w, h;
 	bool dirty;
 
+	void pre_render() { } 
+
 	void render ( BitmapSurface & surface, const UpdateParms & parms ) 
 	{
 		std::cout << "$$$$$$$$$$$$ clearing background" << std::endl;
@@ -401,14 +403,12 @@ int main(int argc, char *argv[])
 	ptr< ILabels>		labels( create_labels_service() );
 
 
-	ptr< ILayers>		layers( create_layers_service() );
 
 	ptr< ILevelController>	level_controller( create_level_controller_service() ); 
 	ptr< IValidController> valid_controller( create_valid_controller_service() ); 
 	//gribs_service( create_gribs_service( "data/sadis2g_soc_grib_dump.bin" ) ),
 
 	Services			services( 
-		*layers,
 //			*projector, 
 		*labels,
 		renderer, 
@@ -433,7 +433,7 @@ int main(int argc, char *argv[])
 
 	ClearBackground		clear_background;
 
-	RenderManager	render_manager( drawing_area, layers, labels, render_control, clear_background );
+	RenderManager	render_manager( drawing_area, labels, render_control, clear_background );
 	TimingManager	timing_manager( render_manager ); 
 
 	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_manager  );

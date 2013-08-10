@@ -43,6 +43,9 @@ struct Render : IRenderJob
 	void add_ref() { ++count; } 
 	void release() { if( --count == 0 ) delete this; } 
 
+
+	void pre_render() { } 
+
 	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
 	{
 		agg::path_storage path;		// this is inefficient. (but we have to copy, because we are going to transform).

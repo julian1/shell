@@ -8,7 +8,6 @@
 
 #include <service/renderer.h>
 
-#include <service/layers.h>
 #include <service/labels.h>
 
 #include <gtkmm.h>
@@ -209,14 +208,12 @@ struct RenderManager : ISignalImmediateUpdate
 	typedef RenderManager this_type; 
 
 	RenderManager( Gtk::DrawingArea	& drawing_area,  
-		ptr< ILayers>	&layers,
 		ptr< ILabels>	&labels, 
 		RenderControl	& render_control ,
 		IResizable		& resizable
 
    ) 	
 		: drawing_area( drawing_area ),
-		layers( layers),
 		labels( labels ),
 		render_control( render_control ),
 		resizable( resizable),
@@ -229,7 +226,6 @@ struct RenderManager : ISignalImmediateUpdate
 	}
 
 	Gtk::DrawingArea	& drawing_area; 	
-	ptr< ILayers>		& layers;			// should be removed ...
 	ptr< ILabels>		& labels; 
 	RenderControl		& render_control ; 
 	IResizable			& resizable; 
@@ -252,18 +248,6 @@ struct RenderManager : ISignalImmediateUpdate
 			Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::immediate_update ), 0 );
 		}
 	}
-
-	/*
-		this timer update stuff can be factored out later, when 
-		the renderer is capable of doing things.
-	*/
-
-	/*
-		Ok, i think that we can pull the timer out, because it's not firing every 
-		60ms. instead it's firing 60ms after the last draw.
-
-		No - because the timer has to call update() directly.
-	*/
 
 	void immediate_update()
 	{
@@ -298,16 +282,22 @@ struct RenderManager : ISignalImmediateUpdate
 
 	void update( )
 	{
+		/*
+			EXTREMELY IMPORTANT - 			
+
+			If something needs a pre-render pass then it can just create
+			a dummy render_job and intercept pre_render 
+		*/
 
 		// what does this even do ???
-		layers->layer_update();
+	//	layers->layer_update();
 
 		labels->update(); 
 
 		render_control.update();
 
 		// this should be delayed until the expose ? 
-		layers->post_layer_update();
+	//	layers->post_layer_update();
 	}
 };
 
@@ -334,7 +324,6 @@ struct TimingManager
 
 		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), 60 );
 	}
-
 };
 
 

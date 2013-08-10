@@ -84,7 +84,6 @@ build $builddir/service/position_editor.o:       cxx src/service/position_editor
 build $builddir/service/renderer.o:     cxx src/service/renderer.cpp 
 build $builddir/service/fonts.o:     cxx src/service/fonts.cpp 
 build $builddir/service/labels.o:     cxx src/service/labels.cpp 
-build $builddir/service/layers.o:     cxx src/service/layers.cpp 
 build $builddir/service/level_controller.o:     cxx src/service/level_controller.cpp 
 build $builddir/service/valid_controller.o:     cxx src/service/valid_controller.cpp 
 #build $builddir/service/gribs_service.o:     cxx src/service/gribs_service.cpp 
@@ -126,7 +125,7 @@ build $builddir/all.a:           $
      $builddir/common/point_in_poly.o $builddir/common/desc.o $
      $
      $builddir/service/grid_editor.o $builddir/service/position_editor.o  $
-     $builddir/service/renderer.o  $builddir/service/fonts.o $builddir/service/labels.o $builddir/service/layers.o $
+     $builddir/service/renderer.o  $builddir/service/fonts.o $builddir/service/labels.o  $
      $builddir/service/level_controller.o $builddir/service/valid_controller.o   $
      $
      $builddir/aggregate/cube_view.o $builddir/aggregate/projection.o $builddir/aggregate/shapes.o $

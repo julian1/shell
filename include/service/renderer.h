@@ -43,6 +43,11 @@ struct IRenderJob
 	// might actually want to be a vector< Rect> that gets populated, which would allow for multiple items 
 	// or else a referse interface
 	virtual void get_bounds( double *x1, double *y1, double *x2, double *y2 ) = 0;  
+
+	// called before all render calls.
+	// VERY Ihooked MPORTANT - use this for co-ordianting cross layer actions like label positioning  
+	// this will most likely be used by a service 
+	virtual void pre_render() = 0;
 };
 
 

@@ -52,6 +52,7 @@ struct RenderJob : IRenderJob
 	void add_ref() { ++count; } 
 	void release() { if( --count == 0) delete this; } 
 
+	void pre_render() {  }
 
 	void blend( BitmapSurface::rbase_type & dst, int x_, int y_, int len, agg::int8u *covers ) const
 	{
