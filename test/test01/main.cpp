@@ -338,7 +338,7 @@ struct ClearBackground : IRenderJob, IResizable
 	}
 	// might actually want to be a vector< Rect> that gets populated, which would allow for multiple items 
 	// or else a referse interface
-	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
+	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
 	{
 		std::cout << "bounds " << w << " " << h << std::endl;
 		*x1 = 0; *y1 = 0; 

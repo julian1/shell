@@ -360,12 +360,12 @@ struct ControlPoint
 	}
 
 	// IRenderJob
-	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
+	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
 	{
-		update_path( );
+		update_path();
 
 		 //bounding_rect_single( path_reader( projected_path), 0, x1, y1, x2, y2);	
-		 bounding_rect_single( path , 0, x1, y1, x2, y2);	
+		 bounding_rect_single( path, 0, x1, y1, x2, y2);	
 
 		// we should adjust the rect by the maximum stroke.
 	} 
@@ -753,7 +753,7 @@ struct Contour : IRenderJob // , IProjectJob
 	void pre_render( RenderParams & render_params ) 
 	{  }
 
-	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
+	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
 	{
 		 //bounding_rect_single( path_reader( projected_path), 0, x1, y1, x2, y2);	
 		 bounding_rect_single( projected_path, 0, x1, y1, x2, y2);	

@@ -96,7 +96,7 @@ struct XControlPoint : IPositionEditorJob, IRenderJob//, IKey
 
 
 
-	void get_bounds( double *x1, double *y1, double *x2, double *y2 ) 
+	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
 	{
 		if( active )
 		{
