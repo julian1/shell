@@ -61,20 +61,22 @@ struct Inner
 		timer( timer),
 		passive_surface(),
 		active_surface( ) ,
-		combine_surface( new BitmapSurface )
+		result_surface( new BitmapSurface )
 	{ } 
 
 	IRenderControl					& render_control; 
 	Timer							& timer;
 
-	//private:
-	//unsigned		count;
+	// be
+	std::set< IRenderJob *>			change_notified_set; 
+
+	// held over - so we can analyze if it changes ...
 	std::vector< IRenderJob * >		passive_set;	
 
 	BitmapSurface					passive_surface;	
 	BitmapSurface					active_surface ;
 
-	ptr< BitmapSurface>				combine_surface; 
+	ptr< BitmapSurface>				result_surface; 
 
 	// last set of jobs rendered to passive buffer
 	// now we create a new surface, but don't clear it or anything 
@@ -106,21 +108,15 @@ Renderer::~Renderer()
 
 void Renderer::notify( IRenderJob & job ) 
 {
-	assert( d->jobs.find( &job) != d->jobs.end() ); 
-
-	//std::cout << "render got notify" << std::endl;
-
+//	assert( d->jobs.find( &job) != d->jobs.end() ); 
 	d->render_control.signal_immediate_update(); 
-
-//	d->jobs.insert( &job );
+	d->change_notified_set.insert( & job);
 }
 
 void Renderer::add( IRenderJob & job ) 
 { 
 	assert( d->jobs.find( &job) == d->jobs.end() ); 
-
 	d->jobs.insert( &job );
-
 	d->render_control.signal_immediate_update(); 
 } 
 
@@ -129,8 +125,9 @@ void Renderer::remove( IRenderJob & job )
 	assert( d->jobs.find( &job) != d->jobs.end() ); 
 
 	d->jobs.erase( &job );
-
 	d->render_control.signal_immediate_update(); 
+	// possible we get a notify event but then subsequent removal
+	d->change_notified_set.erase( & job);
 } 
 
 
@@ -155,10 +152,8 @@ static void draw_rect( BitmapSurface::rbase_type	& rbase, const Rect & rect, con
 void Renderer::resize( int w, int h ) 
 {
 	d->passive_surface.resize( w, h );
-
 	d->active_surface.resize( w, h );
-
-	d->combine_surface->resize( w, h );
+	d->result_surface->resize( w, h );
 
 	// clear the set, to force complete redraw
 	d->passive_set.clear();
@@ -180,40 +175,47 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 
 	bool require_passive_redraw = false;
 
+	// go through all our jobs and add to our two sets according to z_order
 	std::vector< IRenderJob * >		active_set;	
+	std::vector< IRenderJob * >		current_set;
 
-
-	// collect elements into a set of sorted jobs
-	// it would be better to use raw pointers and avoid call overhead of virtual add_ref() and release() in log( n) in sort
-	// but then we would also have to 
-
-	active_set.clear();
-
-	std::vector< IRenderJob * >	current_set;
-
-	// add the set of passive jobs for this render round
 	foreach( IRenderJob * job , d->jobs )
 	{
 		int z = job->get_z_order(); 
-		if(  z < 100 )
+		if( z < 100 )
 		{
 			current_set.push_back( job);
+
+			// if the job ever fired a change notify
+			// then we will have to redraw 
+			if( d->change_notify_set.find( job) )
+			{
+				require_passive_redraw = true;
+				break;
+			}
 		}
 		else
 		{
 			active_set.push_back( job );
 		}
 	}
-	
+
+	/*
+		OK i think we can simplify this considerably... 
+		and avoid all the sorting etc.
+
+		rather than just record the change notify 
+	*/		
+
 	// sort them according to their z_order
 	// we want it always sorted (even if we don't test), because it becomes
 	// the old vector in the next render round.
 	std::sort( current_set.begin(), current_set.end(), compare_z_order ); 
 
-	// also sort the active set for later
+	// also sort the active set which is required for drawing later
 	std::sort( active_set.begin(), active_set.end(), compare_z_order ); 
 
-
+#if 0
 	// check if any jobs have invalid flag set.
 	if( ! require_passive_redraw)
 	{	
@@ -226,49 +228,57 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 			}
 		}
 	}
+#endif
 
-	// check if jobs or ordering might have changed ordering
+	// if a render job has had a change notify event, and it appears in
+	// the passive set, then we have to invalidate the passive set 
+	if( ! require_passive_redraw )
+	{	
+		foreach( const IRenderJob * job, d->change_notified_set ) 
+		{
+			if( d->current.find( job) )
+			{
+				require_passive_redraw = true;
+				break;
+			}
+		}
+	}
+
+	// clear for later
+	d->change_notified_set.clear();
+
+
+	// if jobs were added or removed or a job z_order changed then the set
+	// will be different from last time and require a redraw 
 	if( ! require_passive_redraw)
 	{	
 		require_passive_redraw = current_set != d->passive_set ; 
 	}
 
-
-	// now that we've compared, set the passive_set to be the current_set
-	d->passive_set = current_set ; 
-
+	// can now set the passive_set with the current_set
+	d->passive_set = current_set; 
 
 
-	// perhaps we should pass a boolean for the area ??? and pass it back again ???
-	// ok, now we invalidate the areas
+	// render the passive set if we need to
 	if( require_passive_redraw )
 	{
-
 		// invalidate the entire background
-		invalid_regions.push_back( Rect( 0, 0 , d->passive_surface.width(), d->passive_surface.height() ));
-
-//			std::cout << "@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;	
-//			std::cout << "has changed - redrawing passive "  << passive_set.size() << std::endl; 
-
-		// WHY DO WE HAVE AN OPERATION LIKE THIS ?
-		// Rendering the background ought to be a job 
-		
-		// clear the buffer ...
-	//	d->passive_surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
-
-		// this has to be the passive set, to respect the z_order, otherwise we would have to re-sort
+		// invalid_regions.push_back( Rect( 0, 0 , d->passive_surface.width(), d->passive_surface.height() ));
 
 		foreach( IRenderJob *job, d->passive_set )
 		{
 			job->render( d->passive_surface, render_params ) ;
-		}
 
+			// invalidate 
+			int x1, x2, y1, y2; 
+			job->get_bounds( &x1, &y1, &x2, &y2 ) ;  
+
+			invalid_regions.push_back( Rect( x1, y1, x2 - x1, y2 - y1 ) );
+		}
 	}
 
-
-
-	// ok, now invalidate the active regions of the last draw round, because the
-	// item might have moved.
+	// ok, now invalidate the active regions from the last draw round, because item 
+	// may have moved, and we need to clear the background.
 	foreach( const Rect & rect, d->active_rects )
 	{
 		if( ! require_passive_redraw )  
@@ -277,7 +287,7 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 		}
 	}	
 
-	// clear to recalculate the new bits
+	// clear to recalculate the new active_rects 
 	d->active_rects.clear(); 
 
 
@@ -286,12 +296,10 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 	// invalidate the active items
 	foreach( IRenderJob *job, active_set )
 	{
-		double x1, x2, y1, y2; 
+		int x1, x2, y1, y2; 
 		job->get_bounds( &x1, &y1, &x2, &y2 ) ;  
 
-		Rect	rect( x1, y1, x2 - x1, y2 - y1 ); 
-
-		d->active_rects.push_back( rect) ; 
+		d->active_rects.push_back( rect( x1, y1, x2 - x1, y2 - y1 ) ) ; 
 
 		// if we have done a passive, then the entire region is already invalided
 		if( ! require_passive_redraw )  
@@ -306,6 +314,7 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 
 
 	// render the active set
+	// must be done in seperate pass due to overlap
 	foreach( IRenderJob *job, active_set )
 	{
 		job->render( d->active_surface, render_params ); 
@@ -337,17 +346,16 @@ ptr< BitmapSurface> Renderer::update_expose( const std::vector< Rect> & invalid_
 	foreach( const Rect & rect, invalid_regions )
 	{
 		// std::cout << "copying region of passive into combine " << rect.x << " " << rect.y << " " << rect.w << " " << rect.h << std::endl;
-		copy_region( d->passive_surface, rect.x, rect.y, rect.w, rect.h, *d->combine_surface, rect.x, rect.y ); 
+		copy_region( d->passive_surface, rect.x, rect.y, rect.w, rect.h, *d->result_surface, rect.x, rect.y ); 
 	}
 
 	// now blend over the top, the active elts
 	foreach( const Rect & rect, d->active_rects )
 	{
-		//blend_region( active_surface, rect.x, rect.y, rect.w, rect.h, *combine_surface, rect.x, rect.y ); 
-		copy_region( d->active_surface, rect.x, rect.y, rect.w, rect.h, *d->combine_surface, rect.x, rect.y ); 
+		copy_region( d->active_surface, rect.x, rect.y, rect.w, rect.h, *d->result_surface, rect.x, rect.y ); 
 	}
 
-//	std::cout << "here1 " << combine_surface->width() << " " << combine_surface->height() << std::endl;
+//	std::cout << "here1 " << result_surface->width() << " " << result_surface->height() << std::endl;
 #if 1
 
 //	std::cout << "active_rects " << d->active_rects.size() << std::endl;
@@ -356,12 +364,12 @@ ptr< BitmapSurface> Renderer::update_expose( const std::vector< Rect> & invalid_
 	foreach( const Rect & rect, d->active_rects )
 	{
 		Rect	a( rect.x, rect.y, rect.w -1, rect.h - 1); 	
-		//draw_rect( d->combine_surface->rbase(), a, agg::rgba8( 0, 0, 0) ); 
-		draw_rect( d->combine_surface->rbase(), a, agg::rgba8( 0xff, 0, 0) ); 
+		//draw_rect( d->result_surface->rbase(), a, agg::rgba8( 0, 0, 0) ); 
+		draw_rect( d->result_surface->rbase(), a, agg::rgba8( 0xff, 0, 0) ); 
 	}
 #endif
 
-	return d->combine_surface; 	
+	return d->result_surface; 	
 }   
 
 
