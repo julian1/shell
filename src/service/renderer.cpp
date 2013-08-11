@@ -253,13 +253,13 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 	// ok, now invalidate the active regions from the last draw round, because item 
 	// may have moved, and we need to clear the background.
 
-	foreach( const Rect & rect, d->active_rects )
+	if( ! require_passive_redraw )  
 	{
-		if( ! require_passive_redraw )  
+		foreach( const Rect & rect, d->active_rects )
 		{
 			invalid_regions.push_back( rect ) ;
-		}
-	}	
+		}	
+	}
 
 	// clear to recalculate the new active_rects 
 	d->active_rects.clear(); 

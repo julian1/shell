@@ -3,6 +3,7 @@
 
 struct Services;
 
+
 void add_animation_object( Services & services ); 
 
 #endif

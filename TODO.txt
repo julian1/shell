@@ -27,7 +27,31 @@ VERY INTERETSING
 	- A layer can be added or removed, and the items in a layer can be added or removed 
 	- can they both work with the same system? 	
 
+----
+	the animation peer informs the renderer, ticker, position about objects 
+	
+	grid peer informs -> grid editor info about objects that can be edited
+			     -> the renderer about needing to be rendered 
 
+	Eg. when ever we add a new grid to the grids, then the grid editor will know about it??
+	but what about projection? 
+
+	Note that the grid peer will be doing the work --
+
+	- But how does the grid or projection notify the grid object of events ???
+	- because the grid peer listens to the projection peer ????	
+
+	projection peer -> grid edit peer -> renderer ...
+	grid peer ->       grid edit peer -> renderer etc. 
+
+	this way as long as the projection or grid sit in their own peers as well
+	we can assemble them and inject them into a grid edit peer 
+		- in fact it can happen automatically
+			if the grid peer sees a new grid, then it can associate it 
+			with the active projection.
+
+
+----
 done - Get rid of ref counting altogether. 
 
 	done - there's also no reason layers should be ref counted 

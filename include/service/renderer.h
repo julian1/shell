@@ -12,10 +12,7 @@
 	adaptors, it may be better to remove.  
 */
 
-struct IKey;
 struct BitmapSurface;
-
-
 
 struct Rect
 {
@@ -35,37 +32,29 @@ struct RenderParams
 
 struct IRenderJob
 {
-	virtual void render ( BitmapSurface & surface, RenderParams & render_params) = 0 ; 
-	// virtual void render_ps ( std::ostream & surface ) = 0 ; 
-
-	// change name get_render_z_order(), to distinguish from label_z_order ? 
-	virtual int get_z_order() const = 0; 
-
-	// no change in z_order, but mandates that there is a one-off change for update round
-	virtual bool get_invalid() const = 0;		
-
-	// might actually want to be a vector< Rect> that gets populated, which would allow for multiple items 
-	// or else a referse interface
-	virtual void get_bounds( int *x1, int *y1, int *x2, int *y2 ) = 0;  
-
 	// called before all render calls.
 	// VERY Ihooked MPORTANT - use this for co-ordianting cross layer actions like label positioning  
 	// this will most likely be used by a service 
 	virtual void pre_render( RenderParams & render_params ) = 0;
+
+	virtual void render ( BitmapSurface & surface, RenderParams & render_params) = 0 ; 
+	// virtual void render_ps ( std::ostream & surface ) = 0 ; 
+
+	// change name get_render_z_order()
+	virtual int get_z_order() const = 0; 
+
+	// might actually want to be a vector< Rect> that gets populated, which would allow for multiple items 
+	// or else a referse interface
+	virtual void get_bounds( int *x1, int *y1, int *x2, int *y2 ) = 0;  
 };
 
 
 
 struct IRenderer 
 {
-
-//	virtual void add( const ptr< IRenderJob> & job ) = 0; 
-//	virtual void remove( const ptr< IRenderJob> & job ) = 0; 
-
 	virtual void add( IRenderJob & job ) = 0; 
 	virtual void remove( IRenderJob & job ) = 0; 
 	virtual void notify( IRenderJob & job ) = 0; 
-
 
 	virtual void resize( int x, int y ) = 0; 
 
@@ -95,10 +84,6 @@ struct Renderer  : IRenderer
 
 	void resize( int x, int y );
 
-	/*
-		these two methods need should be combined .
-	*/
-
 	// Rather than returning a set of regions, why don't we pass an interface for what needs
 	// to be invalidated ...
 
@@ -112,64 +97,5 @@ private:
 	Renderer( const Renderer & );
 	Renderer & operator = ( const Renderer & );
 };
-
-
-
-/*
-	it would be ok, to inject gtk stuff if really 
-*/
-
-
-// ptr< IRenderer>	create_renderer_service( );
-
-/*
-struct IBlit 
-{
-	// the surface is the full screen, and we just want to blit the area
-	// given by 
-	virtual void blit( int x, int y, int w, int h, const BitmapSurface & surface ) = 0; 
-};
-*/
-
-/*
-struct IInvalidate
-{
-	virtual void invalidate( int x, int y, int w, int h ) = 0; 
-};
-*/
-
-// ok, the alternative to having to sequence the rendering over two calls, would be to 
-// inject the gtk drawing area, and the  
-
-// 
-
-
-
-//ptr< IRenderer>	create_better_renderer_service( BitmapSurface & surface /* gtk */  );
-
-
-	// renderer calls this, when the update occurs. 
-	// so we could actually pass as a UpdateParms argument, not in the constructor. 
-	// then the server will come back with a bunch of areas to update. 
-
-
-/*
-	the sequence is that update occurs, and it provides a list of invalid areas.
-	these are then sent to the server. 
-	then an event occurs asking for repaint.
-
-	Note, that the server could ask to repaint any area.
-*/
-
-// should we just inject the drawing_area in, then we could hook it's events  ???
-// no, becaues there are other events like resize(), that require more handling logic
-// being able to abstract
-// perhaps the 
-
-
-
-
-
-
 
 

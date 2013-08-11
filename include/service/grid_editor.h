@@ -31,6 +31,9 @@ struct IGridEditorJob
 	// set_active( bool )
 };
 
+// ok, the grid editor needs to be able to see if the grid has changed ...
+// But the only way a grid can broadcast events ... is if it has it's peer ...
+
 
 struct IGridEditor
 {
