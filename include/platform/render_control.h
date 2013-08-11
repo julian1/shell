@@ -114,14 +114,15 @@ struct RenderControl : IRenderControl
 		// get the rendered regions	
 		ptr< BitmapSurface> surface = renderer.update_expose( regions ); 
 
+#if 0
 		int region_area = 0; 
 		foreach( const Rect & region, regions)
 		{
 			region_area += region.w * region.h ; 
 		}
 		double percent = double( region_area) / ( surface->width() * surface->height() ) * 100.; 
-
-		// std::cout << "-------- blitting regions " << regions.size() << " percent " << percent << std::endl;
+		std::cout << "-------- blitting regions " << regions.size() << " percent " << percent << std::endl;
+#endif
 		// and blit them
 		foreach( const Rect & rect, regions )
 		{

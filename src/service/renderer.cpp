@@ -73,6 +73,7 @@ struct Inner
 
 	BitmapSurface					passive_surface;	
 	BitmapSurface					active_surface ;
+
 	ptr< BitmapSurface>				combine_surface; 
 
 	// last set of jobs rendered to passive buffer
@@ -161,6 +162,8 @@ void Renderer::resize( int w, int h )
 
 	// clear the set, to force complete redraw
 	d->passive_set.clear();
+
+	d->render_control.signal_immediate_update(); 
 } 
 
 
@@ -363,156 +366,4 @@ ptr< BitmapSurface> Renderer::update_expose( const std::vector< Rect> & invalid_
 
 
 
-
-
-
-//}; // namespace
-
-
-
-/*
-ptr< IRenderer>	create_renderer_service( ) 
-{
-	return new Renderer; 
-}
-*/
-
-
-#if 0
-
-
-template< class T> 
-static bool ranges_are_identical( 
-	T start1, const T & finish1,    
-	T start2, const T & finish2) 
-{     
-	if( std::distance( start1, finish1) != std::distance( start2, finish2))
-		return false;
-	return std::equal( start1, finish1, start2 ); 
-}	
-
-#endif
-
-
-/* i don't think this is right. jobs should invalidate themselves to the renderer, not the other way around.
-void Renderer::invalidate()
-{
-	self->passive_set.clear(); 
-}
-*/
-
-#if 0
-	void update( const UpdateParms & parms) 
-	{ 
-		// collect elements into a set of sorted jobs
-		// it would be better to use raw pointers and avoid call overhead of virtual add_ref() and release() in log( n) in sort
-		// but then we would also have to 
-		std::vector< ptr< IRenderJob> >	current_set;
-
-		// add the set of passive jobs for this render round
-		foreach( objects_t::value_type & pair , jobs )
-		{
-			const ptr< IRenderJob>  & job = pair.second; 
-			int z = job->get_z_order(); 
-			if(  z < 100 )
-			{
-				current_set.push_back( job);
-			}
-		}
-		
-		// sort them according to their z_order
-		// we want it always sorted (even if we don't test), because it becomes
-		// the old vector in the next render round.
-
-		std::sort( current_set.begin(), current_set.end(), compare_z_order ); 
-
-		bool require_passive_redraw = false; 
-
-		// check if any jobs have invalid flag set.
-		if( ! require_passive_redraw)
-		{	
-			foreach( const ptr< IRenderJob> & job, current_set ) 
-			{
-				if( job->get_invalid() )
-				{
-					require_passive_redraw = true;
-					break;
-				}
-			}
-		}
-
-		// check if jobs or ordering might be different
-		if( ! require_passive_redraw)
-		{	
-			require_passive_redraw = current_set != passive_set ; 
-		}
-
-		// check if the surface might have changed (should not be necessary ) 
-		if( ! require_passive_redraw)
-		{
-			if( last_surface.width() != surface.width() 
-				|| last_surface.height() != surface.height() ) 
-			{
-				require_passive_redraw = true;
-			}
-		}
-
-		// if change in the passive items, then we redraw
-		if( require_passive_redraw)
-		{
-			std::cout << "has changed - redrawing passive"  << std::endl;	
-
-			last_surface.resize( surface.width(), surface.height() );
-			
-			// clear the buffer ...
-			last_surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
-
-			// render the current_set jobs
-			foreach( const ptr< IRenderJob> & job , current_set )
-			{
-				job->render( last_surface, parms ) ;
-			}
-
-			// and record the new passive job set
-			passive_set = current_set;	
-		}
-
-		// ideally, we'd like not to have to copy as much, but could detect the size
-		// of all the items greater than 100 and take more care blitting.
-		// copy into new buffer.
-		surface.copy_from(  last_surface );
-
-
-		// draw the rest of the high z_order jobs 
-		foreach( objects_t::value_type & pair , jobs )
-		{
-			const ptr< IRenderJob> & job = pair.second; 
-			if( job->get_z_order() >= 100 )
-			{
-				job->render( surface, parms ) ;
-			}
-		}
-
-		// ok, the isolines are all new.
-	} 
-#endif	
-
-			// ok, we have now got a white background,   DO WE EVEN HAVE TO USE A BLEND ??? 
-			// this should have worked ...
-#if 0
-			typedef agg::pixfmt_rgba32					pixfmt_type;
-			typedef agg::renderer_base< pixfmt_type>	rbase_type;
-
-			unsigned	flip_y( - 1); 
-
-			agg::rendering_buffer   rbuf( 
-				active_surface.buf() + ( r.y * active_surface.width() * 4) + ( r.x * 4),
-				r.w, r.h, 
-				(-flip_y) * active_surface.width() * 4 ); 
-
-			pixfmt_type		pixf( rbuf);
-			rbase_type		rbase( pixf);
-
-			rbase.clear( agg::rgba8( 0xff, 0xff, 0xff ) );
-#endif
 
