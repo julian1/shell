@@ -2,10 +2,12 @@
 #pragma once
 
 #include <set> 
-#include <gtkmm.h>
+
+#include <platform/async.h>
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
+
 
 
 
@@ -22,6 +24,12 @@ struct IAnimation
 	virtual void remove( IAnimationJob & job ) = 0; 
 };
 
+/*
+	having a general purpose async abstraction that integrates with the app message pump 
+	will be very nice.
+	for both this timer tick, and managing rendering etc.
+*/
+
 struct Animation : IAnimation 
 {
 	// this needs to synchronize with drawing queue stalls, and not just queue timing events 
@@ -35,13 +43,17 @@ struct Animation : IAnimation
 
 	int									tick_interval;
 
+	Async								async;
+
 	Animation (  )  
 		: tick_interval( 60 )
 	{  
-		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), tick_interval );
+	//	Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), tick_interval );
+
+		async.run( boost::bind( & this_type::update, this), tick_interval );
 	}	
 
-	void timer_update( )
+	void update( )
 	{
 		//		std::cout << "timer update" << std::endl;
 
@@ -53,7 +65,10 @@ struct Animation : IAnimation
 			job->tick() ;
 		}
 
-		Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), tick_interval );
+
+		async.run( boost::bind( & this_type::update, this), tick_interval );
+
+	//	Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::timer_update), tick_interval );
 	}
 
 	void add( IAnimationJob & job ) 

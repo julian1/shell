@@ -8,6 +8,52 @@ when the grid notifies, everything can get updated.
 
 -----
 
+- It's very easy to have future closures like javascript do stuff within
+	a peer if we wanted using the application message pump. Eg. outside 
+	the animation with will synchronise drawing.
+	This ought to be a capability or service that is given to peers 
+	like the timer object.
+
+- having select (active/passive) would also be useful notification.
+
+-	For objects we use & composition. rather than inject a root aggregate into
+	a bunch of surrounding adapters. An object that does projecting,styling,
+	rendering of a grid should be wired like any other. 
+		MyObject
+			Grid & grid;					<- comes from event 'add' event
+			Geoextent & geoextent;			" 
+			Projection & projection;		<- comes from projection 'add' event
+			Styling & styling;				<- from peer default, or object specific
+			Labelling & labels;
+			Isolinger & isoliner;			<- from peer, and main 
+			Geometry  geom				   <- *** not a reference ***	
+			Logger & log;					<- from peer, from main. 
+
+		etc.
+	Our system of peers are the adapters.	
+
+- the peers make lifetime issues much easier to deal with. Because
+	theres just a single container holding a single ref to the object, 
+	that needs to be dealt with. 
+
+- It may make sense to put all the code on the peer. rather than 
+	the individual object. because we receive events on the peer, and because
+	many operations are naturally cross object (labelling) eg. so that we 
+	get a grid event, and then we lookup the object with the grid, etc.  
+	- this follows naturally from 
+
+
+- it would be nice to get our grid editor working with labels. even if
+	not georeferenced.
+	
+-	We can have complicated views on data - where the lifetimes are all nicely managed
+	eg. if a isoline view or pointforcast are removed it won't affect the other view
+
+-   if we remove a projection, then all peers can just scan to remove
+	anything that references the grid.
+
+---
+
 VERY IMPORTANT - the aggregate as something that has a single unit of 
 	lifetime is perfect for c++ style composing of objects rather than new
 	and ref counting.
@@ -50,7 +96,30 @@ VERY INTERETSING
 			if the grid peer sees a new grid, then it can associate it 
 			with the active projection.
 
+	text representing the projection is seen by a peer that then instantiates a projection
 
+	open file changes, - grib file selected -   
+	grib decoders populate a list of gribs that can be seen
+	a grib is selected -> something decodes the grib and places a grid in grid view with projection 
+																and in grid editor with projection
+	etc. 
+	each thing is only responsible for it's own actions.
+
+	- if the user selects a different grid from the list, then that will get loaded
+
+-----
+	this is the path...
+	grid criteria -> grid -> grid + projection -> (with style)  isoliner rendering 
+											   -> grid editor	
+	
+	Peers will be
+		grids
+		georeferenced_grids  (not necessarily projected but have a 	
+		
+	
+	projection is current_projection
+	style is current
+-----
 ----
 done - Get rid of ref counting altogether. 
 
