@@ -21,6 +21,7 @@
 #include <service/fonts.h>
 #include <service/labels.h>
 
+#include <platform/async.h>
 #include <service/animation.h>
 #include <service/services.h>
 
@@ -394,7 +395,9 @@ int main(int argc, char *argv[])
 
 	//RenderControl		render_control( drawing_area, renderer );
 
-	Animation			animation; 
+	Async				async;
+	
+	Animation			animation( async); 
 
 	GridEditor			grid_editor;
 	PositionEditor		position_editor;

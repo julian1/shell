@@ -8,7 +8,7 @@ when the grid notifies, everything can get updated.
 
 -----
 
-- It's very easy to have future closures like javascript do stuff within
+done It's very easy to have future closures like javascript do stuff within
 	a peer if we wanted using the application message pump. Eg. outside 
 	the animation with will synchronise drawing.
 	This ought to be a capability or service that is given to peers 
