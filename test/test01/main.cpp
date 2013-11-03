@@ -26,6 +26,9 @@
 #include <service/services.h>
 
 
+#include <service/grid.h>	 // grid renderer
+
+
 #include <gtkmm.h>
 
 
@@ -309,6 +312,11 @@ struct MouseManager
 
 struct ClearBackground : IRenderJob, IResizable
 {
+	/*
+		think we should change this should change this 
+		????? why not put the bitmap surface in the render_params ???
+	*/
+
 	ClearBackground() 
 	: w( 0), h( 0), dirty( true )
 	{ } 
@@ -316,10 +324,15 @@ struct ClearBackground : IRenderJob, IResizable
 	int w, h;
 	bool dirty;
 
-	void pre_render( RenderParams & render_params ) { } 
+	void pre_render( RenderParams & render_params ) 
+	{ } 
+
+	// WHY IS
 
 	void render ( BitmapSurface & surface, RenderParams & render_params  ) 
 	{
+		// we don't need to know the size in the clear. only in the get_founds call..
+
 		std::cout << "$$$$$$$$$$$$ clearing background" << std::endl;
 
 		surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
@@ -449,6 +462,7 @@ int main(int argc, char *argv[])
 
 	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor ); 
 
+	GridRenderer	grid_renderer( renderer );
 
 	/////////////////
 

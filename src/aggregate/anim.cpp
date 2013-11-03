@@ -42,20 +42,24 @@ static double pointToLineDistance( double Ax, double Ay,  double Bx, double By, 
 
 struct MyObject ; 
 
+/*
 struct IMyPeer
 {
 	virtual void add( MyObject & o ) = 0;
 	virtual void notify( MyObject & o ) = 0;
 	virtual void remove( MyObject & o ) = 0;
 };
+*/
 
+// inheriting interfaces... 
+// Why not pass the render directly into this object
 
 struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob 
 {
 	// assemble the state
 
-	MyObject( IMyPeer & peer )
-		: peer( peer), 
+	MyObject( Services & services )
+		: services( services), // peer( peer), 
 		offset( 0),
 		dt( 0),
 		test_animation_active( false )
@@ -64,9 +68,36 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 
 		path.free_all();
 		path.concat_path( r);
+
+		show( true);
 	}  
 
-	IMyPeer				& peer; 
+	~MyObject()
+	{
+
+		show( false);
+	}
+
+	void show( bool u )
+	{
+		if( u) {		
+			services.renderer.add( *this  );
+			services.position_editor.add( *this );
+			services.animation.add( *this );
+		}
+		else {
+			services.renderer.remove( *this  );
+			services.position_editor.remove( *this );
+			services.animation.remove( *this );
+		}
+	}
+
+
+
+	Services			& services ;
+	//IMyPeer				& peer; 
+
+
 
 	double				offset; 
 	int					dt; 
@@ -75,7 +106,9 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 
 	void notify()
 	{
-		peer.notify( *this );
+	//	peer.notify( *this );
+
+		services.renderer.notify( *this );
 	}
 
 	// - return distance so that position editor can choose when several options 
@@ -224,6 +257,8 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	and then pass that down.
 */
 
+/*
+
 struct MyPeer : IMyPeer
 {
 	// peer is a lot like a factory
@@ -268,14 +303,15 @@ struct MyPeer : IMyPeer
 		services.renderer.notify( o );
 	}
 };
-
+*/
 
 }; // anon namespace
 
 void add_animation_object( Services & services )
 {
-	MyPeer *peer = new MyPeer( services ); 	
-	peer->create_object(); 
+	new MyObject( services);
+	//MyPeer *peer = new MyPeer( services ); 	
+	//peer->create_object(); 
 }
 
 

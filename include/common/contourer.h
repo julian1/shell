@@ -31,6 +31,24 @@ struct IContourCallback
 
 void make_contours2( const Grid & grid, const std::vector< double> & values, IContourCallback & callback );   
 
+// this is a really crap interface ...
+// actually 
+// the dependency on a grid is ugly too ...
+
+struct ContourData
+{
+	double *data;  
+	unsigned w; 
+	unsigned h; 
+	std::vector< double> values; 
+	std::vector< agg::path_storage > paths; 
+};
+
+struct IMakeContours
+{
+	virtual void make_contours( ContourData & ) = 0  ; 
+};
+
 
 #endif
 

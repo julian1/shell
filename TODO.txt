@@ -1,4 +1,75 @@
 
+
+the render surface should be placed in the render_params
+
+
+
+
+
+
+
+-----
+When ever we want an object we create it with a factory/peer. 
+
+Grid grid = grid_peer.create(); 
+Projection proj = projections.create();
+
+This has the effect of injecting in the event handling code, which is
+	managed for all systems that might be interested in it. Eg.
+	the grid editor, the grid renderer etc.  
+
+----
+Rendering is a slightly different model,
+
+Actually no.we can directly inform the renderer that we need the
+callback.
+
+	drawing_object.update() {
+		renderer.notify( this); 
+	}
+
+Then the object will get the direct callbacks 
+renderer.add( x)
+renderer.remove( x)
+renderer.update( x)
+
+
+But the call back is not in the right context ... 
+because we are use 
+
+
+layer should have a projection object. not the other way around.
+
+-------------
+
+OK I am not sure that we don't want a single document with all the state.
+	- projections
+		- raster_layers
+		- gribs
+			contours
+			styles
+	- undo_history
+		etc.
+
+	and then we push that state into all the controllers. 
+	It's the only way to create saveable state.
+
+	If a grid is to have a color then this needs to be able to be saved ...
+	and pushed into the default style for rendering it.
+
+
+Ok, issue is that the grid has to be created in the grid peer.
+
+	Remember it's the peer that adds the job...
+
+	So grid would inform the grid render peer which would inform the renderer.
+
+	Ok, not sure. 
+	A grib that wants to be rendererd -> would push to the grid ... 
+
+----
+grib criteria -> grib -> grid -> grid+projection (allows us to trace source of data with hittesting etc). 
+
 grid -> pushed into grid editor
 	 -> pushed into presentation/rendering service with projection and style properties.
 	 -> style properties pushed into a service to handle that.	
@@ -7,6 +78,8 @@ grid -> pushed into grid editor
 when the grid notifies, everything can get updated. 
 
 -----
+
+IRenderJob getbounds() should be const
 
 done It's very easy to have future closures like javascript do stuff within
 	a peer if we wanted using the application message pump. Eg. outside 
@@ -23,18 +96,22 @@ done It's very easy to have future closures like javascript do stuff within
 			Grid & grid;					<- comes from event 'add' event
 			Geoextent & geoextent;			" 
 			Projection & projection;		<- comes from projection 'add' event
-			Styling & styling;				<- from peer default, or object specific
 			Labelling & labels;
-			Isolinger & isoliner;			<- from peer, and main 
 			Geometry  geom				   <- *** not a reference ***	
+
+			Styling & styling;				<- from peer default, or object specific
 			Logger & log;					<- from peer, from main. 
+			Isolinger & isoliner;			<- from peer, and main 
+
+	Actually stuff from the peer could probably be held on the peer, if logic
+	code is going to be on peer rather than individual objects.
 
 		etc.
 	Our system of peers are the adapters.	
 
 - the peers make lifetime issues much easier to deal with. Because
 	theres just a single container holding a single ref to the object, 
-	that needs to be dealt with. 
+	that ever needs to be dealt with. 
 
 - It may make sense to put all the code on the peer. rather than 
 	the individual object. because we receive events on the peer, and because
