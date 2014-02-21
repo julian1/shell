@@ -12,7 +12,7 @@
 	adaptors, it may be better to remove.  
 */
 
-struct BitmapSurface;
+struct Bitmap;
 
 struct Rect
 {
@@ -26,13 +26,13 @@ struct Rect
 
 struct RenderParams
 {
-	RenderParams( BitmapSurface & surface, int dt )
+	RenderParams( Bitmap & surface, int dt )
 		: surface( surface),
 		dt( dt)
 	{ } 
 
 	int dt; 
-	BitmapSurface & surface;
+	Bitmap & surface;
 };
 
 
@@ -70,7 +70,7 @@ struct IRenderer
 	virtual void render_and_invalidate( std::vector< Rect> & regions ) = 0;  
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
-	virtual ptr< BitmapSurface> update_expose( const std::vector< Rect> & regions ) = 0;  
+	virtual ptr< Bitmap> update_expose( const std::vector< Rect> & regions ) = 0;  
 };
 
 // this definition shouldn't be here...
@@ -96,7 +96,7 @@ struct Renderer  : IRenderer
 	void render_and_invalidate( std::vector< Rect> & regions );
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
-	ptr< BitmapSurface> update_expose( const std::vector< Rect> & regions );
+	ptr< Bitmap> update_expose( const std::vector< Rect> & regions );
 
 private:
 	struct Inner *d;

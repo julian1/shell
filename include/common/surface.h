@@ -18,7 +18,7 @@
 
 
 /*
-	This should be renamed a RenderBitmapSurface. or BitmapBitmapSurface  
+	This should be renamed a RenderBitmap. or BitmapBitmap  
 
 	It's also used for images, not just the renderer.
 
@@ -27,7 +27,7 @@
 	or Surface  or Raster or Image
 */
 
-struct BitmapSurface 
+struct Bitmap 
 {
 
 	typedef agg::pixfmt_bgra32					pixfmt_type;
@@ -52,7 +52,7 @@ private:
 
 public:
 
-	BitmapSurface()
+	Bitmap()
 		: count( 0),
 		flip_y( - 1),
 		buf_( 0),
@@ -63,7 +63,7 @@ public:
 		assert( rbase_.width() == 0 && rbase_.height() == 0);
 	} 
 
-	BitmapSurface( unsigned width, unsigned height )
+	Bitmap( unsigned width, unsigned height )
 		: count( 0),
 		flip_y( - 1),
 		buf_( new unsigned char [ width * height * 4 ] ),
@@ -74,10 +74,10 @@ public:
 		assert( rbase_.width() == width && rbase_.height() == height);
 	} 
 private:
-	BitmapSurface( const BitmapSurface & ); 
-	BitmapSurface & operator = ( const BitmapSurface & ); 
+	Bitmap( const Bitmap & ); 
+	Bitmap & operator = ( const Bitmap & ); 
 public:
-	~BitmapSurface()
+	~Bitmap()
 	{
 		if( buf_) 
 		{
@@ -122,7 +122,7 @@ public:
 		return rbase_.height(); 
 	} 
 
-	void copy_from( const BitmapSurface & src)
+	void copy_from( const Bitmap & src)
 	{
 		if( src.width() != width() 
 			|| src.height() != height())
@@ -146,7 +146,7 @@ public:
 */
 
 
-static void copy_region( BitmapSurface & src, int x, int y, int w, int h, BitmapSurface & dst, int dst_x, int dst_y )
+static void copy_region( Bitmap & src, int x, int y, int w, int h, Bitmap & dst, int dst_x, int dst_y )
 {
 	// this is perhaps not memory safe - rendering_buffer does not enforce bounds checks on it's buffer
 	// since the render_base dst uses the src render_buffer
@@ -168,7 +168,7 @@ static void copy_region( BitmapSurface & src, int x, int y, int w, int h, Bitmap
 }
 
 #if 0
-static void blend_region( BitmapSurface & src, int x, int y, int w, int h, BitmapSurface & dst, int dst_x, int dst_y )
+static void blend_region( Bitmap & src, int x, int y, int w, int h, Bitmap & dst, int dst_x, int dst_y )
 {
 	unsigned	flip_y( - 1); 
 

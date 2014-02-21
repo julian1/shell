@@ -54,7 +54,7 @@ struct RenderJob : IRenderJob
 	
 	void pre_render(RenderParams & params) {  }
 
-	void blend( BitmapSurface::rbase_type & dst, int x_, int y_, int len, agg::int8u *covers ) const
+	void blend( Bitmap::rbase_type & dst, int x_, int y_, int len, agg::int8u *covers ) const
 	{
 		//std::cout << "whoot blend y=" << y << " x=" << x << " len=" << len << std::endl;
 		//my_projection.transform ; 
@@ -62,7 +62,7 @@ struct RenderJob : IRenderJob
 		ptr< IProjection> proj = projection_aggregate->get_projection();
 
 		//affine.
-		BitmapSurface::rbase_type & src = root->get_surface()->rbase();
+		Bitmap::rbase_type & src = root->get_surface()->rbase();
 
 		for( unsigned i = 0; i < len; ++i)
 		{
@@ -97,7 +97,7 @@ struct RenderJob : IRenderJob
 		// const T1 &screen_to_latlon,
 		// const T2 &latlon_to_data,
 		// const Renderable &image_src, 
-		BitmapSurface::rbase_type & rbase		//	BaseRenderer& ren,
+		Bitmap::rbase_type & rbase		//	BaseRenderer& ren,
 		//const IFill  & filler,
 		//int interlace
 	) {
@@ -165,7 +165,7 @@ struct RenderJob : IRenderJob
 //		return;
 
 		// set up the affine
-		ptr< BitmapSurface> src = root->get_surface();
+		ptr< Bitmap> src = root->get_surface();
 
 		//std::cout << "src width " << src->width() << "    " << src->height() << std::endl;
 
@@ -193,11 +193,11 @@ struct RenderJob : IRenderJob
 		output_scanlines( ras, sl, params.surface.rbase()/*, fill*/ /*, 0*/ );  
 
 #if 0
-		ptr< BitmapSurface>	x = root->get_surface();
+		ptr< Bitmap>	x = root->get_surface();
 		assert( x);
 
-		BitmapSurface::rbase_type & src = x->rbase(); 
-		BitmapSurface::rbase_type & dst = surface.rbase(); 
+		Bitmap::rbase_type & src = x->rbase(); 
+		Bitmap::rbase_type & dst = surface.rbase(); 
 
 		// this is a very naive approach direct blit
 		for( unsigned h = 0; h < src.height(); ++h)
@@ -328,12 +328,12 @@ struct RasterAggregateRoot : IRasterAggregateRoot
 			delete this;
 	}
 
-	ptr< BitmapSurface> get_surface() const 
+	ptr< Bitmap> get_surface() const 
 	{  
 		return surface;
 	}  
 
-	void set_surface( const ptr< BitmapSurface> & surface_ ) 
+	void set_surface( const ptr< Bitmap> & surface_ ) 
 	{  
 		surface = surface_;
 	}  
@@ -345,7 +345,7 @@ struct RasterAggregateRoot : IRasterAggregateRoot
 
 private:
 	unsigned		count;
-	ptr< BitmapSurface>	surface; 
+	ptr< Bitmap>	surface; 
 	agg::trans_affine affine;
 };
 
@@ -356,7 +356,7 @@ ptr< IRasterAggregateRoot> create_test_raster_aggregate_root()
 
 	ptr< IRasterAggregateRoot> root = new RasterAggregateRoot;
 
-	ptr< BitmapSurface> texture = load_png_file( "./data/BlueMarble4096x2048.png" );
+	ptr< Bitmap> texture = load_png_file( "./data/BlueMarble4096x2048.png" );
 	root->set_surface( texture );
 
 	return root;
@@ -371,7 +371,7 @@ ptr< IRasterAggregateRoot> create_test_raster_aggregate_root()
 /*
 struct IFill 
 {
-	virtual	void blend( BitmapSurface::rbase_type & rbase, int x, int y, int len, agg::int8u *covers )  = 0; 
+	virtual	void blend( Bitmap::rbase_type & rbase, int x, int y, int len, agg::int8u *covers )  = 0; 
 };
 */
 
@@ -384,7 +384,7 @@ struct Fill //: RasterRenderComponent::IFiller
 
 //		MyProjection & my_projection;
 
-	void blend( BitmapSurface::rbase_type & rbase, int x, int y, int len, agg::int8u *covers ) const
+	void blend( Bitmap::rbase_type & rbase, int x, int y, int len, agg::int8u *covers ) const
 	{
 		//std::cout << "whoot blend y=" << y << " x=" << x << " len=" << len << std::endl;
 

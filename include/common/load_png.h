@@ -4,7 +4,7 @@
 #include <common/ptr.h> 
 #include <string> 
 
-struct BitmapSurface;
+struct Bitmap;
 
 /*
 	we can use an interface like this to decouple, if we want.
@@ -12,7 +12,7 @@ struct BitmapSurface;
 struct ILoadPngAdaptor
 {
 	virtual void error( const std::string & msg ) = 0;				// we could also pass logger in 
-	virtual void add_png( const ptr< BitmapSurface> & surface ) = 0; 
+	virtual void add_png( const ptr< Bitmap> & surface ) = 0; 
 };
 
 
@@ -28,7 +28,7 @@ struct ILoadPng
 }; 
 
 
-ptr< BitmapSurface> load_png_file( const std::string &filename /* ILoadPng & */ ) ;
+ptr< Bitmap> load_png_file( const std::string &filename /* ILoadPng & */ ) ;
 
 #endif
 

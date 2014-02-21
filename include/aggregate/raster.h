@@ -63,8 +63,8 @@ struct IRasterAggregateRoot
 	virtual void add_ref() = 0;
 	virtual void release() = 0;
 
-	virtual ptr< BitmapSurface> get_surface() const = 0; 
-	virtual void set_surface( const ptr< BitmapSurface> &  ) = 0; 
+	virtual ptr< Bitmap> get_surface() const = 0; 
+	virtual void set_surface( const ptr< Bitmap> &  ) = 0; 
 
 	virtual void set_geo_reference( const agg::trans_affine & ) = 0; 
 };

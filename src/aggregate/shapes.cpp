@@ -816,7 +816,7 @@ struct ShapeRenderJobAdapt : IRenderJob
 	void add_ref() { ++count; } 
 	void release() { if( --count == 0) delete this; } 
 
-	void render ( BitmapSurface & surface, const UpdateParms & parms ) 
+	void render ( Bitmap & surface, const UpdateParms & parms ) 
 	{
 		path_reader	reader( shape->projected_path );
 

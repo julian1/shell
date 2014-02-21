@@ -112,7 +112,7 @@ struct RenderControl : IRenderControl
 		}
 #endif
 		// get the rendered regions	
-		ptr< BitmapSurface> surface = renderer.update_expose( regions ); 
+		ptr< Bitmap> surface = renderer.update_expose( regions ); 
 
 #if 0
 		int region_area = 0; 
@@ -134,7 +134,7 @@ struct RenderControl : IRenderControl
 		ok, there is a problem at the moment. we do the update() sequence as part of the expose.  	 
 		but we want the update(), to trigger the expose.
 	*/
-	static void blit_buffer( Gtk::DrawingArea & drawing_area, const Rect & rect, ptr< BitmapSurface> & surface_ )
+	static void blit_buffer( Gtk::DrawingArea & drawing_area, const Rect & rect, ptr< Bitmap> & surface_ )
 	{
 		unsigned char *data = surface_->buf() + (rect.y * surface_->width() * 4) + (rect.x * 4); // beginning of buf 
 

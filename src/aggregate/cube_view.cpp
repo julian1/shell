@@ -656,7 +656,7 @@ struct ContourRenderStrategy
 {
 	// can be injected. or copied etc. hmmm. not sure. we would have to put quite a lot of state in here ?  
 
-	void render ( BitmapSurface & surface, const UpdateParms & parms ) 
+	void render ( Bitmap & surface, const UpdateParms & parms ) 
 	{
 
 		//std::cout << "render contour" << std::endl;

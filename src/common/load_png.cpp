@@ -48,7 +48,7 @@ void abort_(const char * s, ...)
 
 
 
-ptr< BitmapSurface>  load_png_file( const std::string &filename )
+ptr< Bitmap>  load_png_file( const std::string &filename )
 //void read_png_file( const char *filename, Renderable &buffer)
 {
 	//start_timer();
@@ -134,7 +134,7 @@ ptr< BitmapSurface>  load_png_file( const std::string &filename )
     fclose(fp);
 
 
-	ptr< BitmapSurface> buffer( new BitmapSurface( info_ptr->width, info_ptr->height )  ); 
+	ptr< Bitmap> buffer( new Bitmap( info_ptr->width, info_ptr->height )  ); 
 //	boost::shared_ptr< Renderable>	buffer( new Renderable); 
 
 

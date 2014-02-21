@@ -61,7 +61,7 @@ struct Inner
 		timer( timer),
 		passive_surface(),
 		active_surface( ) ,
-		result_surface( new BitmapSurface )
+		result_surface( new Bitmap )
 	{ } 
 
 	IRenderControl					& render_control; 
@@ -74,10 +74,10 @@ struct Inner
 
 	std::vector< IRenderJob * >		passive_set;	
 
-	BitmapSurface					passive_surface;	
-	BitmapSurface					active_surface ;
+	Bitmap					passive_surface;	
+	Bitmap					active_surface ;
 
-	ptr< BitmapSurface>				result_surface; 
+	ptr< Bitmap>				result_surface; 
 
 	// last set of jobs rendered to passive buffer
 	// now we create a new surface, but don't clear it or anything 
@@ -134,11 +134,11 @@ void Renderer::remove( IRenderJob & job )
 
 
 
-static void draw_rect( BitmapSurface::rbase_type	& rbase, const Rect & rect, const agg::rgba8 & color  )
+static void draw_rect( Bitmap::rbase_type	& rbase, const Rect & rect, const agg::rgba8 & color  )
 { 
 	// helper function
 
-	//BitmapSurface::rbase_type	& rbase = active_surface->rbase(); 
+	//Bitmap::rbase_type	& rbase = active_surface->rbase(); 
 	// std::cout << "line " << rect.x << " " << rect.y << " " << rect.w << " " << rect.h << std::endl;
 
 	//void copy_hline(int x1, int y, int x2, const color_type& c)
@@ -311,7 +311,7 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 	directly into the gtk. rather than copying into a combined surface and then copying into the gtk surface
 */
 
-ptr< BitmapSurface> Renderer::update_expose( const std::vector< Rect> & invalid_regions ) 
+ptr< Bitmap> Renderer::update_expose( const std::vector< Rect> & invalid_regions ) 
 { 
 	// the regions may be a superset of the regions we invalided, therefore we have to blit all passive
 	// and then all active, even though everything in active is likely to be sufficient. 
