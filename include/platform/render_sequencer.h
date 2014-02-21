@@ -16,6 +16,14 @@
 #define foreach BOOST_FOREACH
 
 /*
+	Ok, the only thing the renderer calls on the renderer
+	is the signal_immediate_update()
+
+	which means it can be entirely replaced with an outward event.
+*/
+
+
+/*
 	OK, so we need two things, 
 	(1) we need the animation component being updated in an animationjob  
 
@@ -175,7 +183,7 @@ struct RenderSequencer : IRenderSequencer
 	}
 };
 
-
+// UGHH
 
 struct IResizable
 {

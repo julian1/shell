@@ -17,6 +17,15 @@
 // The event sequence should be linear.
 // GTk event -> RenderResize -> Renderer.resize -> ClearBackground event
 
+// Eg. ClearBackground needs to hook the renderer
+
+
+/*
+	Ok, the only thing the renderer calls on the renderer
+	is the signal_immediate_update()
+
+	which means it can be entirely replaced with an outward event.
+*/
 
 struct RenderResize 
 {

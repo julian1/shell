@@ -11,6 +11,7 @@
 
 #include <service/renderer.h> 
 
+#include <common/events.h>
 #include <common/surface.h>
 #include <common/timer.h>
 
@@ -64,6 +65,8 @@ struct Inner
 		result_surface( new Bitmap )
 	{ } 
 
+	Events							events;
+
 	IRenderSequencer					& render_sequencer; 
 	Timer							& timer;
 
@@ -104,6 +107,21 @@ Renderer::~Renderer()
 	delete d;
 	d = NULL;
 } 
+
+
+void Renderer::register_( INotify & l) 
+{
+	d->events.register_( l); 
+}
+void Renderer::unregister( INotify & l) 
+{
+	d->events.unregister( l);
+}
+
+void Renderer::notify( const char *msg)
+{
+	d->events.notify( this, msg ); 
+}
 
 
 
