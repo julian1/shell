@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <common/events.h>
 #include <common/surface.h>
 
 #include <service/renderer.h>
@@ -46,22 +47,40 @@ struct RenderSequencer : IRenderSequencer
 	RenderSequencer( Gtk::DrawingArea & drawing_area, IRenderer &renderer )
 		: drawing_area( drawing_area),
 		renderer( renderer ),
-		immediate_update_pending( false )
+		immediate_update_pending( false ),
+		x( "change", *this, & this_type::on_renderer_change )
 	{	
 		drawing_area.signal_draw().connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
+
+		
+		renderer.register_( x );
 	}
+
+	~RenderSequencer( )
+	{
+		renderer.unregister( x );
+	}
+		
+
+	EventAdapter		x;
 
 	Gtk::DrawingArea	& drawing_area; 
 	IRenderer			& renderer;
 	bool				immediate_update_pending; 
 
-	void signal_immediate_update(  )
+
+	void on_renderer_change( const Event & e ) 
 	{
+		//std::cout << "got renderer change event" << std::endl;
 		if( ! immediate_update_pending )		
 		{							
 			immediate_update_pending = true;
 			Glib::signal_timeout().connect_once ( sigc::mem_fun( *this, & this_type::update ), 0 );
 		}
+	}
+
+	void signal_immediate_update(  )
+	{
 	}
 
 	void update()

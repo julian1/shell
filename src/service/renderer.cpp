@@ -129,6 +129,7 @@ void Renderer::notify( IRenderJob & job )
 {
 //	assert( d->jobs.find( &job) != d->jobs.end() ); 
 	d->render_sequencer.signal_immediate_update(); 
+	notify( "change" );
 
 	// add to our change notify set
 	d->change_notified_set.push_back( & job);
@@ -140,6 +141,7 @@ void Renderer::add( IRenderJob & job )
 	d->jobs.insert( &job );
 
 	d->render_sequencer.signal_immediate_update(); 
+	notify( "change" );
 } 
 
 void Renderer::remove( IRenderJob & job ) 
@@ -148,6 +150,7 @@ void Renderer::remove( IRenderJob & job )
 	d->jobs.erase( &job );
 
 	d->render_sequencer.signal_immediate_update(); 
+	notify( "change" );
 } 
 
 
@@ -180,6 +183,9 @@ void Renderer::resize( int w, int h )
 	d->passive_set.clear();
 
 	d->render_sequencer.signal_immediate_update(); 
+	notify( "change" );
+
+
 } 
 
 
