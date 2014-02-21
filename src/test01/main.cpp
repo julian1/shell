@@ -5,6 +5,7 @@
 #include <platform/valid_control.h> 
 #include <platform/modal_control.h> 
 #include <platform/render_control.h> 
+#include <platform/render_resize.h> 
 
 
 #include <aggregate/cube_view.h>
