@@ -170,8 +170,9 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 	assert( invalid_regions.empty() );
 
 
-	RenderParams		render_params;
-	render_params.dt = d->timer.elapsed();
+//	RenderParams		render_params;
+//	render_params.dt = d->timer.elapsed();
+	int dt = d->timer.elapsed();
 	d->timer.restart();
 
 
@@ -240,7 +241,10 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 
 		foreach( IRenderJob *job, d->passive_set )
 		{
-			job->render( d->passive_surface, render_params ) ;
+
+			RenderParams	params( d->passive_surface, dt );
+
+			job->render( params ) ;
 
 			// invalidate 
 			int x1, x2, y1, y2; 
@@ -293,7 +297,8 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 	// must be done in seperate pass due to overlap
 	foreach( IRenderJob *job, active_set )
 	{
-		job->render( d->active_surface, render_params ); 
+		RenderParams	params( d->active_surface, dt );
+		job->render( params );  
 	}
 
 } 

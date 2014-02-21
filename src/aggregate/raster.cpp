@@ -159,7 +159,7 @@ struct RenderJob : IRenderJob
 	}
 
 
-	void render ( BitmapSurface & surface, RenderParams & render_params ) 
+	void render ( RenderParams & params ) 
 	{
 //		std::cout << "whoot render raster" << std::endl;
 //		return;
@@ -185,12 +185,12 @@ struct RenderJob : IRenderJob
 		path_reader	path( proj_limb );
 
 		agg::rasterizer_scanline_aa<> ras;
-		ras.clip_box( 0, 0, surface.width(), surface.height());	
+		ras.clip_box( 0, 0, params.surface.width(), params.surface.height());	
 
 		ras.add_path( path );
 		agg::scanline_u8 sl;
 	
-		output_scanlines( ras, sl, surface.rbase()/*, fill*/ /*, 0*/ );  
+		output_scanlines( ras, sl, params.surface.rbase()/*, fill*/ /*, 0*/ );  
 
 #if 0
 		ptr< BitmapSurface>	x = root->get_surface();

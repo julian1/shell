@@ -59,7 +59,7 @@ struct MyJob : IRenderJob
 	void pre_render( RenderParams & render_params ) 
 	{ } 
 
-	void render ( BitmapSurface & surface, RenderParams & render_params) 
+	void render ( RenderParams & render_params) 
 	{ } 
 
 	int get_z_order() const 

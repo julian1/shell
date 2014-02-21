@@ -61,7 +61,7 @@ struct Render : IRenderJob
 
 
 
-	void render ( BitmapSurface & surface, RenderParams & render_params ) 
+	void render ( RenderParams & params ) 
 	{
 		agg::path_storage path;		// this is inefficient. (but we have to copy, because we are going to transform).
 									// it should be cached. 
@@ -82,7 +82,7 @@ struct Render : IRenderJob
 		agg::rasterizer_scanline_aa<>   ras;
 		ras.add_path( stroke );
 
-		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0, 0, 0 ) );
+		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), agg::rgba8( 0, 0, 0 ) );
 	}
 	bool get_invalid() const 
 	{

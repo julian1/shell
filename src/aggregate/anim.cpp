@@ -273,12 +273,12 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		return 100;
 	}; 
 
-	void render ( BitmapSurface & surface, RenderParams & render_params ) 
+	void render ( RenderParams & params ) 
 	{
 		// std::cout << "render test job " << parms.dt << std::endl;
 		// path_reader	reader( root->get_path() );
 
-		offset += render_params.dt * 0.020;
+		offset += params.dt * 0.020;
 
 		if( offset > 20)  
 			offset -= 20;
@@ -306,7 +306,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		agg::rasterizer_scanline_aa<>   ras;
 		ras.add_path( stroke );
 
-		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), agg::rgba8( 0xff, 0, 0 ) );
+		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), agg::rgba8( 0xff, 0, 0 ) );
 	}
 
 	bool get_invalid() const 

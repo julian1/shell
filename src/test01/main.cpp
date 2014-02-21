@@ -329,13 +329,13 @@ struct ClearBackground : IRenderJob, IResizable
 
 	// WHY IS
 
-	void render ( BitmapSurface & surface, RenderParams & render_params  ) 
+	void render ( RenderParams & params  ) 
 	{
 		// we don't need to know the size in the clear. only in the get_founds call..
 
 		std::cout << "$$$$$$$$$$$$ clearing background" << std::endl;
 
-		surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
+		params.surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
 		dirty = false;
 	} 
 

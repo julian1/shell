@@ -26,7 +26,13 @@ struct Rect
 
 struct RenderParams
 {
+	RenderParams( BitmapSurface & surface, int dt )
+		: surface( surface),
+		dt( dt)
+	{ } 
+
 	int dt; 
+	BitmapSurface & surface;
 };
 
 
@@ -35,9 +41,9 @@ struct IRenderJob
 	// called before all render calls.
 	// VERY Ihooked MPORTANT - use this for co-ordianting cross layer actions like label positioning  
 	// this will most likely be used by a service 
-	virtual void pre_render( RenderParams & render_params ) = 0;
+	virtual void pre_render( RenderParams & render_params) = 0;
 
-	virtual void render ( BitmapSurface & surface, RenderParams & render_params) = 0 ; 
+	virtual void render( RenderParams & render_params) = 0 ; 
 	// virtual void render_ps ( std::ostream & surface ) = 0 ; 
 
 	// change name get_render_z_order()

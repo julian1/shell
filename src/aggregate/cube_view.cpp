@@ -370,7 +370,7 @@ struct ControlPoint
 		// we should adjust the rect by the maximum stroke.
 	} 
 
-	void render( BitmapSurface & surface, RenderParams & render_params )
+	void render( RenderParams & params )
 	{
 		if( ! position_editor_active )
 			return ;
@@ -382,7 +382,7 @@ struct ControlPoint
 		ras.add_path( path );
 
 		agg::rgba       color( .3, 0, 1, .5);
-		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), color );
+		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), color );
 	}
 
 	bool get_invalid() const 
@@ -772,7 +772,7 @@ struct Contour : IRenderJob // , IProjectJob
 
 	}
 
-	void render ( BitmapSurface & surface, RenderParams & render_params )
+	void render ( RenderParams & params )
 	{
 
 
@@ -801,7 +801,7 @@ struct Contour : IRenderJob // , IProjectJob
 				: agg::rgba8( 0xff, 0, 0) ;
 		*/
 		// agg::rgba8       c( 0xff, 0, 0);
-		agg::render_scanlines_aa_solid( ras, sl, surface.rbase(), color );
+		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), color );
 		//std::cout << "here" << std::endl;
 	}
 

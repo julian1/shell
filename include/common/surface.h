@@ -23,6 +23,8 @@
 	It's also used for images, not just the renderer.
 
 	or even just Bitmap	
+
+	or Surface  or Raster or Image
 */
 
 struct BitmapSurface 
