@@ -14,7 +14,7 @@
 #include <common/surface.h>
 #include <common/timer.h>
 
-#include <platform/render_control.h>   // bit messy, when only need render_control interface
+#include <platform/render_sequencer.h>   // bit messy, when only need render_sequencer interface
 
 #include <algorithm>
 #include <vector>
@@ -56,15 +56,15 @@ typedef std::set<  IRenderJob * >	objects_t;
 
 struct Inner
 {
-	Inner(  IRenderSequencer & render_control, Timer & timer  )
-		: render_control( render_control),
+	Inner(  IRenderSequencer & render_sequencer, Timer & timer  )
+		: render_sequencer( render_sequencer),
 		timer( timer),
 		passive_surface(),
 		active_surface( ) ,
 		result_surface( new Bitmap )
 	{ } 
 
-	IRenderSequencer					& render_control; 
+	IRenderSequencer					& render_sequencer; 
 	Timer							& timer;
 
 	std::vector< IRenderJob * >		change_notified_set;	
@@ -89,10 +89,10 @@ struct Inner
 
 
 	
-Renderer::Renderer( IRenderSequencer & render_control, Timer & timer  )
-	: d( new Inner( render_control, timer)  )
+Renderer::Renderer( IRenderSequencer & render_sequencer, Timer & timer  )
+	: d( new Inner( render_sequencer, timer)  )
 { 
-	// don't use render_control yet!!! it has not been instantiated!! 
+	// don't use render_sequencer yet!!! it has not been instantiated!! 
 
 	// clear the buffer ...
 //		surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
@@ -110,7 +110,7 @@ Renderer::~Renderer()
 void Renderer::notify( IRenderJob & job ) 
 {
 //	assert( d->jobs.find( &job) != d->jobs.end() ); 
-	d->render_control.signal_immediate_update(); 
+	d->render_sequencer.signal_immediate_update(); 
 
 	// add to our change notify set
 	d->change_notified_set.push_back( & job);
@@ -121,7 +121,7 @@ void Renderer::add( IRenderJob & job )
 	assert( d->jobs.find( &job) == d->jobs.end() ); 
 	d->jobs.insert( &job );
 
-	d->render_control.signal_immediate_update(); 
+	d->render_sequencer.signal_immediate_update(); 
 } 
 
 void Renderer::remove( IRenderJob & job ) 
@@ -129,7 +129,7 @@ void Renderer::remove( IRenderJob & job )
 	assert( d->jobs.find( &job) != d->jobs.end() ); 
 	d->jobs.erase( &job );
 
-	d->render_control.signal_immediate_update(); 
+	d->render_sequencer.signal_immediate_update(); 
 } 
 
 
@@ -161,7 +161,7 @@ void Renderer::resize( int w, int h )
 	// clear the set, to force complete redraw
 	d->passive_set.clear();
 
-	d->render_control.signal_immediate_update(); 
+	d->render_sequencer.signal_immediate_update(); 
 } 
 
 

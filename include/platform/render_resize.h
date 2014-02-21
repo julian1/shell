@@ -1,25 +1,28 @@
 
-#include <common/surface.h>
+#pragma once
 
 #include <service/renderer.h>
 #include <service/labels.h>
 
 #include <gtkmm.h>
 
-/*
-//#include <iostream>
-#include <cassert>
 
-#include <boost/foreach.hpp>
-#define foreach BOOST_FOREACH
 
-*/
+// we should'nt be feeding objects in here, just
+// so we can know if the screen has resized.
 
-struct RenderSizeControl 
+// The ClearBackground needs to hook an event on the renderer
+// and catch the resize event. 
+
+// The event sequence should be linear.
+// GTk event -> RenderResize -> Renderer.resize -> ClearBackground event
+
+
+struct RenderResize 
 {
-	typedef RenderSizeControl this_type; 
+	typedef RenderResize this_type; 
 
-	RenderSizeControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer, IResizable	& resizable )
+	RenderResize( Gtk::DrawingArea & drawing_area, IRenderer &renderer, IResizable	& resizable )
 		: drawing_area( drawing_area),
 		renderer( renderer ),
 		resizable( resizable)

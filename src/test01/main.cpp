@@ -4,7 +4,7 @@
 #include <platform/level_control.h> 
 #include <platform/valid_control.h> 
 #include <platform/modal_control.h> 
-#include <platform/render_control.h> 
+#include <platform/render_sequencer.h> 
 #include <platform/render_resize.h> 
 
 
@@ -454,7 +454,7 @@ int main(int argc, char *argv[])
 	// labels needs to be given the renderer so that it can get a pre_render step
 
 
-	RenderSizeControl render_size_control( drawing_area, renderer, clear_background );
+	RenderResize render_size_control( drawing_area, renderer, clear_background );
 
 
 	//TimingManager	timing_manager( render_control ); 
