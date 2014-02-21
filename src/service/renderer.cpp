@@ -170,8 +170,8 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 	assert( invalid_regions.empty() );
 
 
-//	RenderParams		render_params;
-//	render_params.dt = d->timer.elapsed();
+//	RenderParams		params;
+//	params.dt = d->timer.elapsed();
 	int dt = d->timer.elapsed();
 	d->timer.restart();
 

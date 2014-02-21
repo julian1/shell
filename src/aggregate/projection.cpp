@@ -112,11 +112,11 @@ struct XControlPoint : IPositionEditorJob, IRenderJob//, IKey
 		}
 	}	
 
-	void pre_render( RenderParams & render_params) 
+	void pre_render( RenderParams & params) 
 	{  }
 
 	// IRenderJob
-	void render( RenderParams & render_params ) 
+	void render( RenderParams & params ) 
 	{
 		// remember the path is used for both, render and hittesting. 
 		// we calculate at render time.
@@ -128,7 +128,7 @@ struct XControlPoint : IPositionEditorJob, IRenderJob//, IKey
 			ras.add_path( path );
 
 			agg::rgba       color( .3, 0, 1, .5);
-			agg::render_scanlines_aa_solid( ras, sl, render_params.surface.rbase(), color );
+			agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), color );
 		}
 	}
 	bool get_invalid() const 

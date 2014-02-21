@@ -56,10 +56,10 @@ struct MyJob : IRenderJob
 	// color 
 	// thickness 
 
-	void pre_render( RenderParams & render_params ) 
+	void pre_render( RenderParams & params ) 
 	{ } 
 
-	void render ( RenderParams & render_params) 
+	void render ( RenderParams & params) 
 	{ } 
 
 	int get_z_order() const 

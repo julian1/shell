@@ -44,7 +44,7 @@ struct Render : IRenderJob
 	void release() { if( --count == 0 ) delete this; } 
 
 
-	void pre_render( RenderParams & render_params  ) { } 
+	void pre_render( RenderParams & params  ) { } 
 
 	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
 	{

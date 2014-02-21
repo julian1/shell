@@ -254,10 +254,10 @@ struct ShapeAdaptor : IRenderJob//, ILabelJob
 		bounding_rect_single( projected_path , 0, x1, y1, x2, y2);	
 	}		
 
-	void pre_render( RenderParams & render_params) 
+	void pre_render( RenderParams & params) 
 	{  }
 
-	void render ( RenderParams & render_params) 
+	void render ( RenderParams & params) 
 	{
 		// path_reader	reader( path );
 		// agg::conv_stroke< agg::path_storage >	stroke( path );
@@ -274,7 +274,7 @@ struct ShapeAdaptor : IRenderJob//, ILabelJob
 			agg::scanline_p8                sl;
 			agg::rasterizer_scanline_aa<>   ras;
 			ras.add_path( text_path );
-			agg::render_scanlines_aa_solid( ras, sl, render_params.surface.rbase(), color );
+			agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), color );
 		}
 
 		// render the outline
@@ -287,7 +287,7 @@ struct ShapeAdaptor : IRenderJob//, ILabelJob
 		agg::scanline_p8                sl;
 		agg::rasterizer_scanline_aa<>   ras;
 		ras.add_path( stroke );
-		agg::render_scanlines_aa_solid( ras, sl, render_params.surface.rbase(), color );
+		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), color );
 		}
 	}
 

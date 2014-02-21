@@ -314,7 +314,7 @@ struct ClearBackground : IRenderJob, IResizable
 {
 	/*
 		think we should change this should change this 
-		????? why not put the bitmap surface in the render_params ???
+		????? why not put the bitmap surface in the params ???
 	*/
 
 	ClearBackground() 
@@ -324,7 +324,7 @@ struct ClearBackground : IRenderJob, IResizable
 	int w, h;
 	bool dirty;
 
-	void pre_render( RenderParams & render_params ) 
+	void pre_render( RenderParams & params ) 
 	{ } 
 
 	// WHY IS
