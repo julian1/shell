@@ -137,8 +137,8 @@ build $builddir/all.a:           $
 
 
 # test01
-build $builddir/test/test01/main.o:  cxx test/test01/main.cpp
-build $bindir/test01:           link $builddir/test/test01/main.o  $builddir/all.a
+build $builddir/src/test01/main.o:  cxx src/test01/main.cpp
+build $bindir/test01:           link $builddir/src/test01/main.o  $builddir/all.a
 
 
 
