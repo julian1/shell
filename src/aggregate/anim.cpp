@@ -5,14 +5,11 @@
 #include <service/services.h>
 #include <service/position_editor.h>
 #include <service/renderer.h>
-
 #include <service/animation.h>
 
 #include <common/path_seg_adaptor.h>
 #include <common/path_reader.h>
-//#include <common/update.h>
 #include <common/surface.h>
-
 
 #include <agg_bounding_rect.h>
 #include <agg_rasterizer_scanline_aa.h>
@@ -26,7 +23,6 @@
 #include <agg_rounded_rect.h>
 
 
-//#include <boost/functional/hash.hpp>	
 #include <cmath>
 
 namespace {
