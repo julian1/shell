@@ -40,9 +40,11 @@ static double pointToLineDistance( double Ax, double Ay,  double Bx, double By, 
 	return std::abs((Px - Ax) * (By - Ay) - (Py - Ay) * (Bx - Ax)) / normalLength;
 }
 
-struct MyObject ; 
 
 /*
+
+struct MyObject ; 
+
 struct IMyPeer
 {
 	virtual void add( MyObject & o ) = 0;
@@ -54,7 +56,58 @@ struct IMyPeer
 // inheriting interfaces... 
 // Why not pass the render directly into this object
 
+// For the object to be properly intercepted, the show().  
+
+// the adding of the object has to be in the outer shell - so that we 
+// can forward everything . 
+
+/*
+	Ok, The alternative to all of this.
+
+
+*/
+
+/*
+	Issue is that the inner object can't generate an 
+	event properly. Because it's the outer object that gets 
+	registered.
+
+	So I think that the wrapping approach won't work.
+	And that we will actually have to handle the 
+	remove() and undo/redo queue events.  On the object. 
+
+
+	- The creation of an object also has to go no the queue.
+	- Perhaps the queue - is the thing that manages the 
+	object lifetime?
+
+	- alternatively the object lives inside the layer,
+	which owns it.
+*/
+
+/*
+struct IMyObject : IPositionEditorJob, IRenderJob, IAnimationJob 
+{ 
+	MyObject( Services & services )
+		: services( services)
+	{ } 
+
+	virtual void show( bool u ) = 0;
+
+
+	virtual void move( int x1, int y1, int x2, int y2 ) 
+	{
+		// we would intercept this and freeze the operation. 
+# 		innner.move( x1, y1, x2, y2); 
+	}
+
+	// almost all methodckk
+
+} ;
+*/
+
 struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob 
+// struct MyObject : IMyObject 
 {
 	// assemble the state
 
@@ -78,6 +131,37 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		show( false);
 	}
 
+	// I don't think that the object should be adding itself like this.
+	// because the object may be far more complicated. 
+
+	// What about undo/redo - where we want to add and remove it, then
+	// in fact we do need all of this stuff.
+
+	// should be called activate
+
+	// I think that we want a general hittester - that can tell the object that
+	// it's active. then the object can fire active events. 
+
+
+	/*
+		Ok, say that the hit controller - can delete objects. 
+		If it's active and I press delete. 
+		
+		Then what happens?.
+			It has to say show( false). and then push the object into a queue.  
+			- it says sh
+
+		- Can we wrap our object to perform this operation ?
+		- How about move operations ...		
+
+		- I think that we have to wrap it. 
+		- Controller's ought to talk to the object normally - with method calls.. 
+			then there's a wrapper around operations, to serialize..
+
+		- The controller will say remove(), the object will serialize this and
+			pass the instruction on. 
+	*/
+
 	void show( bool u )
 	{
 		if( u) {		
@@ -92,7 +176,11 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		}
 	}
 
-
+	void remove()
+	{
+		show( false ); 
+		// push ourselves onto the undo/restore queue.
+	}
 
 	Services			& services ;
 	//IMyPeer				& peer; 
