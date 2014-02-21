@@ -1,0 +1,71 @@
+
+@ if an object maintains reference to services then it can actually just directly
+notify. 
+	But that isn't sufficient for propagating events to non-subsystems. eg. from
+		a projection or grid etc. 
+
+@ why not make the undo manager a service? So objects can add themselves to it? 
+
+@ It's quite nice if we can directly create the object without having to 
+go through a peer.  It's just floating freely as the highest object
+	whether an object adds/removes itself 
+
+@ think about interaction with undo/redo - objects need to be added and removed
+	from peer.
+
+@ TO allow an object to destruct itself from an event, it must be able to detach itself
+from the various subsystems. This means it needs to hold a reference to the renderer
+so that it can remove itself from the renderer.
+	to support show( bool) and hide()
+
+@ whether something gets wraped by injection or created as an event from a following system 
+doesn't matter. they both create isolated composable systems based on composition. 
+
+@ We don't even have to add projects in peers if we don't want. We can broadcast
+destruction events that bubble up.
+
+@ Don't write logic code too deep in objects. instead put it up in controller logic. 
+If it's buried too deep then we can't consult other controllers etc to test
+active state of objects and stuff.
+
+@ If we want to test something - then we can fire a pre-event before doing the real
+event. Eg. fire pre-event for deleting projection. then a layer can prompt whether
+user really wants to do this 
+
+----
+
+layer should have a projection component
+
+layers
+	layer
+		projection
+
+layers
+	grid_renderer
+		grid
+		style
+		projection
+
+@ whether objects are created by subsystem following. Or explicitly
+by manually creating is kind of irrelevant.
+
+
+projection fires an update event -> the layer fires an event hooked by renderer
+	-> the renderer queues that it needs to update.
+
+---
+
+For something like a timer rather than adding ourselves to the timer
+subsytem. Is it easier to hook an event on a timer component. 
+
+Likewise for keyboard events - rather than add ourselves to receive 
+events, why not hook a keyboard component. It doesn't solve the ordering
+problem but that may be ok.  If object is active then it can do something
+useful with keyboard events.
+
+if a layer is active then it can respond to drag events. etc. it's
+also still kind of a service. 
+
+
+
+
