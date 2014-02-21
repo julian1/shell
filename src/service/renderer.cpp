@@ -56,7 +56,7 @@ typedef std::set<  IRenderJob * >	objects_t;
 
 struct Inner
 {
-	Inner(  IRenderControl & render_control, Timer & timer  )
+	Inner(  IRenderSequencer & render_control, Timer & timer  )
 		: render_control( render_control),
 		timer( timer),
 		passive_surface(),
@@ -64,7 +64,7 @@ struct Inner
 		result_surface( new Bitmap )
 	{ } 
 
-	IRenderControl					& render_control; 
+	IRenderSequencer					& render_control; 
 	Timer							& timer;
 
 	std::vector< IRenderJob * >		change_notified_set;	
@@ -89,7 +89,7 @@ struct Inner
 
 
 	
-Renderer::Renderer( IRenderControl & render_control, Timer & timer  )
+Renderer::Renderer( IRenderSequencer & render_control, Timer & timer  )
 	: d( new Inner( render_control, timer)  )
 { 
 	// don't use render_control yet!!! it has not been instantiated!! 

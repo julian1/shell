@@ -25,17 +25,17 @@
 
 */
 
-struct IRenderControl 
+struct IRenderSequencer 
 {
 	virtual void signal_immediate_update() = 0;
 };
 
 
-struct RenderControl : IRenderControl 
+struct RenderSequencer : IRenderSequencer 
 {
-	typedef RenderControl this_type; 
+	typedef RenderSequencer this_type; 
 
-	RenderControl( Gtk::DrawingArea & drawing_area, IRenderer &renderer )
+	RenderSequencer( Gtk::DrawingArea & drawing_area, IRenderer &renderer )
 		: drawing_area( drawing_area),
 		renderer( renderer ),
 		immediate_update_pending( false )

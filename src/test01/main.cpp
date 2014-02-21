@@ -210,7 +210,7 @@ struct KeyboardManager
 	KeyboardManager( Gtk::Window & window ,
 		GridEditor		& grid_editor,
 		PositionEditor	& position_editor ,
-		IRenderControl & render_control
+		IRenderSequencer & render_control
 	) : window( window ),
 		grid_editor( grid_editor),
 		position_editor( position_editor),
@@ -225,7 +225,7 @@ struct KeyboardManager
 	Gtk::Window		& window ; 
 	GridEditor		& grid_editor;
 	PositionEditor	& position_editor;
-	IRenderControl & render_control; 
+	IRenderSequencer & render_control; 
 
 
 	static int translate_code( unsigned code )
@@ -398,15 +398,15 @@ int main(int argc, char *argv[])
 
 	Timer				timer;
 
-	// use placement new trick to instantiate Renderer and RenderControl
+	// use placement new trick to instantiate Renderer and RenderSequencer
 	// with references to each other
-	char				buf[ sizeof( RenderControl ) ];
-	RenderControl		& render_control = *(RenderControl *)(void *)buf;
+	char				buf[ sizeof( RenderSequencer ) ];
+	RenderSequencer		& render_control = *(RenderSequencer *)(void *)buf;
 
 	Renderer			renderer( render_control, timer );
-	new( buf ) RenderControl( drawing_area, renderer );
+	new( buf ) RenderSequencer( drawing_area, renderer );
 
-	//RenderControl		render_control( drawing_area, renderer );
+	//RenderSequencer		render_control( drawing_area, renderer );
 
 	Async				async;
 	

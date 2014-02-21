@@ -76,12 +76,12 @@ struct IRenderer
 // this definition shouldn't be here...
 // should only be a struct
 
-struct IRenderControl;
+struct IRenderSequencer;
 struct Timer;
 
 struct Renderer  : IRenderer
 {
-	Renderer( IRenderControl & render_control, Timer & timer  );
+	Renderer( IRenderSequencer & render_control, Timer & timer  );
 	~Renderer();
 
 	void add( IRenderJob & job ) ;
