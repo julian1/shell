@@ -6,7 +6,7 @@
 
 #include <common/ptr.h>
 
-#include <service/valid_controller.h>
+#include <controller/valid_controller.h>
 
 #include <gtkmm.h>
 

@@ -8,8 +8,8 @@
 #include <common/projection.h>
 #include <common/path_reader.h>
 
-#include <service/renderer.h>
-#include <service/services.h>
+#include <controller/renderer.h>
+#include <controller/services.h>
 
 /*
 	ok, we need a limb as well ???

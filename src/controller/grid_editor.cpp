@@ -1,5 +1,5 @@
 
-#include <service/grid_editor.h>	// Grid
+#include <controller/grid_editor.h>	// Grid
 
 #include <iostream>
 #include <cmath>	// pow, sqrt	

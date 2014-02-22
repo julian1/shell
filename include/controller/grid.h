@@ -15,7 +15,7 @@
 
 //#include <set> 
 #include <map> 
-#include <service/renderer.h> 
+#include <controller/renderer.h> 
 /*
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>

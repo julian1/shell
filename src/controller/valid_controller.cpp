@@ -3,7 +3,7 @@
 #include <set>
 #include <algorithm>
 
-#include <service/valid_controller.h>
+#include <controller/valid_controller.h>
 
 #include <gtkmm.h>	// GtkBox
 

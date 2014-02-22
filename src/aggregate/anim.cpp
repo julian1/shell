@@ -3,10 +3,10 @@
 #include <aggregate/anim.h>
 
 
-#include <service/services.h>
-#include <service/position_editor.h>
-#include <service/renderer.h>
-#include <service/animation.h>
+#include <controller/services.h>
+#include <controller/position_editor.h>
+#include <controller/renderer.h>
+#include <controller/animation.h>
 
 #include <common/path_seg_adaptor.h>
 #include <common/path_reader.h>

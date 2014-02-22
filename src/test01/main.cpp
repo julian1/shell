@@ -19,15 +19,15 @@
 #include <common/logger.h>
 #include <common/timer.h>
 
-#include <service/fonts.h>
-#include <service/labels.h>
+#include <controller/fonts.h>
+#include <controller/labels.h>
 
 #include <platform/async.h>
-#include <service/animation.h>
-#include <service/services.h>
+#include <controller/animation.h>
+#include <controller/services.h>
 
 
-#include <service/grid.h>	 // grid renderer
+#include <controller/grid.h>	 // grid renderer
 
 
 #include <gtkmm.h>

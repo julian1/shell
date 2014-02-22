@@ -19,14 +19,14 @@
 #include <data/grib_decode.h>
 #include <common/cube.h>
 
-#include <service/services.h>
-#include <service/position_editor.h>
-//#include <service/contourer.h>
-//#include <service/projector.h>
-#include <service/renderer.h>
-#include <service/grid_editor.h>
-#include <service/level_controller.h>
-#include <service/valid_controller.h>
+#include <controller/services.h>
+#include <controller/position_editor.h>
+//#include <controller/contourer.h>
+//#include <controller/projector.h>
+#include <controller/renderer.h>
+#include <controller/grid_editor.h>
+#include <controller/level_controller.h>
+#include <controller/valid_controller.h>
 
 #include <agg_bounding_rect.h>
 #include <agg_conv_stroke.h>

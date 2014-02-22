@@ -8,8 +8,8 @@
 #include <common/projection.h>
 //#include <common/key.h>
 
-#include <service/services.h>
-#include <service/renderer.h>
+#include <controller/services.h>
+#include <controller/renderer.h>
 
 #include <agg_bounding_rect.h>
 #include <agg_rasterizer_scanline_aa.h>

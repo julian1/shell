@@ -6,7 +6,7 @@
 #include <common/events.h>
 #include <common/bitmap.h>
 
-#include <service/renderer.h>
+#include <controller/renderer.h>
 
 #include <gtkmm.h>
 #include <iostream>

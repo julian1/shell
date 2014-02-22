@@ -5,14 +5,14 @@
 #include <aggregate/projection.h>
 #include <common/projection.h>
 
-//#include <service/shapes.h>
-//#include <service/position_editor.h>
-#include <service/renderer.h>
-//#include <service/projector.h>
-#include <service/services.h>
+//#include <controller/shapes.h>
+//#include <controller/position_editor.h>
+#include <controller/renderer.h>
+//#include <controller/projector.h>
+#include <controller/services.h>
 
-#include <service/fonts.h>
-#include <service/labels.h>
+#include <controller/fonts.h>
+#include <controller/labels.h>
 
 
 //#include <common/path_seg_adaptor.h>

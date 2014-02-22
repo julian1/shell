@@ -8,7 +8,7 @@
 //#include <common/key.h>
 
 #include <common/quadtree.h>
-#include <service/labels.h>
+#include <controller/labels.h>
 
 #include <iostream>
 #include <set>

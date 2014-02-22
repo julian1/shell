@@ -17,9 +17,9 @@
 
 #include <common/ptr.h>
 
-#include <service/position_editor.h>
-#include <service/grid_editor.h>
-#include <service/services.h>
+#include <controller/position_editor.h>
+#include <controller/grid_editor.h>
+#include <controller/services.h>
 
 #include <gtkmm.h>
 

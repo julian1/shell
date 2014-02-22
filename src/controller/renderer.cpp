@@ -10,7 +10,7 @@
 */
 
 
-#include <service/renderer.h>
+#include <controller/renderer.h>
 
 #include <common/events.h>
 #include <common/bitmap.h>

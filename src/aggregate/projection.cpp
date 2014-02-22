@@ -9,10 +9,10 @@
 #include <common/point_in_poly.h>
 #include <common/path_seg_adaptor.h>
 
-#include <service/services.h>
-#include <service/position_editor.h>
-#include <service/position_editor.h>
-#include <service/renderer.h>
+#include <controller/services.h>
+#include <controller/position_editor.h>
+#include <controller/position_editor.h>
+#include <controller/renderer.h>
 
 
 

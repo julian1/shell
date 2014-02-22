@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <service/renderer.h>
-#include <service/labels.h>
+#include <controller/renderer.h>
+#include <controller/labels.h>
 
 #include <gtkmm.h>
 
