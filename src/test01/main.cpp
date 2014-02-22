@@ -310,19 +310,18 @@ struct MouseManager
 };
 
 
+/*
 
-struct ClearBackground : IRenderJob, IResizable
+	The renderer, when it gets a resize will automatically redraw everything
+	so this thing only needs to advertise its bounds, and doesn't need eventsc.
+*/
+struct ClearBackground : IRenderJob
 {
 	typedef ClearBackground this_type;
-	/*
-		think we should change this should change this 
-		????? why not put the bitmap surface in the params ???
-	*/
 
 	ClearBackground( IRenderer &renderer) 
 		: renderer( renderer ),
 		x( "resize", *this, & this_type::on_renderer_resize )//,
-//		w( 0), h( 0), dirty( true )
 	{ 
 		renderer.register_( x );
 	} 
@@ -332,37 +331,26 @@ struct ClearBackground : IRenderJob, IResizable
 		renderer.unregister( x );
 	}
 
-
 	IRenderer		&renderer; 
 	EventAdapter	x;
-
-							// Ok, what's complicated here, is knowing the 
-							// size that we have to invalidate by.
-							// Or perhaps we can send it in the pre_render ? 
-							// no, it's too late
-//	int				w, h;	// really shouldn't need this 
-//	bool			dirty;
 
 	void on_renderer_resize( const Event & e )
 	{
 		std::cout << "got renderer resize " << std::endl;
 
-//		dirty = true;
+		// we can actually get rid of the eventing here.
+		// this gets called when it's needed
 	}
 
 	void pre_render( RenderParams & params ) 
 	{ } 
 
-	// WHY IS
-
 	void render ( RenderParams & params  ) 
 	{
 		// we don't need to know the size in the clear. only in the get_founds call..
-
 		std::cout << "$$$$$$$$$$$$ clearing background" << std::endl;
 
 		params.surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
-//		dirty = false;
 	} 
 
 	// change name get_render_z_order(), to distinguish from label_z_order ? 
@@ -371,40 +359,12 @@ struct ClearBackground : IRenderJob, IResizable
 		return -1;
 	} 
 
-	// no change in z_order, but mandates that there is a one-off change for update round
-	bool get_invalid() const 
-	{
-//		return dirty; 
-	}
-	// might actually want to be a vector< Rect> that gets populated, which would allow for multiple items 
-	// or else a referse interface
 	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
 	{
-		
 		*x1 = 0; 
 		*y1 = 0; 
-	
 		renderer.getsize( x2, y2 );	
-
-		// lets just query the renderer
-
-		//std::cout << "bounds " << w << " " << h << std::endl;
-//		*x1 = 0; *y1 = 0; 
-//		*x2 = w; *y2 = h;
-		// we don't know the bounds ...
-		// unless we pass it in
 	}  
-
-	// overide
-	void resize( int w_, int h_ ) 
-	{
-/*
-		// reather than query the renderer we'll just maintain state here
-		w = w_; 
-		h = h_; 
-		dirty = true;
-*/
-	} 
 };
 
 
@@ -490,7 +450,7 @@ int main(int argc, char *argv[])
 	// labels needs to be given the renderer so that it can get a pre_render step
 
 
-	RenderResize render_size_control( drawing_area, renderer, clear_background );
+	RenderResize render_resize( drawing_area, renderer );
 
 
 	//TimingManager	timing_manager( render_control ); 
