@@ -20,6 +20,12 @@
 
 struct INotify;
 
+/*
+	Different subsystems want events for different interfaces of the	
+	same object. The only way to do this is to downcast, which 
+	requires a base class. 
+
+*/
 
 // change name notify() to emit()
 

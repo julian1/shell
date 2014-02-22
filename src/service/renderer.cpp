@@ -132,11 +132,12 @@ void Renderer::remove( IRenderJob & job )
 // this should be renamed to event or something . 
 void Renderer::notify( const Event &e )
 {
-	// Ahhh we may have a problem with coercing the right
 
-	// a job has changed state.
-
-	// do we have the object source ???
+	/*
+		The only way we get an event on this object, is if we 
+		subscribe to it on its IRenderJob interface, which
+		means this downcast is safe.
+	*/
 	IRenderJob & job = (IRenderJob  &) e.object; 
 
 
