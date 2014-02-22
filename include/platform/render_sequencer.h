@@ -1,38 +1,21 @@
 
 #pragma once
 
+// sequences the rendering with gtk event loop
+
 #include <common/events.h>
 #include <common/bitmap.h>
 
 #include <service/renderer.h>
-#include <service/labels.h>
 
 #include <gtkmm.h>
-
-
 #include <iostream>
 #include <cassert>
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
-/*
-	Ok, the only thing the renderer calls on the renderer
-	is the signal_immediate_update()
 
-	which means it can be entirely replaced with an outward event.
-*/
-
-
-/*
-	OK, so we need two things,
-	(1) we need the animation component being updated in an animationjob
-
-	(2) we need the animanted object to be able to broadcast a change notify event
-
-	(3) we need the renderer to be in contact with the render control.
-
-*/
 
 
 
@@ -110,6 +93,8 @@ struct RenderSequencer
 
 	void blit_stuff( const Cairo::RefPtr<Cairo::Context>& cr )
 	{
+
+		// Shuffle the data into our own structures
 		std::vector< Rect> regions;
 
 		std::vector< Cairo::Rectangle > rectangles;
