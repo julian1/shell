@@ -99,7 +99,7 @@ void Renderer::unregister( INotify & l)
 
 void Renderer::notify( const char *msg)
 {
-	d->events.notify( this, msg );
+	d->events.notify( *this, msg );
 }
 
 
@@ -137,13 +137,15 @@ void Renderer::notify( const Event &e )
 	// a job has changed state.
 
 	// do we have the object source ???
-	IRenderJob & job = * (IRenderJob  *) e.object; 
+	IRenderJob & job = (IRenderJob  &) e.object; 
 
-	std::cout << "e.object " << e.object << std::endl;
 
 	assert( d->jobs.find( &job) != d->jobs.end() );
 
 	d->change_notified_set.push_back( & job);
+
+
+	notify( "change" );
 }
 
 #if 0

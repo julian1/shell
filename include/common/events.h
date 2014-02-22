@@ -21,16 +21,38 @@
 struct INotify;
 
 
+// change name notify() to emit()
+
+struct IObject
+{
+	// events
+	virtual void register_( INotify & ) = 0;
+	virtual void unregister( INotify & ) = 0;
+
+	// we have to have something we can cast from ...
+	// this means evertything that can emit events has to be
+	// derived from this.
+	//virtual ~IObject() { } 
+};
+
+// The thing is to perform any casting ... - for the receiver. 
+// the receiver knows what type of object it expects. 
+
+// the downcast has to be done however. because the emitdowncast, 
+
+// would it be possible to wrap the object somehow? 
+
+
 struct Event
 {
-	Event( void * object, const char *msg )
+	Event( IObject & object, const char *msg )
 		: object( object),
 		msg( msg),
 		payload( 0),
 		cancel( false)
 	{ } 
 	// perhaps an enum
-	void * object;
+	IObject & object;
 	const char *msg;
 	void *payload;
 	bool cancel;
@@ -60,7 +82,7 @@ struct Events
 			listeners.end());
 	}
 
-	void notify( void * object, const char *msg )
+	void notify( IObject & object, const char *msg )
 	{
 		for( unsigned i = 0; i < listeners.size(); ++i )
 			listeners[ i]->notify( Event( object, msg ));

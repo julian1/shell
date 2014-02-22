@@ -39,10 +39,10 @@ struct RenderParams
 
 struct INotify; 
 
-struct IRenderJob
+struct IRenderJob : IObject
 {
-	virtual void register_( INotify & l) = 0; 
-	virtual void unregister( INotify & l) = 0;
+//	virtual void register_( INotify & l) = 0; 
+//	virtual void unregister( INotify & l) = 0;
 	
 
 	// called before all render calls.
@@ -63,12 +63,8 @@ struct IRenderJob
 
 
 
-struct IRenderer
+struct IRenderer : virtual IObject
 {
-	// events
-	virtual void register_( INotify & ) = 0;
-	virtual void unregister( INotify & ) = 0;
-
 	// render jobs
 	virtual void add( IRenderJob & job ) = 0;
 	virtual void remove( IRenderJob & job ) = 0;

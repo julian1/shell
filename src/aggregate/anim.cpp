@@ -210,12 +210,25 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	{
 		std::cout << "notifying this " << this << std::endl;
 
-		events.notify( this, msg ); 
+		events.notify( *this, msg ); 
 		
 		// OK, this is crappy.  
 		//services.renderer.notify( *this );
 	}
 
+	// the this address is different to the IRenderjob address 
+	// even though they are the same object. 
+
+	// If the event is going to be common. Think we have to have a common
+	// event thing for jobs. then we can downcast without dynamic_cast.   
+
+
+	// Not sure the issue is the notify. 
+
+	// is there a way to embed a cast in the template,,, 
+	// to indicate what actual object we want ????
+
+	// eg. we have all these things that are typed, and listening.. 
 
 	void show( bool u )
 	{
