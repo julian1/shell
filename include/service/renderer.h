@@ -58,12 +58,11 @@ struct IRenderJob
 
 struct IRenderer
 {
-
-	virtual void notify( const char *msg) = 0; 
+	// events
 	virtual void register_( INotify & ) = 0;
 	virtual void unregister( INotify & ) = 0;
 
-
+	// render jobs
 	virtual void add( IRenderJob & job ) = 0;
 	virtual void remove( IRenderJob & job ) = 0;
 	virtual void notify( IRenderJob & job ) = 0;
@@ -73,11 +72,10 @@ struct IRenderer
 
 	// update is now a sequence
 	// return the list of regions that must be updated (they may overlap)
-	// and set some state for update2
 	virtual void render_and_invalidate( std::vector< Rect> & regions ) = 0;
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
-	virtual ptr< Bitmap> update_expose( const std::vector< Rect> & regions ) = 0;
+	virtual void update_expose( const std::vector< Rect> & regions, Bitmap & result ) = 0;
 };
 
 // this definition shouldn't be here...
@@ -108,7 +106,8 @@ struct Renderer  : IRenderer
 	void render_and_invalidate( std::vector< Rect> & regions );
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
-	ptr< Bitmap> update_expose( const std::vector< Rect> & regions );
+
+	void  update_expose( const std::vector< Rect> & regions, Bitmap & result );
 
 private:
 	struct Inner *d;

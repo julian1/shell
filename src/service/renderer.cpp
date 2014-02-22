@@ -58,7 +58,6 @@ typedef std::set<  IRenderJob * >	objects_t;
 struct Inner
 {
 	Inner()
-		: result_surface( new Bitmap )
 	{ } 
 
 	Events							events;
@@ -75,7 +74,6 @@ struct Inner
 	Bitmap					passive_surface;	
 	Bitmap					active_surface ;
 
-	ptr< Bitmap>				result_surface; 
 
 	// last set of jobs rendered to passive buffer
 	// now we create a new surface, but don't clear it or anything 
@@ -169,7 +167,6 @@ void Renderer::resize( int w, int h )
 {
 	d->passive_surface.resize( w, h );
 	d->active_surface.resize( w, h );
-	d->result_surface->resize( w, h );
 
 	// clear the set, to force complete redraw
 	d->passive_set.clear();
@@ -334,7 +331,7 @@ void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions )
 	directly into the gtk. rather than copying into a combined surface and then copying into the gtk surface
 */
 
-ptr< Bitmap> Renderer::update_expose( const std::vector< Rect> & invalid_regions ) 
+void Renderer::update_expose( const std::vector< Rect> & invalid_regions, Bitmap & result_surface ) 
 { 
 	// the regions may be a superset of the regions we invalided, therefore we have to blit all passive
 	// and then all active, even though everything in active is likely to be sufficient. 
@@ -343,17 +340,28 @@ ptr< Bitmap> Renderer::update_expose( const std::vector< Rect> & invalid_regions
 
 	// now we work with the combined buffer.	
 
+
+	if( result_surface.width() != d->passive_surface.width()
+	|| result_surface.height() != d->passive_surface.height()) 
+	result_surface.resize(  d->passive_surface.width(), d->passive_surface.height()); 
+
+	assert( 
+		result_surface.width() == d->passive_surface.width()
+		&& result_surface.height() == d->passive_surface.height()
+	);
+
+
 	// for each region copy the passive into the active 
 	foreach( const Rect & rect, invalid_regions )
 	{
 		// std::cout << "copying region of passive into combine " << rect.x << " " << rect.y << " " << rect.w << " " << rect.h << std::endl;
-		copy_region( d->passive_surface, rect.x, rect.y, rect.w, rect.h, *d->result_surface, rect.x, rect.y ); 
+		copy_region( d->passive_surface, rect.x, rect.y, rect.w, rect.h, result_surface, rect.x, rect.y ); 
 	}
 
 	// now blend over the top, the active elts
 	foreach( const Rect & rect, d->active_rects )
 	{
-		copy_region( d->active_surface, rect.x, rect.y, rect.w, rect.h, *d->result_surface, rect.x, rect.y ); 
+		copy_region( d->active_surface, rect.x, rect.y, rect.w, rect.h, result_surface, rect.x, rect.y ); 
 	}
 
 //	std::cout << "here1 " << result_surface->width() << " " << result_surface->height() << std::endl;
@@ -366,11 +374,11 @@ ptr< Bitmap> Renderer::update_expose( const std::vector< Rect> & invalid_regions
 	{
 		Rect	a( rect.x, rect.y, rect.w -1, rect.h - 1); 	
 		//draw_rect( d->result_surface->rbase(), a, agg::rgba8( 0, 0, 0) ); 
-		draw_rect( d->result_surface->rbase(), a, agg::rgba8( 0xff, 0, 0) ); 
+		draw_rect( result_surface.rbase(), a, agg::rgba8( 0xff, 0, 0) ); 
 	}
 #endif
 
-	return d->result_surface; 	
+//	return d->result_surface; 	
 }   
 
 
