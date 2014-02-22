@@ -57,18 +57,13 @@ typedef std::set<  IRenderJob * >	objects_t;
 
 struct Inner
 {
-	Inner(  IRenderSequencer & render_sequencer, Timer & timer  )
-		: render_sequencer( render_sequencer),
-		timer( timer),
-		passive_surface(),
-		active_surface( ) ,
-		result_surface( new Bitmap )
+	Inner()
+		: result_surface( new Bitmap )
 	{ } 
 
 	Events							events;
 
-	IRenderSequencer					& render_sequencer; 
-	Timer							& timer;
+	Timer							timer;
 
 	std::vector< IRenderJob * >		change_notified_set;	
 
@@ -92,8 +87,8 @@ struct Inner
 
 
 	
-Renderer::Renderer( IRenderSequencer & render_sequencer, Timer & timer  )
-	: d( new Inner( render_sequencer, timer)  )
+Renderer::Renderer( )
+	: d( new Inner  )
 { 
 	// don't use render_sequencer yet!!! it has not been instantiated!! 
 
@@ -128,7 +123,6 @@ void Renderer::notify( const char *msg)
 void Renderer::notify( IRenderJob & job ) 
 {
 //	assert( d->jobs.find( &job) != d->jobs.end() ); 
-	d->render_sequencer.signal_immediate_update(); 
 	notify( "change" );
 
 	// add to our change notify set
@@ -140,7 +134,6 @@ void Renderer::add( IRenderJob & job )
 	assert( d->jobs.find( &job) == d->jobs.end() ); 
 	d->jobs.insert( &job );
 
-	d->render_sequencer.signal_immediate_update(); 
 	notify( "change" );
 } 
 
@@ -149,7 +142,6 @@ void Renderer::remove( IRenderJob & job )
 	assert( d->jobs.find( &job) != d->jobs.end() ); 
 	d->jobs.erase( &job );
 
-	d->render_sequencer.signal_immediate_update(); 
 	notify( "change" );
 } 
 
@@ -182,10 +174,7 @@ void Renderer::resize( int w, int h )
 	// clear the set, to force complete redraw
 	d->passive_set.clear();
 
-	d->render_sequencer.signal_immediate_update(); 
 	notify( "change" );
-
-
 } 
 
 

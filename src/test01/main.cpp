@@ -210,12 +210,12 @@ struct KeyboardManager
 {
 	KeyboardManager( Gtk::Window & window ,
 		GridEditor		& grid_editor,
-		PositionEditor	& position_editor ,
-		IRenderSequencer & render_control
+		PositionEditor	& position_editor //,
+//		IRenderSequencer & render_control
 	) : window( window ),
 		grid_editor( grid_editor),
-		position_editor( position_editor),
-		render_control( render_control )
+		position_editor( position_editor)//,
+//		render_control( render_control )
 	{
 		typedef KeyboardManager this_type; 
 
@@ -226,7 +226,7 @@ struct KeyboardManager
 	Gtk::Window		& window ; 
 	GridEditor		& grid_editor;
 	PositionEditor	& position_editor;
-	IRenderSequencer & render_control; 
+//	IRenderSequencer & render_control; 
 
 
 	static int translate_code( unsigned code )
@@ -252,7 +252,7 @@ struct KeyboardManager
 		grid_editor.key_press( translate_code( event->keyval ) ); 
 		position_editor.key_press( translate_code( event->keyval ) ); 
 
-		render_control.signal_immediate_update(  ); 
+//		render_control.signal_immediate_update(  ); 
 		return false;
 	}
 	bool on_key_release_event(GdkEventKey* event )
@@ -260,7 +260,7 @@ struct KeyboardManager
 		grid_editor.key_release( translate_code( event->keyval ) ); 
 		position_editor.key_release( translate_code( event->keyval ) ); 
 
-		render_control.signal_immediate_update(  ); 
+//		render_control.signal_immediate_update(  ); 
 		return false;
 	}
 };
@@ -397,17 +397,18 @@ int main(int argc, char *argv[])
 	// if we gave these things full references, then we wouldn't
 	// need to maintain instances in the Application class scope ?? 
 
-	Timer				timer;
+//	Timer				timer;
 
 	// use placement new trick to instantiate Renderer and RenderSequencer
 	// with references to each other
-	char				buf[ sizeof( RenderSequencer ) ];
-	RenderSequencer		& render_control = *(RenderSequencer *)(void *)buf;
+//	char				buf[ sizeof( RenderSequencer ) ];
+//	RenderSequencer		& render_control = *(RenderSequencer *)(void *)buf;
 
-	Renderer			renderer( render_control, timer );
-	new( buf ) RenderSequencer( drawing_area, renderer );
+	Renderer			renderer;
+//	new( buf ) RenderSequencer( drawing_area, renderer );
 
-	//RenderSequencer		render_control( drawing_area, renderer );
+	RenderSequencer		render_control( drawing_area, renderer );
+
 
 	Async				async;
 	
@@ -459,7 +460,7 @@ int main(int argc, char *argv[])
 
 	//TimingManager	timing_manager( render_control ); 
 
-	KeyboardManager keyboard_manager( window, grid_editor, position_editor, render_control  );
+	KeyboardManager keyboard_manager( window, grid_editor, position_editor/*c$, render_control */ );
 
 	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor ); 
 

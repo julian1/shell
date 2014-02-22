@@ -82,12 +82,11 @@ struct IRenderer
 // this definition shouldn't be here...
 // should only be a struct
 
-struct IRenderSequencer;
 struct Timer;
 
 struct Renderer  : IRenderer
 {
-	Renderer( IRenderSequencer & render_control, Timer & timer  );
+	Renderer( );
 	~Renderer();
 
 	// should change name to subscribe/unsubscribe
