@@ -327,12 +327,15 @@ struct ClearBackground : IRenderJob
 
 	void register_( INotify * l) 
 	{
+		l->add_ref();
 		// events.register_( l);
 	} 
 
 	void unregister( INotify * l)
 	{
 		// events.unregister( l);
+
+		l->release();
 	}
 
 

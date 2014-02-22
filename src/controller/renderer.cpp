@@ -22,6 +22,7 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+#include <boost/shared_ptr.hpp>
 
 
 namespace {
@@ -53,7 +54,8 @@ struct Inner
 	Timer							timer;
 
 
-	NotifyAdapter< Renderer>		* x;
+	//NotifyAdapter< Renderer>		* x;
+	boost::shared_ptr< NotifyAdapter< Renderer> > x;
 
 	std::vector< IRenderJob * >		change_notified_set;
 
@@ -79,14 +81,18 @@ struct Inner
 Renderer::Renderer( )
 	: d( new Inner)
 {
-	d->x = make_adapter( *this, & Renderer::on_job_changed ); 
+	/*d->x = make_adapter( *this, & Renderer::on_job_changed ); 
 	d->x->add_ref();
+
+	boost::shared_ptr< NotifyAdapter< Renderer> > y (  make_adapter( *this, & Renderer::on_job_changed ) ); 
+	*/
+	d->x = boost::shared_ptr< NotifyAdapter< Renderer> >(  make_adapter( *this, & Renderer::on_job_changed )); 
 }
 
 
 Renderer::~Renderer()
 {
-	d->x->release();
+//	d->x->release();
 	delete d;
 	d = NULL;
 }
@@ -117,9 +123,9 @@ void Renderer::add( IRenderJob & job )
 	assert( d->jobs.find( &job) == d->jobs.end() );
 	d->jobs.insert( &job );
 
-	std::cout << "add job " << & job << std::endl;
+	std::cout << "add render job " << & job << std::endl;
 
-	job.register_( d->x );	
+	job.register_( &*d->x );	
 	notify( "change" );
 }
 
@@ -128,11 +134,11 @@ void Renderer::remove( IRenderJob & job )
 	assert( d->jobs.find( &job) != d->jobs.end() );
 	d->jobs.erase( &job );
 
-	std::cout << "remove job " << & job << std::endl;
+	std::cout << "remove render job " << & job << std::endl;
 	// WHAT happend if item is in the change_notified_set here?.
 	// we still need it recorded, so we can clear the background
 
-	job.unregister( d->x );	
+	job.unregister( & *d->x );	
 	notify( "change" );
 }
 

@@ -208,7 +208,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	
 	void notify( const char *msg )
 	{
-		std::cout << "notifying this " << this << std::endl;
+		//std::cout << "notifying this " << this << std::endl;
 
 		events.notify( *this, msg ); 
 		

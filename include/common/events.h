@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <cassert>
+
 // whether something gets wraped and composed - by a following system
 // or else injected with references doesn't matter. they both create
 // isolated composable systems with good event properties.
@@ -11,11 +13,6 @@
 // it relies on the event handler to cast to the
 // correct type
 
-#include <cassert>
-#include <vector>
-#include <algorithm>
-#include <iostream>
-#include <cstring>
 //#include <boost/bind.hpp>
 //#include <boost/function.hpp>
 
@@ -70,73 +67,27 @@ struct INotify
 {
 	virtual void add_ref() = 0;
 	virtual void release() = 0;
-
 	virtual void notify( const Event &e ) = 0;
 	virtual bool operator == ( const INotify & ) const = 0;
 };
 
 
-struct X
-{
-	// compare objects, make generic and a template
-
-	X( const INotify *a )
-		: a( a)
-	{ } 
-
-	const INotify *a;
-
-	bool operator () ( const INotify *b) const
-	{
-		return *a == *b;
-	}
-};
-
 struct Events
 {
-private:
-	std::vector< INotify *> listeners;
+	// Change name to listeners
+
 public:
-
-	void register_( INotify * l)
-	{
-		l->add_ref();
-		listeners.push_back( l);
-	}
-
-	void unregister( INotify * l)
-	{
-		// we will have to change teh comparison operation here,
-		// if we do equality stuff...
-
-		// this is a pointer comparison, but we need a predicate comparison...
-
-		listeners.erase(
-			std::remove_if( listeners.begin(), listeners.end(),  X( l) ),
-			listeners.end()
-		);
-
-		l->release();
-	}
-
-	void notify( IObject & object, const char *msg )
-	{
-		for( unsigned i = 0; i < listeners.size(); ++i ) {
-			listeners[ i]->notify( Event( object, msg ));
-		}
-	}
+	Events(); 
+	~Events(); 
+	void register_( INotify * l); 
+	void unregister( INotify * l); 
+	void notify( IObject & object, const char *msg ); 
+private:
+	struct Inner *d;
+	Events( const Events & ); 
+	Events & operator = ( const Events & ); 
 };
 
-
-/*
-// If we don't do a cast here, then perhaps we can eliminate binding ?
-
-struct IHelper
-{
-	virtual void operator () ( const Event & e) = 0;
-//	virtual bool operator == ( const IHelper & x) = 0;
-};
-*/
 
 
 template< class C>
@@ -200,6 +151,16 @@ NotifyAdapter< C> * make_adapter( C * c, void (C::*m)( const Event & e ))
 }
 
 
+
+/*
+// If we don't do a cast here, then perhaps we can eliminate binding ?
+
+struct IHelper
+{
+	virtual void operator () ( const Event & e) = 0;
+//	virtual bool operator == ( const IHelper & x) = 0;
+};
+*/
 
 
 /*

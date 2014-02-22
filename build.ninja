@@ -65,6 +65,8 @@ rule link
 
 
 ## common
+
+build $builddir/common/events.o:        cxx src/common/events.cpp
 build $builddir/common/timer.o:        cxx src/common/timer.cpp
 build $builddir/common/logger.o:        cxx src/common/logger.cpp
 build $builddir/common/grid.o:       cxx src/common/grid.cpp 
@@ -120,7 +122,8 @@ build $builddir/tools/dump_reports3.o: cxx src/tools/dump_reports3.cpp
 ##
 
 build $builddir/all.a:           $
-     ar  $builddir/common/timer.o  $builddir/common/logger.o  $builddir/common/grid.o $builddir/common/load_png.o  $
+     ar  $builddir/common/events.o $builddir/common/timer.o  $builddir/common/logger.o  $builddir/common/grid.o $
+     $builddir/common/load_png.o  $
      $builddir/common/load_shapefile.o $builddir/common/point_in_poly.o $builddir/common/contourer.o $builddir/common/load_font.o $
      $builddir/common/point_in_poly.o $builddir/common/desc.o $
      $
