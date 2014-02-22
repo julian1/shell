@@ -1,4 +1,5 @@
 
+#include <common/events.h>
 #include <aggregate/anim.h>
 
 
@@ -172,6 +173,8 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	Render				renderer;
 	Editor				editor;
 
+	Events				events;
+	
 
 	MyObject( Services & services )
 		: services( services),
@@ -191,6 +194,24 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	{
 
 		show( false);
+	}
+
+	void register_( INotify & l) 
+	{
+		events.register_( l);
+	} 
+
+	void unregister( INotify & l)
+	{
+		events.unregister( l);
+	}
+	
+	void notify( const char *msg )
+	{
+		events.notify( this, msg ); 
+		
+		// OK, this is crappy.  
+		services.renderer.notify( *this );
 	}
 
 
@@ -214,10 +235,6 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		// push ourselves onto the undo/restore queue.
 	}
 
-	void notify()
-	{
-		services.renderer.notify( *this );
-	}
 
 
 	// IPositionEditorJob
@@ -229,7 +246,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	void set_active( bool active ) 
 	{
 		editor.set_active( active); 
-		notify();
+		notify( "change");
 	}
 
 	void set_position_active( bool ) 
@@ -237,8 +254,10 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 
 	void move( int x1, int y1, int x2, int y2 ) 
 	{
+		// should test if pos is the same, and avoid firing the event
+
 		editor.move( x1, y1, x2, y2 );
-		notify();
+		notify( "change");
 	}
 
 	void finish_edit() 
@@ -254,7 +273,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		//std::cout << "whoot we are getting an animation event " << dt_ << std::endl;
 		// we notify that our state has changed even if we haven't calculated it
 		// yet.
-		notify();
+		notify( "change");
 	}
 
 	// IRenderJob 

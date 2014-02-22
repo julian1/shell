@@ -1,4 +1,6 @@
 
+#if 0
+
 #include <aggregate/mapgrid.h>
 #include <aggregate/projection.h>
 
@@ -528,4 +530,4 @@ private:
 /*
 	We want to store a value, in respect to two other values.
 */
-
+#endif

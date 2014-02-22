@@ -1,3 +1,6 @@
+
+#if 0
+
 /*
 	We create this as a way to do async stuff that will help to synchronize
 	animation stuff.
@@ -124,4 +127,5 @@ struct GridRenderer //: IGridRenderer
 	}
 };
 
+#endif
 

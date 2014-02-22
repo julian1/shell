@@ -1,4 +1,6 @@
 
+#if 0
+
 #include <aggregate/projection.h>
 
 #include <common/projection.h>
@@ -1135,5 +1137,7 @@ void ProjectionAggregateRoot::set_projection( const ptr< IProjection> & )
 		} 
 		//std::cout << "dist " << dist << std::endl;
 		return dist;
+#endif
+
 #endif
 

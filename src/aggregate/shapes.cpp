@@ -1,4 +1,5 @@
 
+#if 0
 
 #include <aggregate/shapes.h>
 #include <aggregate/projection.h>
@@ -1031,4 +1032,4 @@ public:
 
 		Do the same for the contours stuff.
 	*/	
-
+#endif

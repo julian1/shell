@@ -324,7 +324,17 @@ struct ClearBackground : IRenderJob
 
 
 	IRenderer		&renderer; 
+	Events			events;
 
+	void register_( INotify & l) 
+	{
+		events.register_( l);
+	} 
+
+	void unregister( INotify & l)
+	{
+		events.unregister( l);
+	}
 
 
 	void pre_render( RenderParams & params ) 
@@ -444,7 +454,7 @@ int main(int argc, char *argv[])
 
 	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor ); 
 
-	GridRenderer	grid_renderer( renderer );
+	//GridRenderer	grid_renderer( renderer );
 
 	/////////////////
 

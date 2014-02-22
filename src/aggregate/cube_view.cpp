@@ -1,4 +1,6 @@
 
+#if 0
+
 #include <common/ptr.h>
 #include <common/cube.h>
 #include <aggregate/cube_view.h>
@@ -1560,5 +1562,7 @@ ptr< IKey> make_key( const ptr< A> & a, const ptr< B> & b)
 		{
 			}
 	} 	
+#endif
+
 #endif
 

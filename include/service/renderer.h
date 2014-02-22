@@ -36,8 +36,14 @@ struct RenderParams
 };
 
 
+struct INotify; 
+
 struct IRenderJob
 {
+	virtual void register_( INotify & l) = 0; 
+	virtual void unregister( INotify & l) = 0;
+	
+
 	// called before all render calls.
 	// VERY Ihooked MPORTANT - use this for co-ordianting cross layer actions like label positioning
 	// this will most likely be used by a service
