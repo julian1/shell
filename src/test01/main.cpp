@@ -322,18 +322,17 @@ struct ClearBackground : IRenderJob
 		: renderer( renderer )
 	{ } 
 
-
 	IRenderer		&renderer; 
-	Events			events;
+//	Events			events;
 
-	void register_( INotify & l) 
+	void register_( INotify * l) 
 	{
-		events.register_( l);
+		// events.register_( l);
 	} 
 
-	void unregister( INotify & l)
+	void unregister( INotify * l)
 	{
-		events.unregister( l);
+		// events.unregister( l);
 	}
 
 

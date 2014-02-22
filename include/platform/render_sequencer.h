@@ -33,7 +33,7 @@ struct RenderSequencer
 
 //	d->events.register_( * make_adapter( *this, & Renderer::on_job_changed ) );
 
-		renderer.register_( * make_adapter( *this, & this_type::on_renderer_change ) );
+		renderer.register_( make_adapter( this, & this_type::on_renderer_change ) );
 	}
 
 	~RenderSequencer( )
@@ -47,7 +47,7 @@ struct RenderSequencer
 
 		//renderer.unregister( x );
 
-		renderer.unregister( * make_adapter( *this, & this_type::on_renderer_change ) );
+		renderer.unregister( make_adapter( this, & this_type::on_renderer_change ) );
 	}
 
 

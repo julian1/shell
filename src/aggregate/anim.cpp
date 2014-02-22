@@ -196,12 +196,12 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		show( false);
 	}
 
-	void register_( INotify & l) 
+	void register_( INotify * l) 
 	{
 		events.register_( l);
 	} 
 
-	void unregister( INotify & l)
+	void unregister( INotify * l)
 	{
 		events.unregister( l);
 	}

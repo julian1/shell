@@ -33,8 +33,8 @@ struct INotify;
 struct IObject
 {
 	// events
-	virtual void register_( INotify & ) = 0;
-	virtual void unregister( INotify & ) = 0;
+	virtual void register_( INotify * ) = 0;
+	virtual void unregister( INotify * ) = 0;
 
 	// we have to have something we can cast from ...
 	// this means evertything that can emit events has to be
@@ -76,7 +76,7 @@ struct INotify
 };
 
 
-struct X //: public std::
+struct X
 {
 	// compare objects, make generic and a template
 
@@ -98,13 +98,13 @@ private:
 	std::vector< INotify *> listeners;
 public:
 
-	void register_( INotify & l)
+	void register_( INotify * l)
 	{
-		l.add_ref();
-		listeners.push_back( &l);
+		l->add_ref();
+		listeners.push_back( l);
 	}
 
-	void unregister( INotify & l)
+	void unregister( INotify * l)
 	{
 		// we will have to change teh comparison operation here,
 		// if we do equality stuff...
@@ -112,11 +112,11 @@ public:
 		// this is a pointer comparison, but we need a predicate comparison...
 
 		listeners.erase(
-			std::remove_if( listeners.begin(), listeners.end(),  X( & l) ),
+			std::remove_if( listeners.begin(), listeners.end(),  X( l) ),
 			listeners.end()
 		);
 
-		l.release();
+		l->release();
 	}
 
 	void notify( IObject & object, const char *msg )
@@ -191,6 +191,12 @@ template< class C>
 NotifyAdapter< C> * make_adapter( C & c, void (C::*m)( const Event & e ))
 {
 	return new NotifyAdapter< C>( c, m );
+}
+
+template< class C>
+NotifyAdapter< C> * make_adapter( C * c, void (C::*m)( const Event & e ))
+{
+	return new NotifyAdapter< C>( *c, m );
 }
 
 

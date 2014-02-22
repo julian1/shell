@@ -90,8 +90,8 @@ struct Renderer  : IRenderer//, INotify
 
 	// should change name to subscribe/unsubscribe
 	void notify( const char *msg); 
-	void register_( INotify & l);
-	void unregister( INotify & l);
+	void register_( INotify * l);
+	void unregister( INotify * l);
 
 	void add( IRenderJob & job ) ;
 	void remove( IRenderJob & job );

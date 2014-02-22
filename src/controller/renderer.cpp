@@ -92,14 +92,14 @@ Renderer::~Renderer()
 }
 
 
-void Renderer::register_( INotify & l)
+void Renderer::register_( INotify * l)
 {
 	// We can just do this...
 //	d->events.register_( * make_adapter( *this, & Renderer::on_job_changed ) );
 
 	d->events.register_( l);
 }
-void Renderer::unregister( INotify & l)
+void Renderer::unregister( INotify * l)
 {
 	d->events.unregister( l);
 }
@@ -119,7 +119,7 @@ void Renderer::add( IRenderJob & job )
 
 	std::cout << "add job " << & job << std::endl;
 
-	job.register_( * d->x );	
+	job.register_( d->x );	
 	notify( "change" );
 }
 
@@ -132,7 +132,7 @@ void Renderer::remove( IRenderJob & job )
 	// WHAT happend if item is in the change_notified_set here?.
 	// we still need it recorded, so we can clear the background
 
-	job.unregister( * d->x );	
+	job.unregister( d->x );	
 	notify( "change" );
 }
 
