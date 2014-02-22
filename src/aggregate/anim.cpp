@@ -208,16 +208,22 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	
 	void notify( const char *msg )
 	{
+		std::cout << "notifying this " << this << std::endl;
+
 		events.notify( this, msg ); 
 		
 		// OK, this is crappy.  
-		services.renderer.notify( *this );
+		//services.renderer.notify( *this );
 	}
 
 
 	void show( bool u )
 	{
 		if( u) {		
+
+			std::cout << "show " << this << std::endl;
+			std::cout << "show as render interface " << (IRenderJob *)this << std::endl;
+
 			services.renderer.add( *this  );
 			services.position_editor.add( *this );
 			services.animation.add( *this );

@@ -1,7 +1,8 @@
 
 #pragma once
 
-#include <common/ptr.h>
+#include <common/events.h>
+//#include <common/ptr.h>
 #include <vector>
 
 /*
@@ -11,7 +12,7 @@
 	- perhaps the IKey, simplifies some things when we combine an aggregate and proj. but for
 	adaptors, it may be better to remove.
 */
-struct INotify; 
+//struct INotify; 
 struct Bitmap;
 
 struct Rect
@@ -71,7 +72,7 @@ struct IRenderer
 	// render jobs
 	virtual void add( IRenderJob & job ) = 0;
 	virtual void remove( IRenderJob & job ) = 0;
-	virtual void notify( IRenderJob & job ) = 0;
+//	virtual void notify( IRenderJob & job ) = 0;
 
 	virtual void resize( int w, int h ) = 0;
 	virtual void getsize( int * w, int * h ) = 0;
@@ -89,7 +90,7 @@ struct IRenderer
 
 struct Timer;
 
-struct Renderer  : IRenderer
+struct Renderer  : IRenderer, INotify
 {
 	Renderer( );
 	~Renderer();
@@ -101,7 +102,8 @@ struct Renderer  : IRenderer
 
 	void add( IRenderJob & job ) ;
 	void remove( IRenderJob & job );
-	void notify( IRenderJob & job );
+//	void notify( IRenderJob & job );
+	void notify( const Event &e );
 
 	void resize( int x, int y );
 	void getsize( int * w, int * h ) ;

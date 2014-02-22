@@ -104,20 +104,15 @@ void Renderer::notify( const char *msg)
 
 
 
-void Renderer::notify( IRenderJob & job )
-{
-//	assert( d->jobs.find( &job) != d->jobs.end() );
-	notify( "change" );
-
-	// add to our change notify set
-	d->change_notified_set.push_back( & job);
-}
 
 void Renderer::add( IRenderJob & job )
 {
 	assert( d->jobs.find( &job) == d->jobs.end() );
 	d->jobs.insert( &job );
 
+	std::cout << "add job " << & job << std::endl;
+
+	job.register_( *this );	
 	notify( "change" );
 }
 
@@ -126,15 +121,46 @@ void Renderer::remove( IRenderJob & job )
 	assert( d->jobs.find( &job) != d->jobs.end() );
 	d->jobs.erase( &job );
 
+	std::cout << "remove job " << & job << std::endl;
 	// WHAT happend if item is in the change_notified_set here?.
 	// we still need it recorded, so we can clear the background
 
+	job.unregister( *this );	
 	notify( "change" );
 }
 
+// this should be renamed to event or something . 
+void Renderer::notify( const Event &e )
+{
+	// Ahhh we may have a problem with coercing the right
 
+	// a job has changed state.
 
-static void draw_rect( Bitmap::rbase_type	& rbase, const Rect & rect, const agg::rgba8 & color  )
+	// do we have the object source ???
+	IRenderJob & job = * (IRenderJob  *) e.object; 
+
+	std::cout << "e.object " << e.object << std::endl;
+
+	assert( d->jobs.find( &job) != d->jobs.end() );
+
+	d->change_notified_set.push_back( & job);
+}
+
+#if 0
+void Renderer::notify( IRenderJob & job )
+{
+//	assert( d->jobs.find( &job) != d->jobs.end() );
+	notify( "change" );
+
+	// add to our change notify set
+	d->change_notified_set.push_back( & job);
+}
+#endif
+
+#if 1
+// pehaps move  into common drawing functions not put here.
+
+static void draw_rect( Bitmap::rbase_type & rbase, const Rect & rect, const agg::rgba8 & color )
 {
 	// helper function
 
@@ -149,7 +175,7 @@ static void draw_rect( Bitmap::rbase_type	& rbase, const Rect & rect, const agg:
 	rbase.copy_vline( rect.x, rect.y, rect.y + rect.h, color );
 	rbase.copy_vline( rect.x + rect.w, rect.y, rect.y + rect.h, color );
 }
-
+#endif
 
 
 void Renderer::resize( int w, int h )
