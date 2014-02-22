@@ -70,12 +70,9 @@ struct RenderSequencer
 
 	void update()
 	{
-		// labels should be updated by a prerender job
-		// labels->update();
-
 		std::vector< Rect> regions;
 
-		renderer.render_and_invalidate( regions ) ;
+		renderer.render( regions ) ;
 
 		foreach( const Rect & rect, regions)
 		{

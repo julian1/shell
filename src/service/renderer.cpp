@@ -185,16 +185,15 @@ void Renderer::getsize( int * w, int * h )
 }
 
 
-void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions ) 
+void Renderer::render( std::vector< Rect> & invalid_regions ) 
 { 
+	// Renders and compute the list of invalid regions
+
 	assert( invalid_regions.empty() );
 
 
-//	RenderParams		params;
-//	params.dt = d->timer.elapsed();
 	int dt = d->timer.elapsed();
 	d->timer.restart();
-
 
 
 	bool require_passive_redraw = false;

@@ -72,7 +72,7 @@ struct IRenderer
 
 	// update is now a sequence
 	// return the list of regions that must be updated (they may overlap)
-	virtual void render_and_invalidate( std::vector< Rect> & regions ) = 0;
+	virtual void render( std::vector< Rect> & regions ) = 0;
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
 	virtual void update_expose( const std::vector< Rect> & regions, Bitmap & result ) = 0;
@@ -103,7 +103,7 @@ struct Renderer  : IRenderer
 	// Rather than returning a set of regions, why don't we pass an interface for what needs
 	// to be invalidated ...
 
-	void render_and_invalidate( std::vector< Rect> & regions );
+	void render( std::vector< Rect> & regions );
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
 
