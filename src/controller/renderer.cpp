@@ -53,7 +53,7 @@ struct Inner
 	Timer							timer;
 
 
-	EventAdapter		x;
+	NotifyAdapter< Renderer>		* x;
 
 	std::vector< IRenderJob * >		change_notified_set;
 
@@ -78,15 +78,15 @@ struct Inner
 
 Renderer::Renderer( )
 	: d( new Inner)
-
 {
-	d->x = EventAdapter( "change", *this, & Renderer::on_job_changed ); 
-
+	d->x = make_adapter( *this, & Renderer::on_job_changed ); 
+	d->x->add_ref();
 }
 
 
 Renderer::~Renderer()
 {
+	d->x->release();
 	delete d;
 	d = NULL;
 }
@@ -94,6 +94,9 @@ Renderer::~Renderer()
 
 void Renderer::register_( INotify & l)
 {
+	// We can just do this...
+//	d->events.register_( * make_adapter( *this, & Renderer::on_job_changed ) );
+
 	d->events.register_( l);
 }
 void Renderer::unregister( INotify & l)
@@ -116,7 +119,7 @@ void Renderer::add( IRenderJob & job )
 
 	std::cout << "add job " << & job << std::endl;
 
-	job.register_( d->x );	
+	job.register_( * d->x );	
 	notify( "change" );
 }
 
@@ -129,7 +132,7 @@ void Renderer::remove( IRenderJob & job )
 	// WHAT happend if item is in the change_notified_set here?.
 	// we still need it recorded, so we can clear the background
 
-	job.unregister( d->x );	
+	job.unregister( * d->x );	
 	notify( "change" );
 }
 

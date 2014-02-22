@@ -26,13 +26,14 @@ struct RenderSequencer
 	RenderSequencer( Gtk::DrawingArea & drawing_area, IRenderer &renderer )
 		: drawing_area( drawing_area),
 		renderer( renderer ),
-		immediate_update_pending( false ),
-		x( "change", *this, & this_type::on_renderer_change )
+		immediate_update_pending( false )//,
+//		x( "change", *this, & this_type::on_renderer_change )
 	{
 		drawing_area.signal_draw().connect( sigc::mem_fun( *this, &this_type::on_expose_event) );
 
+//	d->events.register_( * make_adapter( *this, & Renderer::on_job_changed ) );
 
-		renderer.register_( x );
+		renderer.register_( * make_adapter( *this, & this_type::on_renderer_change ) );
 	}
 
 	~RenderSequencer( )
@@ -44,11 +45,13 @@ struct RenderSequencer
 
 		// and the same for removal...
 
-		renderer.unregister( x );
+		//renderer.unregister( x );
+
+		renderer.unregister( * make_adapter( *this, & this_type::on_renderer_change ) );
 	}
 
 
-	EventAdapter		x;
+//	EventAdapter		x;
 
 	Gtk::DrawingArea	& drawing_area;
 	IRenderer			& renderer;

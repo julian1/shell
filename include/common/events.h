@@ -1,14 +1,14 @@
 
 #pragma once
 
-// whether something gets wraped and composed - by a following system 
+// whether something gets wraped and composed - by a following system
 // or else injected with references doesn't matter. they both create
-// isolated composable systems with good event properties.  
+// isolated composable systems with good event properties.
 
 // we can do cancellable events as well.
 
 // this is a version without bind or function
-// it relies on the event handler to cast to the 
+// it relies on the event handler to cast to the
 // correct type
 
 #include <cassert>
@@ -22,9 +22,9 @@
 struct INotify;
 
 /*
-	Different subsystems want events for different interfaces of the	
-	same object. The only way to do this is to downcast, which 
-	requires a base class. 
+	Different subsystems want events for different interfaces of the
+	same object. The only way to do this is to downcast, which
+	requires a base class.
 
 */
 
@@ -39,15 +39,15 @@ struct IObject
 	// we have to have something we can cast from ...
 	// this means evertything that can emit events has to be
 	// derived from this.
-	//virtual ~IObject() { } 
+	//virtual ~IObject() { }
 };
 
-// The thing is to perform any casting ... - for the receiver. 
-// the receiver knows what type of object it expects. 
+// The thing is to perform any casting ... - for the receiver.
+// the receiver knows what type of object it expects.
 
-// the downcast has to be done however. because the emitdowncast, 
+// the downcast has to be done however. because the emitdowncast,
 
-// would it be possible to wrap the object somehow? 
+// would it be possible to wrap the object somehow?
 
 
 struct Event
@@ -57,7 +57,7 @@ struct Event
 		msg( msg),
 		payload( 0),
 		cancel( false)
-	{ } 
+	{ }
 	// perhaps an enum
 	IObject & object;
 	const char *msg;
@@ -68,101 +68,161 @@ struct Event
 
 struct INotify
 {
-	virtual void notify( const Event &e ) = 0;
+	virtual void add_ref() = 0;
+	virtual void release() = 0;
 
-	// actually we can't manage the memory from an interface
-	// unless we newed it.
+	virtual void notify( const Event &e ) = 0;
+	virtual bool operator == ( const INotify & ) const = 0;
+};
+
+
+struct X //: public std::
+{
+	// compare objects, make generic and a template
+
+	X( const INotify *a )
+		: a( a)
+	{ } 
+
+	const INotify *a;
+
+	bool operator () ( const INotify *b) const
+	{
+		return *a == *b;
+	}
 };
 
 struct Events
 {
 private:
-	std::vector< INotify *> listeners;  
+	std::vector< INotify *> listeners;
 public:
-	void register_( INotify & l) 
+
+	void register_( INotify & l)
 	{
+		l.add_ref();
 		listeners.push_back( &l);
 	}
-	void unregister( INotify & l) 
+
+	void unregister( INotify & l)
 	{
-		listeners.erase(	
-			std::remove( listeners.begin(), listeners.end(), &l), 
-			listeners.end());
+		// we will have to change teh comparison operation here,
+		// if we do equality stuff...
+
+		// this is a pointer comparison, but we need a predicate comparison...
+
+		listeners.erase(
+			std::remove_if( listeners.begin(), listeners.end(),  X( & l) ),
+			listeners.end()
+		);
+
+		l.release();
 	}
 
 	void notify( IObject & object, const char *msg )
 	{
-		for( unsigned i = 0; i < listeners.size(); ++i )
+		for( unsigned i = 0; i < listeners.size(); ++i ) {
 			listeners[ i]->notify( Event( object, msg ));
+		}
 	}
 };
 
 
+/*
 // If we don't do a cast here, then perhaps we can eliminate binding ?
 
 struct IHelper
 {
-	virtual void operator () ( const Event & e) = 0; 
-
-
+	virtual void operator () ( const Event & e) = 0;
 //	virtual bool operator == ( const IHelper & x) = 0;
-
 };
+*/
+
 
 template< class C>
-struct Helper : IHelper
+struct NotifyAdapter : INotify
 {
-	explicit Helper( C & c, void (C::*m)( const Event & e )) 
-		: c( c),
-		m( m)
-	{ } 
-	
-	C & c; 
-	void (C::*m)( const Event & e ); 
+private:
+	int count;
+	C & c;
+	void (C::*m)( const Event & e );
 
-	void operator () ( const Event & e)
+	NotifyAdapter( const NotifyAdapter & );
+	NotifyAdapter & operator = ( const NotifyAdapter & );
+
+public:
+	explicit NotifyAdapter( C & c, void (C::*m)( const Event & e ))
+		: count( 0),
+		c( c),
+		m( m)
+	{ }
+
+	void add_ref() {
+		assert( count >= 0);
+		++count;
+	}
+
+	void release() {
+		assert( count > 0);
+		if( --count == 0 )
+			delete this;
+	}
+
+	void notify( const Event &e )
 	{
 		(c.*m)( e);
 	}
-/*
-	bool operator == ( const IHelper & x)
+
+	bool operator == ( const INotify & l ) const
 	{
-		assert( 0); 
+		if( this == & l )
+			return true;
 
-	// thiink this could work but it's getting complicated.
+		const NotifyAdapter< C> & h 
+			= dynamic_cast< const NotifyAdapter< C> & > ( l);
 
-//		Helper< C *> p = dyna
-//		return &c == &x.c && m == &x.m;
+		return &c == & h.c 
+			&& m == h.m;
 	}
-*/
 };
 
+
+template< class C>
+NotifyAdapter< C> * make_adapter( C & c, void (C::*m)( const Event & e ))
+{
+	return new NotifyAdapter< C>( c, m );
+}
+
+
+
+
+/*
 // ok now. Do we want to put copy semantics
 
-struct EventAdapter : INotify
+struct NotifyAdapter : INotify
 {
-	template< class C> 
-	explicit EventAdapter( const char *predicate, C & c, void (C::*m)( const Event & e ) ) 
+	template< class C>
+	explicit NotifyAdapter( const char *predicate, C & c, void (C::*m)( const Event & e ) )
 		: predicate( predicate),
 		helper( new Helper< C>( c, m))
-	{ }  
+	{ }
 
-	explicit EventAdapter( ) 
+	explicit NotifyAdapter( )
 		: predicate( 0 ),
 		helper( 0)
-	{ }  
+	{ }
 
-	explicit EventAdapter( const EventAdapter & adapter ) 
-	{ 
+	explicit NotifyAdapter( const NotifyAdapter & adapter )
+	{
 		// Copy and take ownership of memory
 		predicate = adapter.predicate;
 		helper = adapter.helper;
 		adapter.predicate = 0;
 		adapter.helper = 0;
-	}  
+	}
 
-	void operator = ( const EventAdapter & adapter ) 
-	{ 
+	void operator = ( const NotifyAdapter & adapter )
+	{
 //		std::cout << "here" << std::endl;
 //		exit( 0);
 
@@ -171,30 +231,30 @@ struct EventAdapter : INotify
 		helper = adapter.helper;
 		adapter.predicate = 0;
 		adapter.helper = 0;
-	} 
+	}
 
 
 
-	bool operator == ( const EventAdapter & adapter ) 
+	bool operator == ( const NotifyAdapter & adapter )
 	{
 		assert( 0 );
 		// we don't know what to cast too here ...
-		//return *helper == *adapter.helper;		
+		//return *helper == *adapter.helper;
 	}
 
-	~EventAdapter() 
-	{ 
+	~NotifyAdapter()
+	{
 		if( helper)
 			delete helper;
-	} 
+	}
 
-	virtual void notify( const Event &e ) 
+	virtual void notify( const Event &e )
 	{
 		// there's no real efficiency advantage to handling
-		// this here or in the dispatcher loop 
-		if( !predicate 
-			|| *predicate == 0 
-			|| strcmp( predicate, e.msg) == 0) 
+		// this here or in the dispatcher loop
+		if( !predicate
+			|| *predicate == 0
+			|| strcmp( predicate, e.msg) == 0)
 			helper->operator() ( e );
 	}
 private:
@@ -202,26 +262,28 @@ private:
 	mutable const char *predicate;
 };
 
+*/
+
 
 //////////////////////////
 
 /*
 
-struct Object 
+struct Object
 {
 	Events events;
 
 public:
 	void notify( const char *msg)
 	{
-		events.notify( this, msg ); 
+		events.notify( this, msg );
 	}
 
-	void register_( INotify & l) 
+	void register_( INotify & l)
 	{
-		events.register_( l); 
+		events.register_( l);
 	}
-	void unregister( INotify & l) 
+	void unregister( INotify & l)
 	{
 		events.unregister( l);
 	}
@@ -230,25 +292,25 @@ public:
 // ok, so this simplifies things a bit by moving the bind into the adaper, and getting rid
 // of the placeholders ...
 
-struct X 
+struct X
 {
 	Object					& object;
-	EventAdapter			x;
+	NotifyAdapter			x;
 
 
 	X( Object & object)
 		: object( object),
 		x( "update", *this, & X::on_object_change)
-	{ 
+	{
 		object.register_( x );
-	} 
+	}
 
 	~X()
 	{
 		object.unregister( x );
 	}
-	
-	void on_object_change( const Event & e ) 
+
+	void on_object_change( const Event & e )
 	{
 		std::cout << "object " << ((Object *)e.object) << " msg is " << e.msg << std::endl;
 			// we can delegate manually
