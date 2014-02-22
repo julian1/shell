@@ -26,17 +26,13 @@ namespace {
 
 };
 
+
 struct Inner
 {
-	Inner()
-	{ }
+	typedef std::vector< INotify *> listeners_type;
 
-
-	std::vector< INotify *> listeners;
+	listeners_type  listeners;
 };
-
-
-
 
 
 Events::Events()
@@ -49,8 +45,6 @@ Events::~Events()
 	d = NULL;
 }
 
-
-
 void Events::register_( INotify * l)
 {
 	l->add_ref();
@@ -59,11 +53,6 @@ void Events::register_( INotify * l)
 
 void Events::unregister( INotify * l)
 {
-	// we will have to change teh comparison operation here,
-	// if we do equality stuff...
-
-	// this is a pointer comparison, but we need a predicate comparison...
-
 	d->listeners.erase(
 		std::remove_if( d->listeners.begin(), d->listeners.end(),  X( l) ),
 		d->listeners.end()
@@ -74,8 +63,12 @@ void Events::unregister( INotify * l)
 
 void Events::notify( IObject & object, const char *msg )
 {
-	for( unsigned i = 0; i < d->listeners.size(); ++i ) {
-		d->listeners[ i]->notify( Event( object, msg ));
+	typedef Inner::listeners_type listeners_type;
+
+	for( listeners_type::iterator i = d->listeners.begin(); 
+		i != d->listeners.end(); ++i ) {
+
+		(*i)->notify( Event( object, msg ));
 	}
 }
 

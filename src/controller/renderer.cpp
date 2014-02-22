@@ -44,10 +44,6 @@ namespace {
 
 struct Inner
 {
-	Inner()
-	{ }
-
-
 
 	Events							events;
 
