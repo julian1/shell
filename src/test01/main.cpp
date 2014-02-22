@@ -58,7 +58,7 @@
 // so this is going to be hidden behind our test aggregate interface.
 // that will support level and validity operations.
 
-
+#if 0
 
 struct Grib1_sections; 
 struct Grid ; 
@@ -199,7 +199,7 @@ private:
 };
 
 
-
+#endif
 
 /*
 	The goal here is to remove the render_control
