@@ -36,14 +36,9 @@ namespace {
 		return a < b ;
 	}
 
-
-	//typedef boost::unordered_map< ptr< IKey> , ptr< IRenderJob>, Hash, Pred >		objects_t;
-	//typedef boost::unordered_multimap< ptr< IKey> , ptr< IRenderJob>, Hash, Pred >		objects_t;
-
 	typedef std::set<  IRenderJob * >	objects_t;
-
-
 };
+
 
 struct Inner
 {
