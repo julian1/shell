@@ -1,6 +1,5 @@
 
-#ifndef MY_PROJECTION_H
-#define MY_PROJECTION_H
+#pragma once
 
 /*
 	The projection (that has the algorithm that actually does the work of project points and shapes / cf sequencing)
@@ -45,5 +44,4 @@ struct IProjection
 
 
 
-#endif
 

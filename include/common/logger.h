@@ -1,8 +1,5 @@
 
-#ifndef MY_LOGGER_H
-#define MY_LOGGER_H
-
-
+#pragma once
 
 #include <sstream>
 #include <boost/scoped_ptr.hpp>
@@ -84,5 +81,4 @@ struct Event
 */
 
     //virtual void event( const Event &e ) = 0;       // post() implies async 
-#endif
 

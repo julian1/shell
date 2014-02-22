@@ -1,6 +1,5 @@
 
-#ifndef MY_LOAD_FONT_H
-#define MY_LOAD_FONT_H
+#pragma once
 
 #include <string>
 #include <agg_path_storage.h>
@@ -21,5 +20,4 @@ struct IFontLoadCallback	// change name load_face_callback
 
 void load_face( const std::string & name, int size, IFontLoadCallback & callback ); 
 
-#endif
 

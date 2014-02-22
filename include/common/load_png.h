@@ -1,5 +1,5 @@
-#ifndef MY_LOAD_PNG_H
-#define MY_LOAD_PNG_H
+
+#pragma once
 
 #include <common/ptr.h> 
 #include <string> 
@@ -30,5 +30,4 @@ struct ILoadPng
 
 ptr< Bitmap> load_png_file( const std::string &filename /* ILoadPng & */ ) ;
 
-#endif
 

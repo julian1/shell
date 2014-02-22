@@ -1,6 +1,5 @@
 
-#ifndef MY_SERVICE_FONTS_H
-#define MY_SERVICE_FONTS_H
+#pragma once
 
 #include <common/ptr.h>
 #include <agg_path_storage.h>
@@ -44,5 +43,4 @@ ptr< IFonts>	create_fonts_service();		// the dependency will be the font paths.
 
 
 
-#endif
 

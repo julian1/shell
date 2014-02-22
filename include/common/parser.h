@@ -1,6 +1,5 @@
 
-#ifndef MY_PARSER_H
-#define MY_PARSER_H
+#pragma once
 
 /*
 	important - we could template the events/context, to be able to carry around context
@@ -718,7 +717,6 @@ struct chseq_< A1, A2, A3, A4, A5, A6> : seq_< char_< A1>, char_< A2>, char_< A3
 
 
 
-#endif
 
 
 

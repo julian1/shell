@@ -1,6 +1,5 @@
 
-#ifndef MY_PATH_READER_H
-#define MY_PATH_READER_H
+#pragma once
 
 /*
 	this class is used, because agg_path_storage includes and iterator. therefore even if we have a basically
@@ -49,5 +48,4 @@ struct path_reader_base
 
 typedef path_reader_base< agg::vertex_block_storage<double> > path_reader; 
 
-#endif
 

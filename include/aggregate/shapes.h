@@ -1,6 +1,5 @@
 
-#ifndef MY_SHAPES_H
-#define MY_SHAPES_H
+#pragma once
 
 #include <common/ptr.h>
 #include <boost/scoped_ptr.hpp>
@@ -92,5 +91,4 @@ void load_shapes_layer( Services & services, const ptr< IShapesAggregateRoot> & 
 void load_test_shapes( const std::string & filename, const ptr< IShapesAggregateRoot> & root );  
 
 
-#endif
 

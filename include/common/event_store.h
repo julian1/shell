@@ -1,6 +1,5 @@
 
-#ifndef MY_EVENT_SOURCE_H 
-#define MY_EVENT_SOURCE_H 
+#pragma once
 
 #include <boost/intrusive_ptr.h>
 
@@ -118,5 +117,4 @@ struct IEventRegister : IUpdate
 // and then insert into all subordinate objects
 
 
-#endif
 

@@ -1,6 +1,5 @@
 
-#ifndef MY_MAPGRID_H
-#define MY_MAPGRID_H
+#pragma once
 
 #include <common/ptr.h>
 #include <agg_path_storage.h>
@@ -27,10 +26,4 @@ void add_mapgrid_aggregate_root( Services & services, const ptr< IMapGridAggrega
 void remove_mapgrid_aggregate_root( Services & services, const ptr< IMapGridAggregateRoot> & root, const ptr< IProjectionAggregateRoot> & proj)  ; 
 
 
-
-
-
-
-
-#endif
 

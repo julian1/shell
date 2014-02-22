@@ -1,6 +1,5 @@
 
-#ifndef MY_CUBE_VIEW_H
-#define MY_CUBE_VIEW_H
+#pragma once
 
 #include <common/ptr.h>
 
@@ -18,7 +17,6 @@ struct CubeAnalysis;
 
 void add_analysis_cube( Services & services, const ptr< CubeAnalysis> & root , const ptr< IProjectionAggregateRoot> & projection_aggregate );
 
-#endif
 
 
 

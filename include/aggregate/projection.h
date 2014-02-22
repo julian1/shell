@@ -1,6 +1,5 @@
 
-#ifndef MY_PROJECTION_AGGREGATE_H
-#define MY_PROJECTION_AGGREGATE_H
+#pragma once
 
 #include <common/ptr.h>
 #include <boost/scoped_ptr.hpp>
@@ -74,5 +73,4 @@ void remove_projection_aggregate_root( Services & services, const ptr< IProjecti
 
 
 
-#endif
 
