@@ -1,4 +1,6 @@
 
+#if 0
+
 #include <aggregate/raster.h>
 #include <aggregate/projection.h>
 
@@ -367,6 +369,10 @@ ptr< IRasterAggregateRoot> create_test_raster_aggregate_root()
 
 
 
+#endif
+
+
+
 
 /*
 struct IFill 
@@ -408,4 +414,4 @@ struct Fill //: RasterRenderComponent::IFiller
 ./old/old2/renderer1.cpp.cpy2://                /*result =*/ read_png_file( "shapes/elev_bump_8k.png", latlon_image);
 #endif
 
-
+  

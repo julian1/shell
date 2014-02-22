@@ -1,31 +1,13 @@
 
-#ifndef MY_SURFACE_H
-#define MY_SURFACE_H
-
+#pragma once
 
 #include <agg_pixfmt_rgba.h>
 #include <agg_renderer_base.h>
 #include <agg_basics.h>
 
 #include <cassert>
-// should make ref countable ????
-// probably 
-// yes, to enable easy return in parameters.
-
-// note that this is an entity.
 
 
-
-
-/*
-	This should be renamed a RenderBitmap. or BitmapBitmap  
-
-	It's also used for images, not just the renderer.
-
-	or even just Bitmap	
-
-	or Surface  or Raster or Image
-*/
 
 struct Bitmap 
 {
@@ -36,7 +18,6 @@ struct Bitmap
 
 private:
 
-	unsigned				count;
 
 	unsigned				flip_y;
 
@@ -53,8 +34,7 @@ private:
 public:
 
 	Bitmap()
-		: count( 0),
-		flip_y( - 1),
+		: flip_y( - 1),
 		buf_( 0),
 		rbuf(),
 		pixf( rbuf),
@@ -64,8 +44,7 @@ public:
 	} 
 
 	Bitmap( unsigned width, unsigned height )
-		: count( 0),
-		flip_y( - 1),
+		: flip_y( - 1),
 		buf_( new unsigned char [ width * height * 4 ] ),
 		rbuf( buf_, width, height, (-flip_y) * width * 4 ),
 		pixf( rbuf),
@@ -85,12 +64,13 @@ public:
 		}
 	}
 
-	void add_ref() { ++count; } 
-	void release() { if( --count == 0) delete this; } 
-
-
 	void resize( unsigned width, unsigned height )
 	{
+		if( width == rbase_.width() 
+			&& height == rbase_.height()
+		) return;
+
+
 		if( buf_) 
 		{
 			delete [] buf_;
@@ -184,11 +164,4 @@ static void blend_region( Bitmap & src, int x, int y, int w, int h, Bitmap & dst
 }
 #endif
 
-
-
-
-
-
-
-#endif
 

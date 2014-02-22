@@ -48,8 +48,7 @@ void abort_(const char * s, ...)
 
 
 
-ptr< Bitmap>  load_png_file( const std::string &filename )
-//void read_png_file( const char *filename, Renderable &buffer)
+void  load_png_file( const std::string &filename, Bitmap & buffer )
 {
 	//start_timer();
 
@@ -134,7 +133,8 @@ ptr< Bitmap>  load_png_file( const std::string &filename )
     fclose(fp);
 
 
-	ptr< Bitmap> buffer( new Bitmap( info_ptr->width, info_ptr->height )  ); 
+	buffer.resize(  info_ptr->width, info_ptr->height )  ; 
+//	ptr< Bitmap> buffer( new Bitmap( info_ptr->width, info_ptr->height )  ); 
 //	boost::shared_ptr< Renderable>	buffer( new Renderable); 
 
 
@@ -159,7 +159,7 @@ ptr< Bitmap>  load_png_file( const std::string &filename )
 				unsigned char b = row[ i + 2]; 
 				unsigned char a = 0xff;
 
-				buffer->rbase().copy_pixel( x, y, agg::rgba8( r, g, b, a)); 
+				buffer.rbase().copy_pixel( x, y, agg::rgba8( r, g, b, a)); 
 				++x;
 			}
 		}
@@ -175,7 +175,7 @@ ptr< Bitmap>  load_png_file( const std::string &filename )
 				// there's not enough range ?
 				// r = (r / 2) + 0x7f; 
 
-				buffer->rbase().copy_pixel( x, y, agg::rgba8( r, r, r , a)); 
+				buffer.rbase().copy_pixel( x, y, agg::rgba8( r, r, r , a)); 
 				++x;
 			}
 		}
@@ -187,7 +187,7 @@ ptr< Bitmap>  load_png_file( const std::string &filename )
 //	std::cout << "file '" << filename << "' load time " << elapsed_time() << "ms\n"; 
 
 
-	return buffer;
+//	return buffer;
 }
 
 
