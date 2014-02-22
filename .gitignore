@@ -4,6 +4,7 @@ test_synop80
 *~
 *.swp
 *.swo
+*.swn
 *.a
 external/
 build/
