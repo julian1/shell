@@ -53,7 +53,7 @@
 		(3) use virtual interface rather than self pointer. 
 */
 #include <common/ptr.h>
-#include <common/surface.h>
+#include <common/bitmap.h>
 
 #include <agg_trans_affine.h>
 #include <agg_path_storage.h>

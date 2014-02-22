@@ -3,7 +3,7 @@
 
 #include <common/projection.h>
 #include <common/polygon_algebra.h>
-#include <common/surface.h>
+#include <common/bitmap.h>
 #include <common/point_in_poly.h>
 #include <common/path_seg_adaptor.h>
 

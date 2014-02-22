@@ -9,7 +9,7 @@
 
 #include <common/path_seg_adaptor.h>
 #include <common/path_reader.h>
-#include <common/surface.h>
+#include <common/bitmap.h>
 
 #include <agg_bounding_rect.h>
 #include <agg_rasterizer_scanline_aa.h>

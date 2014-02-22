@@ -2,7 +2,7 @@
 #include <aggregate/mapgrid.h>
 #include <aggregate/projection.h>
 
-#include <common/surface.h>
+#include <common/bitmap.h>
 #include <common/projection.h>
 //#include <common/key.h>
 

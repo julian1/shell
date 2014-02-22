@@ -12,7 +12,7 @@
 #include <service/renderer.h> 
 
 #include <common/events.h>
-#include <common/surface.h>
+#include <common/bitmap.h>
 #include <common/timer.h>
 
 #include <platform/render_sequencer.h>   // bit messy, when only need render_sequencer interface

@@ -10,7 +10,7 @@
 #include <common/grid.h>
 #include <common/path_reader.h>
 #include <common/projection.h>
-#include <common/surface.h>
+#include <common/bitmap.h>
 #include <common/path_seg_adaptor.h>
 
 #include <common/gts_header.h>

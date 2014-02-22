@@ -884,7 +884,7 @@ private:
 
 struct DecodeGrid 
 {
-	// so we will pass in the surface here, most likely  
+	// so we will pass in the bitmap.here, most likely  
 	// or return a new aggregate ...
 
 	DecodeGrid( IGetValue &r, const Gds_section & gds )  

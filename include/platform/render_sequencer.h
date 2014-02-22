@@ -2,7 +2,7 @@
 #pragma once
 
 #include <common/events.h>
-#include <common/surface.h>
+#include <common/bitmap.h>
 
 #include <service/renderer.h>
 #include <service/labels.h>

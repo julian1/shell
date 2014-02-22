@@ -11,7 +11,7 @@
 
 
 #include <common/ptr.h>
-#include <common/surface.h>
+#include <common/bitmap.h>
 
 
 
