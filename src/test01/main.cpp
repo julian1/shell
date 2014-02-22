@@ -313,17 +313,42 @@ struct MouseManager
 
 struct ClearBackground : IRenderJob, IResizable
 {
+	typedef ClearBackground this_type;
 	/*
 		think we should change this should change this 
 		????? why not put the bitmap surface in the params ???
 	*/
 
-	ClearBackground() 
-	: w( 0), h( 0), dirty( true )
-	{ } 
+	ClearBackground( IRenderer &renderer) 
+		: renderer( renderer ),
+		x( "resize", *this, & this_type::on_renderer_resize )//,
+//		w( 0), h( 0), dirty( true )
+	{ 
+		renderer.register_( x );
+	} 
 
-	int w, h;
-	bool dirty;
+	~ClearBackground() 
+	{
+		renderer.unregister( x );
+	}
+
+
+	IRenderer		&renderer; 
+	EventAdapter	x;
+
+							// Ok, what's complicated here, is knowing the 
+							// size that we have to invalidate by.
+							// Or perhaps we can send it in the pre_render ? 
+							// no, it's too late
+//	int				w, h;	// really shouldn't need this 
+//	bool			dirty;
+
+	void on_renderer_resize( const Event & e )
+	{
+		std::cout << "got renderer resize " << std::endl;
+
+//		dirty = true;
+	}
 
 	void pre_render( RenderParams & params ) 
 	{ } 
@@ -337,7 +362,7 @@ struct ClearBackground : IRenderJob, IResizable
 		std::cout << "$$$$$$$$$$$$ clearing background" << std::endl;
 
 		params.surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
-		dirty = false;
+//		dirty = false;
 	} 
 
 	// change name get_render_z_order(), to distinguish from label_z_order ? 
@@ -349,15 +374,23 @@ struct ClearBackground : IRenderJob, IResizable
 	// no change in z_order, but mandates that there is a one-off change for update round
 	bool get_invalid() const 
 	{
-		return dirty; 
+//		return dirty; 
 	}
 	// might actually want to be a vector< Rect> that gets populated, which would allow for multiple items 
 	// or else a referse interface
 	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
 	{
-		std::cout << "bounds " << w << " " << h << std::endl;
-		*x1 = 0; *y1 = 0; 
-		*x2 = w; *y2 = h;
+		
+		*x1 = 0; 
+		*y1 = 0; 
+	
+		renderer.getsize( x2, y2 );	
+
+		// lets just query the renderer
+
+		//std::cout << "bounds " << w << " " << h << std::endl;
+//		*x1 = 0; *y1 = 0; 
+//		*x2 = w; *y2 = h;
 		// we don't know the bounds ...
 		// unless we pass it in
 	}  
@@ -365,10 +398,12 @@ struct ClearBackground : IRenderJob, IResizable
 	// overide
 	void resize( int w_, int h_ ) 
 	{
+/*
 		// reather than query the renderer we'll just maintain state here
 		w = w_; 
 		h = h_; 
 		dirty = true;
+*/
 	} 
 };
 
@@ -450,7 +485,7 @@ int main(int argc, char *argv[])
 
 	GUILevelController	gui_level_controller( hbox, level_controller ); 
 
-	ClearBackground		clear_background;
+	ClearBackground		clear_background( renderer);
 
 	// labels needs to be given the renderer so that it can get a pre_render step
 

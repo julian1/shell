@@ -175,7 +175,17 @@ void Renderer::resize( int w, int h )
 	d->passive_set.clear();
 
 	notify( "change" );
+	notify( "resize" );
 } 
+
+
+void Renderer::getsize( int * w, int * h ) 
+{
+
+	*w = d->passive_surface.width(); 
+	*h = d->passive_surface.height(); 
+
+}
 
 
 void Renderer::render_and_invalidate( std::vector< Rect> & invalid_regions ) 

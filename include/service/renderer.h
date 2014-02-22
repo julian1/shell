@@ -68,7 +68,8 @@ struct IRenderer
 	virtual void remove( IRenderJob & job ) = 0;
 	virtual void notify( IRenderJob & job ) = 0;
 
-	virtual void resize( int x, int y ) = 0;
+	virtual void resize( int w, int h ) = 0;
+	virtual void getsize( int * w, int * h ) = 0;
 
 	// update is now a sequence
 	// return the list of regions that must be updated (they may overlap)
@@ -99,6 +100,7 @@ struct Renderer  : IRenderer
 	void notify( IRenderJob & job );
 
 	void resize( int x, int y );
+	void getsize( int * w, int * h ) ;
 
 	// Rather than returning a set of regions, why don't we pass an interface for what needs
 	// to be invalidated ...
