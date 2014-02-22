@@ -9,12 +9,6 @@
 
 // we can do cancellable events as well.
 
-// this is a version without bind or function
-// it relies on the event handler to cast to the
-// correct type
-
-//#include <boost/bind.hpp>
-//#include <boost/function.hpp>
 
 struct INotify;
 
@@ -25,11 +19,10 @@ struct INotify;
 
 */
 
-// change name notify() to emit()
+// change name notify() to emit() ?
 
 struct IObject
 {
-	// events
 	virtual void register_( INotify * ) = 0;
 	virtual void unregister( INotify * ) = 0;
 
@@ -72,20 +65,20 @@ struct INotify
 };
 
 
-struct Events
+struct Listeners
 {
 	// Change name to listeners
 
 public:
-	Events(); 
-	~Events(); 
+	Listeners(); 
+	~Listeners(); 
 	void register_( INotify * l); 
 	void unregister( INotify * l); 
 	void notify( IObject & object, const char *msg ); 
 private:
 	struct Inner *d;
-	Events( const Events & ); 
-	Events & operator = ( const Events & ); 
+	Listeners( const Listeners & ); 
+	Listeners & operator = ( const Listeners & ); 
 };
 
 
@@ -126,14 +119,22 @@ public:
 
 	bool operator == ( const INotify & l ) const
 	{
+		// there's a leak here, we really have to say that
+		// we're using this object, but then it breaks const...	
+		// ugghh...
+//		l.add_ref();
+
 		if( this == & l )
 			return true;
 
 		const NotifyAdapter< C> & h 
 			= dynamic_cast< const NotifyAdapter< C> & > ( l);
 
-		return &c == & h.c 
+		bool ret = &c == & h.c 
 			&& m == h.m;
+
+//		l.release();
+		return ret;
 	}
 };
 
@@ -151,147 +152,4 @@ NotifyAdapter< C> * make_adapter( C * c, void (C::*m)( const Event & e ))
 }
 
 
-
-/*
-// If we don't do a cast here, then perhaps we can eliminate binding ?
-
-struct IHelper
-{
-	virtual void operator () ( const Event & e) = 0;
-//	virtual bool operator == ( const IHelper & x) = 0;
-};
-*/
-
-
-/*
-// ok now. Do we want to put copy semantics
-
-struct NotifyAdapter : INotify
-{
-	template< class C>
-	explicit NotifyAdapter( const char *predicate, C & c, void (C::*m)( const Event & e ) )
-		: predicate( predicate),
-		helper( new Helper< C>( c, m))
-	{ }
-
-	explicit NotifyAdapter( )
-		: predicate( 0 ),
-		helper( 0)
-	{ }
-
-	explicit NotifyAdapter( const NotifyAdapter & adapter )
-	{
-		// Copy and take ownership of memory
-		predicate = adapter.predicate;
-		helper = adapter.helper;
-		adapter.predicate = 0;
-		adapter.helper = 0;
-	}
-
-	void operator = ( const NotifyAdapter & adapter )
-	{
-//		std::cout << "here" << std::endl;
-//		exit( 0);
-
-		// Copy and take ownership if memory
-		predicate = adapter.predicate;
-		helper = adapter.helper;
-		adapter.predicate = 0;
-		adapter.helper = 0;
-	}
-
-
-
-	bool operator == ( const NotifyAdapter & adapter )
-	{
-		assert( 0 );
-		// we don't know what to cast too here ...
-		//return *helper == *adapter.helper;
-	}
-
-	~NotifyAdapter()
-	{
-		if( helper)
-			delete helper;
-	}
-
-	virtual void notify( const Event &e )
-	{
-		// there's no real efficiency advantage to handling
-		// this here or in the dispatcher loop
-		if( !predicate
-			|| *predicate == 0
-			|| strcmp( predicate, e.msg) == 0)
-			helper->operator() ( e );
-	}
-private:
-	mutable IHelper * helper;
-	mutable const char *predicate;
-};
-
-*/
-
-
-//////////////////////////
-
-/*
-
-struct Object
-{
-	Events events;
-
-public:
-	void notify( const char *msg)
-	{
-		events.notify( this, msg );
-	}
-
-	void register_( INotify & l)
-	{
-		events.register_( l);
-	}
-	void unregister( INotify & l)
-	{
-		events.unregister( l);
-	}
-};
-
-// ok, so this simplifies things a bit by moving the bind into the adaper, and getting rid
-// of the placeholders ...
-
-struct X
-{
-	Object					& object;
-	NotifyAdapter			x;
-
-
-	X( Object & object)
-		: object( object),
-		x( "update", *this, & X::on_object_change)
-	{
-		object.register_( x );
-	}
-
-	~X()
-	{
-		object.unregister( x );
-	}
-
-	void on_object_change( const Event & e )
-	{
-		std::cout << "object " << ((Object *)e.object) << " msg is " << e.msg << std::endl;
-			// we can delegate manually
-	}
-};
-
-
-int main()
-{
-	Object	object;
-	X		x( object);
-
-	object.notify( "update");
-}
-
-*/
 

@@ -45,7 +45,7 @@ namespace {
 struct Inner
 {
 
-	Events							events;
+	Listeners listeners;
 
 	Timer							timer;
 
@@ -97,18 +97,17 @@ Renderer::~Renderer()
 void Renderer::register_( INotify * l)
 {
 	// We can just do this...
-//	d->events.register_( * make_adapter( *this, & Renderer::on_job_changed ) );
 
-	d->events.register_( l);
+	d->listeners.register_( l);
 }
 void Renderer::unregister( INotify * l)
 {
-	d->events.unregister( l);
+	d->listeners.unregister( l);
 }
 
 void Renderer::notify( const char *msg)
 {
-	d->events.notify( *this, msg );
+	d->listeners.notify( *this, msg );
 }
 
 

@@ -35,23 +35,23 @@ struct Inner
 };
 
 
-Events::Events()
+Listeners::Listeners()
 	: d( new Inner)
 { } 
 
-Events::~Events()
+Listeners::~Listeners()
 {
 	delete d;
 	d = NULL;
 }
 
-void Events::register_( INotify * l)
+void Listeners::register_( INotify * l)
 {
 	l->add_ref();
 	d->listeners.push_back( l);
 }
 
-void Events::unregister( INotify * l)
+void Listeners::unregister( INotify * l)
 {
 	d->listeners.erase(
 		std::remove_if( d->listeners.begin(), d->listeners.end(),  X( l) ),
@@ -61,7 +61,7 @@ void Events::unregister( INotify * l)
 	l->release();
 }
 
-void Events::notify( IObject & object, const char *msg )
+void Listeners::notify( IObject & object, const char *msg )
 {
 	typedef Inner::listeners_type listeners_type;
 

@@ -173,7 +173,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	Render				renderer;
 	Editor				editor;
 
-	Events				events;
+	Listeners			listeners;
 	
 
 	MyObject( Services & services )
@@ -198,19 +198,19 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 
 	void register_( INotify * l) 
 	{
-		events.register_( l);
+		listeners.register_( l);
 	} 
 
 	void unregister( INotify * l)
 	{
-		events.unregister( l);
+		listeners.unregister( l);
 	}
 	
 	void notify( const char *msg )
 	{
 		//std::cout << "notifying this " << this << std::endl;
 
-		events.notify( *this, msg ); 
+		listeners.notify( *this, msg ); 
 		
 		// OK, this is crappy.  
 		//services.renderer.notify( *this );
