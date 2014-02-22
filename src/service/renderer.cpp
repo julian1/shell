@@ -46,9 +46,14 @@ struct Inner
 	Inner()
 	{ }
 
+
+
 	Events							events;
 
 	Timer							timer;
+
+
+	EventAdapter		x;
 
 	std::vector< IRenderJob * >		change_notified_set;
 
@@ -57,8 +62,8 @@ struct Inner
 
 	std::vector< IRenderJob * >		passive_set;
 
-	Bitmap					passive_surface;
-	Bitmap					active_surface ;
+	Bitmap							passive_surface;
+	Bitmap							active_surface ;
 
 
 	// last set of jobs rendered to passive buffer
@@ -73,11 +78,10 @@ struct Inner
 
 Renderer::Renderer( )
 	: d( new Inner)
-{
-	// don't use render_sequencer yet!!! it has not been instantiated!!
 
-	// clear the buffer ...
-//		surface.rbase().clear( agg::rgba8( 0xff, 0xff, 0xff ) );
+{
+	d->x = EventAdapter( "change", *this, & Renderer::on_job_changed ); 
+
 }
 
 
@@ -112,7 +116,7 @@ void Renderer::add( IRenderJob & job )
 
 	std::cout << "add job " << & job << std::endl;
 
-	job.register_( *this );	
+	job.register_( d->x );	
 	notify( "change" );
 }
 
@@ -125,12 +129,12 @@ void Renderer::remove( IRenderJob & job )
 	// WHAT happend if item is in the change_notified_set here?.
 	// we still need it recorded, so we can clear the background
 
-	job.unregister( *this );	
+	job.unregister( d->x );	
 	notify( "change" );
 }
 
 // this should be renamed to event or something . 
-void Renderer::notify( const Event &e )
+void Renderer::on_job_changed( const Event &e )
 {
 
 	/*
@@ -140,11 +144,9 @@ void Renderer::notify( const Event &e )
 	*/
 	IRenderJob & job = (IRenderJob  &) e.object; 
 
-
 	assert( d->jobs.find( &job) != d->jobs.end() );
 
 	d->change_notified_set.push_back( & job);
-
 
 	notify( "change" );
 }

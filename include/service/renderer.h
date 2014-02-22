@@ -2,7 +2,6 @@
 #pragma once
 
 #include <common/events.h>
-//#include <common/ptr.h>
 #include <vector>
 
 /*
@@ -41,10 +40,6 @@ struct INotify;
 
 struct IRenderJob : IObject
 {
-//	virtual void register_( INotify & l) = 0; 
-//	virtual void unregister( INotify & l) = 0;
-	
-
 	// called before all render calls.
 	// VERY Ihooked MPORTANT - use this for co-ordianting cross layer actions like label positioning
 	// this will most likely be used by a service
@@ -84,9 +79,11 @@ struct IRenderer : virtual IObject
 // this definition shouldn't be here...
 // should only be a struct
 
+// Let's get rid of the INotify here.
+
 struct Timer;
 
-struct Renderer  : IRenderer, INotify
+struct Renderer  : IRenderer//, INotify
 {
 	Renderer( );
 	~Renderer();
@@ -98,8 +95,9 @@ struct Renderer  : IRenderer, INotify
 
 	void add( IRenderJob & job ) ;
 	void remove( IRenderJob & job );
-//	void notify( IRenderJob & job );
-	void notify( const Event &e );
+
+	void on_job_changed( const Event &e ); 
+	//void notify( const Event &e );
 
 	void resize( int x, int y );
 	void getsize( int * w, int * h ) ;

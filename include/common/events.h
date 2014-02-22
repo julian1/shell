@@ -11,6 +11,7 @@
 // it relies on the event handler to cast to the 
 // correct type
 
+#include <cassert>
 #include <vector>
 #include <algorithm>
 #include <iostream>
@@ -75,8 +76,9 @@ struct INotify
 
 struct Events
 {
+private:
 	std::vector< INotify *> listeners;  
-
+public:
 	void register_( INotify & l) 
 	{
 		listeners.push_back( &l);
@@ -101,6 +103,10 @@ struct Events
 struct IHelper
 {
 	virtual void operator () ( const Event & e) = 0; 
+
+
+//	virtual bool operator == ( const IHelper & x) = 0;
+
 };
 
 template< class C>
@@ -118,6 +124,17 @@ struct Helper : IHelper
 	{
 		(c.*m)( e);
 	}
+/*
+	bool operator == ( const IHelper & x)
+	{
+		assert( 0); 
+
+	// thiink this could work but it's getting complicated.
+
+//		Helper< C *> p = dyna
+//		return &c == &x.c && m == &x.m;
+	}
+*/
 };
 
 // ok now. Do we want to put copy semantics
@@ -130,9 +147,45 @@ struct EventAdapter : INotify
 		helper( new Helper< C>( c, m))
 	{ }  
 
+	explicit EventAdapter( ) 
+		: predicate( 0 ),
+		helper( 0)
+	{ }  
+
+	explicit EventAdapter( const EventAdapter & adapter ) 
+	{ 
+		// Copy and take ownership of memory
+		predicate = adapter.predicate;
+		helper = adapter.helper;
+		adapter.predicate = 0;
+		adapter.helper = 0;
+	}  
+
+	void operator = ( const EventAdapter & adapter ) 
+	{ 
+//		std::cout << "here" << std::endl;
+//		exit( 0);
+
+		// Copy and take ownership if memory
+		predicate = adapter.predicate;
+		helper = adapter.helper;
+		adapter.predicate = 0;
+		adapter.helper = 0;
+	} 
+
+
+
+	bool operator == ( const EventAdapter & adapter ) 
+	{
+		assert( 0 );
+		// we don't know what to cast too here ...
+		//return *helper == *adapter.helper;		
+	}
+
 	~EventAdapter() 
 	{ 
-		delete helper;
+		if( helper)
+			delete helper;
 	} 
 
 	virtual void notify( const Event &e ) 
@@ -145,8 +198,8 @@ struct EventAdapter : INotify
 			helper->operator() ( e );
 	}
 private:
-	IHelper * helper;
-	const char *predicate;
+	mutable IHelper * helper;
+	mutable const char *predicate;
 };
 
 
