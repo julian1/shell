@@ -317,30 +317,15 @@ struct MouseManager
 */
 struct ClearBackground : IRenderJob
 {
-	typedef ClearBackground this_type;
 
 	ClearBackground( IRenderer &renderer) 
-		: renderer( renderer ),
-		x( "resize", *this, & this_type::on_renderer_resize )//,
-	{ 
-		renderer.register_( x );
-	} 
+		: renderer( renderer )
+	{ } 
 
-	~ClearBackground() 
-	{
-		renderer.unregister( x );
-	}
 
 	IRenderer		&renderer; 
-	EventAdapter	x;
 
-	void on_renderer_resize( const Event & e )
-	{
-		std::cout << "got renderer resize " << std::endl;
 
-		// we can actually get rid of the eventing here.
-		// this gets called when it's needed
-	}
 
 	void pre_render( RenderParams & params ) 
 	{ } 

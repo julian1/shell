@@ -9,6 +9,7 @@
 	and receiving of the expose event.
 */
 
+
 #include <service/renderer.h>
 
 #include <common/events.h>
