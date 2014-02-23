@@ -50,6 +50,10 @@ Listeners::~Listeners()
 	//    -- if the event target is destroyed the event target can remove the bridge since
 	//		it's responsible for creating it.
 
+	// shouldn't be any listeners - otherwise when the target calls unregister
+	// we will segfault
+	assert( d->listeners.empty() );
+
 	typedef Inner::listeners_type listeners_type;
 
 	// listeners should probably not exist
