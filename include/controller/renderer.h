@@ -4,18 +4,14 @@
 #include <common/events.h>
 #include <vector>
 
-/*
-	- if we got rid of the IKey. They we could do straight pointer comparisons on the interface,
-	for equality, and the hashing could be done on the pointer value.
-
-	- perhaps the IKey, simplifies some things when we combine an aggregate and proj. but for
-	adaptors, it may be better to remove.
-*/
-//struct INotify; 
 struct Bitmap;
+struct INotify; 
 
 struct Rect
 {
+	// Perhaps should use an agg::rect instead here
+	// Although defining our own having to drag in the agg header system 
+	// Perhaps change name to RenderRect to distinguish context
 	Rect( int x, int y, int w, int h )
 		: x( x), y( y), w( w), h( h )
 	{ }
@@ -31,35 +27,35 @@ struct RenderParams
 		dt( dt)
 	{ }
 
-	int dt;
-	Bitmap & surface;
+	int		dt;
+	Bitmap	&surface;
+	// bool postscript.
+	// PostscriptSurface ... std::ostream & postscript
 };
 
-
-struct INotify; 
 
 struct IRenderJob : IObject
 {
 	// called before all render calls.
-	// VERY Ihooked MPORTANT - use this for co-ordianting cross layer actions like label positioning
+	// VERY IMPORTANT - use this for co-ordianting cross layer actions like label positioning
 	// this will most likely be used by a service
 	virtual void pre_render( RenderParams & params) = 0;
 
 	virtual void render( RenderParams & params) = 0 ;
-	// virtual void render_ps ( std::ostream & surface ) = 0 ;
 
-	// change name get_render_z_order()
+	// Perhaps change name to render_z_order()
 	virtual int get_z_order() const = 0;
 
-	// might actually want to be a vector< Rect> that gets populated, which would allow for multiple items
-	// or else a referse interface
+	// might want to change this to vector< Rect> , which would would allow for multiple items
+	// to be returned for the object
+	// Could pass an interface as well that would be called
 	virtual void get_bounds( int *x1, int *y1, int *x2, int *y2 ) = 0;
 };
 
 
-
 struct IRenderer : virtual IObject
 {
+	// Events
 	virtual void register_( INotify * l) = 0;
 	virtual void unregister( INotify * l) = 0;
 
@@ -96,7 +92,7 @@ struct Renderer  : IRenderer
 	void getsize( int * w, int * h ) ;
 
 	void render( std::vector< Rect> & regions );
-	void  update_expose( const std::vector< Rect> & regions, Bitmap & result );
+	void update_expose( const std::vector< Rect> & regions, Bitmap & result );
 
 private:
 	struct Inner *d;

@@ -17,7 +17,6 @@
 #include <common/timer.h>
 
 #include <set>
-#include <algorithm>
 #include <vector>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -50,7 +49,6 @@ struct Inner
 	Timer							timer;
 
 
-	//NotifyAdapter< Renderer>		* x;
 	boost::shared_ptr< NotifyAdapter< Renderer> > x;
 
 	std::vector< IRenderJob * >		change_notified_set;
@@ -73,22 +71,15 @@ struct Inner
 };
 
 
-
 Renderer::Renderer( )
 	: d( new Inner)
 {
-	/*d->x = make_adapter( *this, & Renderer::on_job_changed ); 
-	d->x->add_ref();
-
-	boost::shared_ptr< NotifyAdapter< Renderer> > y (  make_adapter( *this, & Renderer::on_job_changed ) ); 
-	*/
 	d->x = boost::shared_ptr< NotifyAdapter< Renderer> >(  make_adapter( *this, & Renderer::on_job_changed )); 
 }
 
 
 Renderer::~Renderer()
 {
-//	d->x->release();
 	delete d;
 	d = NULL;
 }
@@ -100,10 +91,13 @@ void Renderer::register_( INotify * l)
 
 	d->listeners.register_( l);
 }
+
+
 void Renderer::unregister( INotify * l)
 {
 	d->listeners.unregister( l);
 }
+
 
 void Renderer::notify( const char *msg)
 {
@@ -111,25 +105,21 @@ void Renderer::notify( const char *msg)
 }
 
 
-
-
 void Renderer::add( IRenderJob & job )
 {
 	assert( d->jobs.find( &job) == d->jobs.end() );
 	d->jobs.insert( &job );
 
-	std::cout << "add render job " << & job << std::endl;
-
 	job.register_( &*d->x );	
 	notify( "change" );
 }
+
 
 void Renderer::remove( IRenderJob & job )
 {
 	assert( d->jobs.find( &job) != d->jobs.end() );
 	d->jobs.erase( &job );
 
-	std::cout << "remove render job " << & job << std::endl;
 	// WHAT happend if item is in the change_notified_set here?.
 	// we still need it recorded, so we can clear the background
 
@@ -137,10 +127,8 @@ void Renderer::remove( IRenderJob & job )
 	notify( "change" );
 }
 
-// this should be renamed to event or something . 
 void Renderer::on_job_changed( const Event &e )
 {
-
 	/*
 		The only way we get an event on this object, is if we 
 		subscribe to it on its IRenderJob interface, which
@@ -155,28 +143,13 @@ void Renderer::on_job_changed( const Event &e )
 	notify( "change" );
 }
 
-#if 0
-void Renderer::notify( IRenderJob & job )
-{
-//	assert( d->jobs.find( &job) != d->jobs.end() );
-	notify( "change" );
-
-	// add to our change notify set
-	d->change_notified_set.push_back( & job);
-}
-#endif
 
 #if 1
-// pehaps move  into common drawing functions not put here.
+// Should move into a set of common drawing operation rather than place here
 
 static void draw_rect( Bitmap::rbase_type & rbase, const Rect & rect, const agg::rgba8 & color )
 {
-	// helper function
-
-	//Bitmap::rbase_type	& rbase = active_surface->rbase();
-	// std::cout << "line " << rect.x << " " << rect.y << " " << rect.w << " " << rect.h << std::endl;
-
-	//void copy_hline(int x1, int y, int x2, const color_type& c)
+	// Helper function
 
 	rbase.copy_hline( rect.x, rect.y, rect.x + rect.w, color );
 	rbase.copy_hline( rect.x, rect.y + rect.h, rect.x + rect.w, color );
@@ -202,10 +175,8 @@ void Renderer::resize( int w, int h )
 
 void Renderer::getsize( int * w, int * h )
 {
-
 	*w = d->passive_surface.width();
 	*h = d->passive_surface.height();
-
 }
 
 
@@ -400,10 +371,6 @@ void Renderer::update_expose( const std::vector< Rect> & invalid_regions, Bitmap
 		draw_rect( result_surface.rbase(), a, agg::rgba8( 0xff, 0, 0) );
 	}
 #endif
-
-//	return d->result_surface;
 }
-
-
 
 
