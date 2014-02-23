@@ -5,19 +5,19 @@
 #include <iostream>
 #include <cassert>
 #include <set>
-//#include <boost/unordered_map.hpp>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+/*
+	- Really don't see that we want a modal position editor.
+	- if we don't want the grid or projection area to be moved, then don't respond to 
+	the hit-test! 
+
+*/
 
 namespace {
 
-
-
-//typedef boost::unordered_map< ptr< IKey> , ptr< IPositionEditorJob>, Hash, Pred >  objects_t;
-
-typedef std::set<  IPositionEditorJob * >	objects_t;
-
+	typedef std::set<  IPositionEditorJob * >	objects_t;
 
 };
 
@@ -25,14 +25,14 @@ typedef std::set<  IPositionEditorJob * >	objects_t;
 struct PositionEditorImpl 
 {
 	PositionEditorImpl()
-		: active( false),
-		active_object( NULL ) 
+//		: active( false),
+		: active_object( NULL ) 
 	{ } 
 
 
 	// unsigned count;
 
-	bool	active;					// is the controller active
+//	bool	active;					// is the controller active
 
 	objects_t	objects;			// change name to job ? 
 									// it's really not an object, it's an abstraction job
@@ -61,7 +61,7 @@ PositionEditor::~PositionEditor()
 
 void PositionEditor::add(  IPositionEditorJob  & job )
 { 
-	d->objects.insert( & job ); //std::make_pair( key, job ));
+	d->objects.insert( & job );
 } 
 
 void PositionEditor::remove( IPositionEditorJob  & job )
@@ -73,8 +73,8 @@ void PositionEditor::remove( IPositionEditorJob  & job )
 // IMyEvents
 void PositionEditor::mouse_move( unsigned x, unsigned y ) 
 { 
-	if( !d->active)
-		return;
+//	if( !d->active)
+//		return;
 
 	if( ! d->active_object )
 		return;
@@ -93,8 +93,8 @@ void PositionEditor::mouse_move( unsigned x, unsigned y )
 } 
 void PositionEditor::button_press( unsigned x, unsigned y )  
 { 
-	if( !d->active)
-		return;
+//	if( !d->active)
+//		return;
 
 	// find the closest object
 	// loop and his hittest and find best object / job
@@ -131,8 +131,8 @@ void PositionEditor::button_press( unsigned x, unsigned y )
 
 void PositionEditor::button_release( unsigned x, unsigned y )  
 { 
-	if( !d->active)
-		return;
+//	if( !d->active)
+//		return;
 
 	// end the transaction 
 	if( d->active_object )
@@ -153,6 +153,7 @@ void PositionEditor::key_release( int )
 
 void PositionEditor::set_active( bool active_ )
 { 
+#if 0
 	d->active = active_;
 
 	int sz = d->objects.size(); 
@@ -170,7 +171,7 @@ void PositionEditor::set_active( bool active_ )
 		job->set_position_active( d->active );
 	}	
 
-
+#endif
 } 
 
 
