@@ -17,7 +17,7 @@
 
 #include <common/ptr.h>
 
-#include <controller/position_editor.h>
+#include <controller/position.h>
 #include <controller/grid_editor.h>
 #include <controller/services.h>
 

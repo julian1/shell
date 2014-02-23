@@ -81,7 +81,7 @@ build $builddir/common/desc.o:        cxx src/common/desc.cpp
 
 ## controller
 build $builddir/controller/grid_editor.o:      cxx src/controller/grid_editor.cpp 
-build $builddir/controller/position_editor.o:       cxx src/controller/position_editor.cpp 
+build $builddir/controller/position.o:       cxx src/controller/position.cpp 
 #build $builddir/controller/projector.o:       cxx src/controller/projector.cpp 
 build $builddir/controller/renderer.o:     cxx src/controller/renderer.cpp 
 build $builddir/controller/fonts.o:     cxx src/controller/fonts.cpp 
@@ -127,7 +127,7 @@ build $builddir/all.a:           $
      $builddir/common/load_shapefile.o $builddir/common/point_in_poly.o $builddir/common/contourer.o $builddir/common/load_font.o $
      $builddir/common/point_in_poly.o $builddir/common/desc.o $
      $
-     $builddir/controller/grid_editor.o $builddir/controller/position_editor.o  $
+     $builddir/controller/grid_editor.o $builddir/controller/position.o  $
      $builddir/controller/renderer.o  $builddir/controller/fonts.o $builddir/controller/labels.o  $
      $builddir/controller/level_controller.o $builddir/controller/valid_controller.o   $
      $

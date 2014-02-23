@@ -41,6 +41,25 @@ Listeners::Listeners()
 
 Listeners::~Listeners()
 {
+	// if the event source goes out of scope we release the listeners.
+	// this functionality is a pretty good justification for the ref-counting approach.
+	// the EventAdapter is a bridge that also decouples lifetimes.
+
+	// We've actually got perfect handling now,  
+	//    -- if the event source is destroyed the event handler is removed. 
+	//    -- if the event target is destroyed the event target can remove the bridge since
+	//		it's responsible for creating it.
+
+	typedef Inner::listeners_type listeners_type;
+
+	// listeners should probably not exist
+	for( listeners_type::iterator i = d->listeners.begin(); 
+		i != d->listeners.end(); ++i ) {
+
+		(*i)->release();
+	}
+
+
 	delete d;
 	d = NULL;
 }

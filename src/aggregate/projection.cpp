@@ -10,8 +10,8 @@
 #include <common/path_seg_adaptor.h>
 
 #include <controller/services.h>
-#include <controller/position_editor.h>
-#include <controller/position_editor.h>
+#include <controller/position.h>
+#include <controller/position.h>
 #include <controller/renderer.h>
 
 

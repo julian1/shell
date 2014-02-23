@@ -6,7 +6,7 @@
 #include <common/projection.h>
 
 //#include <controller/shapes.h>
-//#include <controller/position_editor.h>
+//#include <controller/position.h>
 #include <controller/renderer.h>
 //#include <controller/projector.h>
 #include <controller/services.h>

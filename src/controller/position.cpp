@@ -1,5 +1,5 @@
 
-#include <controller/position_editor.h>
+#include <controller/position.h>
 #include <common/ui_events.h>
 
 #include <iostream>

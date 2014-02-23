@@ -4,7 +4,7 @@
 
 
 #include <controller/services.h>
-#include <controller/position_editor.h>
+#include <controller/position.h>
 #include <controller/renderer.h>
 #include <controller/animation.h>
 
@@ -219,7 +219,6 @@ struct ControlPoint : IPositionEditorJob, IRenderJob//, IKey
 		}
 
 	}
-
 
 	// IRenderJob
 	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
