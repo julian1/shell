@@ -12,6 +12,9 @@
 #include <common/path_reader.h>
 #include <common/bitmap.h>
 
+
+#include <common/point_in_poly.h>
+
 #include <agg_bounding_rect.h>
 #include <agg_rasterizer_scanline_aa.h>
 #include <agg_scanline_p.h>
@@ -132,15 +135,14 @@ struct Editor
 
 	void move( int x1, int y1, int x2, int y2 ) 
 	{
-		double dx = x2 - x1; 
-		double dy = y2 - y1; 
-
 		agg::trans_affine	affine;
-		affine *= agg::trans_affine_translation( dx, dy );
+		affine *= agg::trans_affine_translation( x2 - x1, y2 - y1 );
 
 		agg::path_storage tmp = path ; 
 		tmp.transform( affine );	
 		path = tmp; 
+
+
 //		notify();
 	}
 
@@ -160,6 +162,149 @@ struct Editor
 };
 
 
+
+
+
+
+struct ControlPoint : IPositionEditorJob, IRenderJob//, IKey
+{
+	ControlPoint( Services & services )
+		: services( services ),
+		path(),
+		active( false)
+	{ 
+		double r = 15; 
+		double x = 125, y = 125; 
+		//			callback.get_position( this, &x, &y );			// this get_position is getting called multiple times.
+
+		path.free_all();
+
+		agg::ellipse e( x, y, r, r, (int) 20);
+		path.concat_path( e );	
+
+		show( true );
+	} 
+
+	Services					& services ;
+	Listeners					listeners;
+
+	agg::path_storage			path;	
+	bool						active		;
+
+	void register_( INotify * l) 
+	{
+		listeners.register_( l);
+	} 
+
+	void unregister( INotify * l)
+	{
+		listeners.unregister( l);
+	}
+
+	void notify( const char *msg )
+	{
+		listeners.notify( *this, msg ); 
+	}
+
+
+	void show( bool u )
+	{
+		if( u) {		
+			services.renderer.add( *this  );
+			services.position_editor.add( *this );
+		}
+		else {
+			services.renderer.remove( *this  );
+			services.position_editor.remove( *this );
+		}
+	}
+
+
+	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
+	{
+//		if( active )
+	
+		bounding_rect_single( path , 0, x1, y1, x2, y2);	
+		
+
+		//std::cout << "bound " << *x1 << " " << *y1 << " " << *x2 << " " << *y2 << std::endl;
+	}	
+
+	void pre_render( RenderParams & params) 
+	{  }
+
+	// IRenderJob
+	void render( RenderParams & params ) 
+	{
+
+		//std::cout << "&&& render ControlPoint" << std::endl;
+
+		// remember the path is used for both, render and hittesting. 
+		// we calculate at render time.
+
+		agg::scanline_p8                sl;
+		agg::rasterizer_scanline_aa<>   ras;
+		ras.add_path( path );
+
+		agg::rgba       color( .3, 0, 1, .5);
+		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), color );
+ 	}
+
+	// IRenderJob
+	int get_z_order() const
+	{
+		// always in top ? 
+		return 101;
+	}
+
+	// IPositionEditorJob
+	void move( int x1, int y1, int x2, int y2 )  
+	{
+		agg::trans_affine	affine;
+		affine *= agg::trans_affine_translation( x2 - x1, y2 - y1 );
+
+		agg::path_storage tmp = path ; 
+		tmp.transform( affine );	
+		path = tmp; 
+
+		// need to notify renderer
+		notify( "change");
+	}
+
+	void set_active( bool active_ ) 
+	{ 
+		//callback.set_control_point_active( active_ ) ;
+	}
+
+	void set_position_active( bool active_ ) 
+	{ 
+		// must change the name of this ( position_controller_active() )
+		// WHY IS THIS 
+		active = active_;
+	}  
+
+	void finish_edit() { }
+
+	double hit_test( unsigned x, unsigned y ) 
+	{
+		if( point_in_poly( x, y, path))
+		{
+			// eg. dist == 0	
+			return 0;
+		} 
+		return 1234;
+	}
+};
+
+
+
+
+
+
+
+
+
+
 struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob 
 {
 	// Assemble the object graph
@@ -173,6 +318,8 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	Render				renderer;
 	Editor				editor;
 
+	ControlPoint		control_point;
+
 	Listeners			listeners;
 	
 
@@ -180,7 +327,8 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		: services( services),
 		is_active( false ),
 		renderer( is_active, path), 
-		editor( is_active, path)
+		editor( is_active, path),
+		control_point( services )
 	{ 
 		agg::rounded_rect   r( 20, 20, 100, 100, 10);
 
@@ -208,12 +356,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	
 	void notify( const char *msg )
 	{
-		//std::cout << "notifying this " << this << std::endl;
-
 		listeners.notify( *this, msg ); 
-		
-		// OK, this is crappy.  
-		//services.renderer.notify( *this );
 	}
 
 	// the this address is different to the IRenderjob address 
@@ -316,11 +459,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		return 100;
 	}; 
 
-	bool get_invalid() const 
-	{
-		assert( 0);	// shouldn't ever be called because at 100
-		return false;
-	}	
+
 };
 
 
