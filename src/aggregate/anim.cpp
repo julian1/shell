@@ -217,26 +217,21 @@ struct ControlPoint : IPositionEditorJob, IRenderJob//, IKey
 			services.renderer.remove( *this  );
 			services.position_editor.remove( *this );
 		}
+
 	}
 
 
+	// IRenderJob
 	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
 	{
-//		if( active )
-	
 		bounding_rect_single( path , 0, x1, y1, x2, y2);	
-		
-
-		//std::cout << "bound " << *x1 << " " << *y1 << " " << *x2 << " " << *y2 << std::endl;
 	}	
 
 	void pre_render( RenderParams & params) 
 	{  }
 
-	// IRenderJob
 	void render( RenderParams & params ) 
 	{
-
 		//std::cout << "&&& render ControlPoint" << std::endl;
 
 		// remember the path is used for both, render and hittesting. 
@@ -246,7 +241,7 @@ struct ControlPoint : IPositionEditorJob, IRenderJob//, IKey
 		agg::rasterizer_scanline_aa<>   ras;
 		ras.add_path( path );
 
-		agg::rgba       color( .3, 0, 1, .5);
+		agg::rgba       color( .3, 0, 1, 1);
 		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), color );
  	}
 
@@ -454,9 +449,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 
 	int get_z_order() const 
 	{
-		// should delegate to the root. because z_order is 
-		// animation job ...
-		return 100;
+		return 102;
 	}; 
 
 

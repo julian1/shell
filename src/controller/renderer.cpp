@@ -388,7 +388,7 @@ void Renderer::update_expose( const std::vector< Rect> & invalid_regions, Bitmap
 	}
 
 //	std::cout << "here1 " << result_surface->width() << " " << result_surface->height() << std::endl;
-#if 1
+#if 0
 
 //	std::cout << "active_rects " << d->active_rects.size() << std::endl;
 
