@@ -201,9 +201,19 @@ private:
 
 #endif
 
+
 /*
-	The goal here is to remove the render_control
-	and instead have the render respond directly to update events.
+	Think it might be easier to let the subsystem hook the Keyboard
+	events. Order of processing is important but can be determined by 
+	instantiation order  
+
+	To make these work properly, we would need an abstract interface to 
+	call on, then we would have to  
+
+	Both of these need to be p
+
+
+	Mouse manager and Keyboard Manager both need to go in platform in any case.
 */
 
 struct KeyboardManager
@@ -323,19 +333,20 @@ struct ClearBackground : IRenderJob
 	{ } 
 
 	IRenderer		&renderer; 
-//	Events			events;
+	Listeners		listeners;
 
 	void register_( INotify * l) 
 	{
-		l->add_ref();
-		// events.register_( l);
+		// we don't generate listeners here, so there's nothing really to do.
+		// but if this object goes out of scope, we should release listeners
+		// so should use the listeners class
+
+		listeners.register_( l);
 	} 
 
 	void unregister( INotify * l)
 	{
-		// events.unregister( l);
-
-		l->release();
+		listeners.unregister( l);
 	}
 
 

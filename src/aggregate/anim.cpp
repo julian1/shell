@@ -142,8 +142,7 @@ struct Editor
 		tmp.transform( affine );	
 		path = tmp; 
 
-
-//		notify();
+		// notify();
 	}
 
 	void finish_edit() 
@@ -162,11 +161,7 @@ struct Editor
 };
 
 
-
-
-
-
-struct ControlPoint : IPositionEditorJob, IRenderJob//, IKey
+struct ControlPoint : IPositionEditorJob, IRenderJob
 {
 	ControlPoint( Services & services )
 		: services( services ),
@@ -175,7 +170,6 @@ struct ControlPoint : IPositionEditorJob, IRenderJob//, IKey
 	{ 
 		double r = 15; 
 		double x = 125, y = 125; 
-		//			callback.get_position( this, &x, &y );			// this get_position is getting called multiple times.
 
 		path.free_all();
 
@@ -231,11 +225,6 @@ struct ControlPoint : IPositionEditorJob, IRenderJob//, IKey
 
 	void render( RenderParams & params ) 
 	{
-		//std::cout << "&&& render ControlPoint" << std::endl;
-
-		// remember the path is used for both, render and hittesting. 
-		// we calculate at render time.
-
 		agg::scanline_p8                sl;
 		agg::rasterizer_scanline_aa<>   ras;
 		ras.add_path( path );
@@ -289,14 +278,6 @@ struct ControlPoint : IPositionEditorJob, IRenderJob//, IKey
 		return 1234;
 	}
 };
-
-
-
-
-
-
-
-
 
 
 struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob 
@@ -454,18 +435,11 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 
 };
 
-
-
 }; // anon namespace
+
 
 void add_animation_object( Services & services )
 {
 	new MyObject( services);
 }
-
-
-
-
-
-
 

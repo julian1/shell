@@ -7,6 +7,7 @@
 struct Bitmap;
 struct INotify; 
 
+
 struct Rect
 {
 	// Perhaps should use an agg::rect instead here
