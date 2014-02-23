@@ -32,29 +32,3 @@ struct Async : IAsync
 };
 
 
-
-
-#if 0
-	struct X
-	{
-		template< class C> 
-		X( const C & c ) 
-			: f( c)
-		{ } 
-
-		boost::function< void()>	f;	
-
-		void operator () ()
-		{
-			f();
-		}
-	};
-
-	template< class C> 
-	void run( const C & c, int tick_interval ) 
-	{
-		X	x( c);
-		Glib::signal_timeout().connect_once ( x, tick_interval );
-	}  
-#endif
-

@@ -5,7 +5,7 @@
 
 /*
 
-	Event model, bubbling up from Gtk,
+	Example of control flow, using event model, bubbling up from Gtk,
 
 	main	
 		GridEditor
