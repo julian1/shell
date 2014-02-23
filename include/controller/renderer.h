@@ -60,55 +60,42 @@ struct IRenderJob : IObject
 
 struct IRenderer : virtual IObject
 {
+	virtual void register_( INotify * l) = 0;
+	virtual void unregister( INotify * l) = 0;
+
 	// render jobs
 	virtual void add( IRenderJob & job ) = 0;
 	virtual void remove( IRenderJob & job ) = 0;
-//	virtual void notify( IRenderJob & job ) = 0;
 
 	virtual void resize( int w, int h ) = 0;
 	virtual void getsize( int * w, int * h ) = 0;
 
-	// update is now a sequence
-	// return the list of regions that must be updated (they may overlap)
+	// render and return the minimum list of regions that must be updated
 	virtual void render( std::vector< Rect> & regions ) = 0;
 
 	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
 	virtual void update_expose( const std::vector< Rect> & regions, Bitmap & result ) = 0;
 };
 
-// this definition shouldn't be here...
-// should only be a struct
 
-// Let's get rid of the INotify here.
-
-struct Timer;
-
-struct Renderer  : IRenderer//, INotify
+struct Renderer  : IRenderer
 {
-	Renderer( );
+	Renderer();
 	~Renderer();
 
-	// should change name to subscribe/unsubscribe
-	void notify( const char *msg); 
 	void register_( INotify * l);
 	void unregister( INotify * l);
+	void notify( const char *msg); 
 
 	void add( IRenderJob & job ) ;
 	void remove( IRenderJob & job );
 
 	void on_job_changed( const Event &e ); 
-	//void notify( const Event &e );
 
 	void resize( int x, int y );
 	void getsize( int * w, int * h ) ;
 
-	// Rather than returning a set of regions, why don't we pass an interface for what needs
-	// to be invalidated ...
-
 	void render( std::vector< Rect> & regions );
-
-	// return a surface, that is sufficient to cover the invalid regions. the passed regions are a superset of regions in update1
-
 	void  update_expose( const std::vector< Rect> & regions, Bitmap & result );
 
 private:
