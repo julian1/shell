@@ -8,7 +8,6 @@
 #include <vector>
 #include <set>
 
-#include <common/ui_events.h>
 
 //#include <boost/unordered_map.hpp>
 #include <boost/foreach.hpp>

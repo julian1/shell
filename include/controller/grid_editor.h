@@ -2,7 +2,6 @@
 #pragma once
 
 #include <common/grid.h>
-#include <common/ui_events.h>	
 
 
 
@@ -52,7 +51,7 @@ struct IGridEditor
 
 
 
-struct GridEditor : IGridEditor, IMyEvents
+struct GridEditor : IGridEditor//, IMyEvents
 {
 	// specific impl, that also supports the ui_events inteface 
 	// the IMyEvents is only relevant to gui, and so is not exposed everywhere. 

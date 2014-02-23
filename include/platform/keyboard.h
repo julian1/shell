@@ -34,16 +34,24 @@
 	keyboard events if it wanted.  Eg. an animated object.
 */
 
+/*
 struct IKeyboardTarget
 {
 	virtual void key_press( int ) = 0;  
 	virtual void key_release( int ) = 0;  
 };
 
-// std::vector< IKeyboardTarget *>	listeners;
+	std::vector< IKeyboardTarget *>	listeners;
+*/
+
+
 
 struct Keyboard
 {
+
+	enum { shift_key = 65505, ctrl_key = 65507 } ;  
+
+
 	typedef Keyboard this_type; 
 
 	Keyboard( Gtk::Window & window ,
@@ -69,8 +77,8 @@ struct Keyboard
 		switch( code)
 		{
 			// case GDK_Return: case GDK_Escape: case GDK_F1: etc
-			case GDK_KEY_Shift_L  :  ret = IMyEvents ::shift_key; break; 
-			case GDK_KEY_Control_L: ret = IMyEvents ::ctrl_key; break;
+			case GDK_KEY_Shift_L  :  ret = this_type::shift_key; break; 
+			case GDK_KEY_Control_L: ret = this_type::ctrl_key; break;
 			default: ret = code; break;
 		};
 		return ret; 

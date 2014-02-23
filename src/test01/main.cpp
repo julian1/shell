@@ -17,7 +17,6 @@
 #include <aggregate/shapes.h>
 #include <aggregate/raster.h>
 
-#include <common/ui_events.h>
 #include <common/logger.h>
 #include <common/timer.h>
 

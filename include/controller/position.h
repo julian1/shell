@@ -11,7 +11,6 @@
 */
 
 
-#include <common/ui_events.h> 
 
 
 struct IPositionEditorJob
@@ -51,7 +50,7 @@ struct IPositionEditor
 
 
 
-struct PositionEditor : IPositionEditor, IMyEvents
+struct PositionEditor : IPositionEditor//, IMyEvents
 {
 	// lifetime
 	PositionEditor();
@@ -70,6 +69,7 @@ struct PositionEditor : IPositionEditor, IMyEvents
 	void mouse_move( unsigned x, unsigned y ) ;
 	void button_press( unsigned x, unsigned y );  
 	void button_release( unsigned x, unsigned y );  
+
 	void key_press( int );  
 	void key_release( int );  
 

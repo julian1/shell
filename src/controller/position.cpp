@@ -1,6 +1,5 @@
 
 #include <controller/position.h>
-#include <common/ui_events.h>
 
 #include <iostream>
 #include <cassert>
