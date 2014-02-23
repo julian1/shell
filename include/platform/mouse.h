@@ -3,6 +3,12 @@
 
 #include <gtkmm.h>
 
+/*	void mouse_move( unsigned x, unsigned y ) ;
+	void button_press( unsigned x, unsigned y );  
+	void button_release( unsigned x, unsigned y );  
+*/
+
+
 struct MouseManager
 {
 	MouseManager( Gtk::DrawingArea	& drawing_area,

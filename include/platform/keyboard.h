@@ -3,33 +3,56 @@
 
 #include <gtkmm.h>
 
-
 /*
-	Think it might be easier to let the subsystem hook the Keyboard
-	events. Order of processing is important but can be determined by 
-	instantiation order  
 
-	To make these work properly, we would need an abstract interface to 
-	call on, then we would have to  
+	Event model, bubbling up from Gtk,
 
-	Both of these need to be p
-
-
-	Mouse manager and Keyboard Manager both need to go in platform in any case.
+	main	
+		GridEditor
+			ObjectWantingKeyboardEvents
+				Keyboard
+					Gtk::drawing_area
 */
 
-struct KeyboardManager
+/*
+	Think it might be easier to let the subsystem hook events from a Keyboard
+	object instead. Order of processing is important but can be determined by 
+	instantiation order  
+
+	To make the current approach work properly, we would need an abstract interface to 
+	call on (that targets could implements), then we would have to  
+
+	Mouse manager and Keyboard Manager both need to go in platform in any case.
+	- The issue with events is that we only have an abstract untyped payload 
+	- we could expose the key however
+
+	int get_key(); 
+
+	so we could query which would be sufficient...
+
+	Putting this in Services could be useful, as it would allow any object to tap 
+	keyboard events if it wanted.  Eg. an animated object.
+*/
+
+struct IKeyboardTarget
 {
-	KeyboardManager( Gtk::Window & window ,
+	virtual void key_press( int ) = 0;  
+	virtual void key_release( int ) = 0;  
+};
+
+// std::vector< IKeyboardTarget *>	listeners;
+
+struct Keyboard
+{
+	typedef Keyboard this_type; 
+
+	Keyboard( Gtk::Window & window ,
 		GridEditor		& grid_editor,
-		PositionEditor	& position_editor //,
-//		IRenderSequencer & render_control
+		PositionEditor	& position_editor
 	) : window( window ),
 		grid_editor( grid_editor),
-		position_editor( position_editor)//,
-//		render_control( render_control )
+		position_editor( position_editor)
 	{
-		typedef KeyboardManager this_type; 
 
 		window.signal_key_press_event() .connect( sigc::mem_fun( *this, &this_type::on_key_press_event));
 		window.signal_key_release_event() .connect( sigc::mem_fun( *this, &this_type::on_key_release_event));
@@ -38,7 +61,6 @@ struct KeyboardManager
 	Gtk::Window		& window ; 
 	GridEditor		& grid_editor;
 	PositionEditor	& position_editor;
-//	IRenderSequencer & render_control; 
 
 
 	static int translate_code( unsigned code )
@@ -53,6 +75,7 @@ struct KeyboardManager
 		};
 		return ret; 
 	}
+
 	// now we want keyboard events. to enable pan
 	bool on_key_press_event( GdkEventKey* event )
     {
@@ -63,16 +86,14 @@ struct KeyboardManager
 
 		grid_editor.key_press( translate_code( event->keyval ) ); 
 		position_editor.key_press( translate_code( event->keyval ) ); 
-
-//		render_control.signal_immediate_update(  ); 
 		return false;
 	}
+
+
 	bool on_key_release_event(GdkEventKey* event )
 	{
 		grid_editor.key_release( translate_code( event->keyval ) ); 
 		position_editor.key_release( translate_code( event->keyval ) ); 
-
-//		render_control.signal_immediate_update(  ); 
 		return false;
 	}
 };

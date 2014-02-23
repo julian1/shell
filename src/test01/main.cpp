@@ -282,21 +282,10 @@ int main(int argc, char *argv[])
 
 	Logger			logger( std::cout );
 
-	// if we gave these things full references, then we wouldn't
-	// need to maintain instances in the Application class scope ?? 
-
-//	Timer				timer;
-
-	// use placement new trick to instantiate Renderer and RenderSequencer
-	// with references to each other
-//	char				buf[ sizeof( RenderSequencer ) ];
-//	RenderSequencer		& render_control = *(RenderSequencer *)(void *)buf;
 
 	Renderer			renderer;
-//	new( buf ) RenderSequencer( drawing_area, renderer );
 
 	RenderSequencer		render_control( drawing_area, renderer );
-
 
 	Async				async;
 	
@@ -304,7 +293,6 @@ int main(int argc, char *argv[])
 
 	GridEditor			grid_editor;
 	PositionEditor		position_editor;
-
 
 
 	ptr< IFonts>		fonts( create_fonts_service( /* font dir */) );
@@ -317,16 +305,13 @@ int main(int argc, char *argv[])
 	ptr< IValidController> valid_controller( create_valid_controller_service() ); 
 	//gribs_service( create_gribs_service( "data/sadis2g_soc_grib_dump.bin" ) ),
 
-	Services			services( 
-//			*projector, 
+	Services services( 
 		*labels,
 		renderer, 
 		animation,
-
 		grid_editor, 
 		position_editor,
 		*fonts,
-	//	*gribs_service,
 		*level_controller,
 		*valid_controller
 	);
@@ -348,7 +333,7 @@ int main(int argc, char *argv[])
 
 	//TimingManager	timing_manager( render_control ); 
 
-	KeyboardManager keyboard_manager( window, grid_editor, position_editor/*c$, render_control */ );
+	Keyboard keyboard_manager( window, grid_editor, position_editor/*c$, render_control */ );
 
 	MouseManager	mouse_manager( drawing_area, grid_editor, position_editor ); 
 
