@@ -17,6 +17,65 @@ struct IGridEditorJob
 	virtual ptr< Grid> get_grid() = 0;
 	virtual void set_grid( const ptr< Grid> & grid )  = 0;
 
+/*
+	Can't we do the transform outside here ?
+
+	Probably not because this is going to have 
+
+	mouse/keyboard -> position editor (set active) -> grid editor ->  object
+
+	Actually I think the two editors need to operate completely independently -
+		both responding to mouse/keyboard events. 
+
+		otherwise the functionality will need to be placed on the object.
+
+	- Remember that it was modal before, which is what we are trying to get away from.
+	but we probably need to have a way of cancelling events.
+
+	mouse/keyboard - edit multiplex -> position editor
+									-> grid editor 
+
+		(in this situation, we have to inform the multiplexer which editor is active
+		to avoid the propagation of events )
+	--
+
+	We could have a single hittest controller - 
+		if the object is active it raises an event to inform the controller it's active.  
+	
+		then the mouse/keyboard event dispatcher could route events only to that 
+		active controller.
+
+
+		Having the object inform the controller that it's active is nice. It means
+		we could use tab to switch between objects etc.
+
+	Call it the object_selector or selector_controller 
+
+	- The other controllers (position/grib) could still directly work with mouse/keyboard
+	but would only do so if they were active.
+
+	- alternatively why not have the controllers working together simultaneously. doing
+	hit testing, and operations. 
+
+	- we have to prevent them conflicting - cancelling an event would actually be simplest. 
+		First that wants to use the event, cancels it.
+
+	- Rather than switching, or boolean testing.
+
+	- Cancelling won't work beucase second controller cannot cancel first controller's events.
+
+	- are we sure we shouldn't route events straight to an active object - and let
+	it be responsible for doing stuff?.
+		( rather than indirectly to a controller )
+
+		- to a grid
+		- or a projection
+		- or a control point 
+
+	One Controller that is lightweight and has a concept of the active object to
+	which it routes stuff.  
+*/
+
 	// project, affine and georeference, for the grid with reference to mouse coordinates
 	// eg. GridEditor should not know either
 	// will have to invert
