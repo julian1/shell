@@ -99,7 +99,7 @@ public:
 
 };
 
-
+#if 0
 struct Editor
 {
 	bool				& is_active; 
@@ -159,7 +159,7 @@ struct Editor
 		return std::abs((Px - Ax) * (By - Ay) - (Py - Ay) * (Bx - Ax)) / normalLength;
 	}
 };
-
+#endif
 
 
 // ok, we just need to give the control point a position...
@@ -174,7 +174,7 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 		: services( services ),
 		x( x),
 		y( y),
-		r( 15),
+		r( 5),
 		path(),
 		active( false)
 	{ 
@@ -183,12 +183,10 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 
 	Services					& services ;
 	Listeners					listeners;
-
 	agg::path_storage			path;	
 	bool						active;
 	int							x, y;
 	double						r; 
-
 
 	void set_position( int x_, int y_)
 	{
@@ -198,16 +196,6 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 		x = x_;
 		y = y_;
 		notify( "change");
-	}
-
-	void register_( INotify * l) 
-	{
-		listeners.register_( l);
-	} 
-
-	void unregister( INotify * l)
-	{
-		listeners.unregister( l);
 	}
 
 	void notify( const char *msg )
@@ -225,12 +213,27 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 			services.renderer.remove( *this  );
 			services.position_editor.remove( *this );
 		}
-
 	}
+
+	// IObject
+	void register_( INotify * l) 
+	{
+		listeners.register_( l);
+	} 
+
+	void unregister( INotify * l)
+	{
+		listeners.unregister( l);
+	}
+
 
 	// IRenderJob
 	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
 	{
+		path.free_all();
+		agg::ellipse e( x, y, r, r, (int) 20);
+		path.concat_path( e );
+
 		bounding_rect_single( path , 0, x1, y1, x2, y2);	
 	}	
 
@@ -239,17 +242,6 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 
 	void render( RenderParams & params ) 
 	{
-		path.free_all();
-		agg::ellipse e( x, y, r, r, (int) 20);
-		path.concat_path( e );
-
-//		agg::trans_affine affine;
-//		affine *= agg::trans_affine_translation( x, y );
-//		agg::path_storage tmp = path ; 
-//		tmp.transform( affine );	
-//		path = tmp; 
-//		path.transform( affine );	
-
 		agg::scanline_p8                sl;
 		agg::rasterizer_scanline_aa<>   ras;
 		ras.add_path( path );
@@ -258,7 +250,6 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), color );
  	}
 
-	// IRenderJob
 	int get_z_order() const
 	{
 		// always in top ? 
@@ -268,15 +259,7 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 	// IPositionEditorJob
 	void move( int x1, int y1, int x2, int y2 )  
 	{
-
 		set_position( x + x2 - x1, y + y2 - y1 );
-
-/*
-		x += x2 - x1;
-		y += y2 - y1; 
-		// need to notify renderer
-		notify( "change");
-*/
 	}
 
 	void set_active( bool active_ ) 
@@ -291,7 +274,8 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 		active = active_;
 	}  
 
-	void finish_edit() { }
+	void finish_edit() 
+	{ }
 
 	double hit_test( unsigned x, unsigned y ) 
 	{
@@ -307,163 +291,66 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 
 // OK, there's an issue, that the control points are going to be moved... 
 
-struct MyObject : /*IPositionEditorJob,*/ IRenderJob, IAnimationJob 
+struct MyObject : IRenderJob, IAnimationJob 
 {
-	// Assemble the object graph
-
 	typedef MyObject	this_type;
 
 	Services			& services ;
-
 	bool				is_active;
 	agg::path_storage	path; 
-
 	// Helpers
 	Render				renderer;
-//	Editor				editor;
-
 	int					x1, y1, x2, y2;
 	ControlPoint		top_left;
 	ControlPoint		top_right;
-
+	ControlPoint		bottom_left;
+	ControlPoint		bottom_right;
 	Listeners			listeners;
-	
 
 	MyObject( Services & services )
 		: services( services),
 		is_active( false ),
 		path(),
 		renderer( is_active, path), 
-//		editor( is_active, path),
-		
 		x1( 20), y1( 20),
 		x2( 100), y2( 100),
 		top_left( services, x1, y1 ),
-		top_right( services, x2, y1 )
-	{ 
+		top_right( services, x2, y1 ),
+		bottom_left( services, x1, y2 ),
+		bottom_right( services, x2, y2 )
 
+	{ 
 		top_left.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
 		top_right.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
-
-
+		bottom_left.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
+		bottom_right.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
 		show( true);
 	}  
 
 	~MyObject()
 	{
-
 		show( false);
 	}
 
-	void register_( INotify * l) 
-	{
-		listeners.register_( l);
-	} 
-
-	void unregister( INotify * l)
-	{
-		listeners.unregister( l);
-	}
-	
 	void notify( const char *msg )
 	{
 		listeners.notify( *this, msg ); 
 	}
 
-	// the this address is different to the IRenderjob address 
-	// even though they are the same object. 
-
-	// If the event is going to be common. Think we have to have a common
-	// event thing for jobs. then we can downcast without dynamic_cast.   
-
-
-	// Not sure the issue is the notify. 
-
-	// is there a way to embed a cast in the template,,, 
-	// to indicate what actual object we want ????
-
-	// eg. we have all these things that are typed, and listening.. 
-
 	void show( bool u )
 	{
 		if( u) {		
-
-			std::cout << "show " << this << std::endl;
-			std::cout << "show as render interface " << (IRenderJob *)this << std::endl;
-
 			services.renderer.add( *this  );
-//			services.position_editor.add( *this );
 			services.animation.add( *this );
 		}
 		else {
 			services.renderer.remove( *this  );
-//			services.position_editor.remove( *this );
 			services.animation.remove( *this );
 		}
 	}
 
-	void remove()
-	{
-		show( false ); 
-		// push ourselves onto the undo/restore queue.
-	}
-
-
-#if 0
-	// IPositionEditorJob
-	double hit_test( unsigned x, unsigned y ) 
-	{
-		return editor.hit_test( x, y ); 
-	}
-
-	void set_active( bool active ) 
-	{
-		editor.set_active( active); 
-		notify( "change");
-	}
-
-	void set_position_active( bool ) 
-	{ } 	
-
-	void move( int x1, int y1, int x2, int y2 ) 
-	{
-		// should test if pos is the same, and avoid firing the event
-
-		editor.move( x1, y1, x2, y2 );
-		notify( "change");
-	}
-
-	void finish_edit() 
-	{
-		editor.finish_edit();
-		// make the model fire an event 
-	}
-#endif
-	
-	// IAnimationJob 
-	void tick() 
-	{
-		//std::cout << "whoot we are getting an animation event " << dt_ << std::endl;
-		// we notify that our state has changed even if we haven't calculated it
-		// yet.
-		notify( "change");
-	}
-
-
 	void on_control_point_changed( const Event &e )
 	{
-		//std::cout << "control point changed" << std::endl;
-
-		// we have to know which object, the event came from, update that, 
-		// then set all the other objects...
-		// and suppress feedback of events...
-
-		// Ok, one of the points has changed --- but how do we know if
-		// we should change the top_left or what-ever ?
-
-		// easy - we can just test it...		 
-
-
 		ControlPoint &src = dynamic_cast< ControlPoint &>( e.object ); 
 		if( &src == &top_left)
 		{
@@ -475,48 +362,65 @@ struct MyObject : /*IPositionEditorJob,*/ IRenderJob, IAnimationJob
 			x2 = src.x;
 			y1 = src.y;
 		}
+		if( &src == &bottom_left)
+		{
+			x1 = src.x;
+			y2 = src.y;
+		}
+		else if( &src == &bottom_right)
+		{
+			x2 = src.x;
+			y2 = src.y;
+		}
 
 		top_left.set_position( x1, y1);
 		top_right.set_position( x2, y1);
-
+		bottom_left.set_position( x1, y2);
+		bottom_right.set_position( x2, y2);
 
 		// and broadcast
 		notify( "change");
 	}
 
+	// IObject
+	void register_( INotify * l) 
+	{
+		listeners.register_( l);
+	} 
+
+	void unregister( INotify * l)
+	{
+		listeners.unregister( l);
+	}
+
+	// IAnimationJob 
+	void tick() 
+	{
+		// notify that our state has changed even if we haven't calculated it yet.
+		notify( "change");
+	}
 
 	// IRenderJob 
+	void get_bounds( int *x1_, int *y1_, int *x2_, int *y2_ ) 
+	{
+		agg::rounded_rect   r( x1, y1, x2, y2, 10);
+		path.free_all();
+		path.concat_path( r);
+		renderer.get_bounds( x1_, y1_, x2_, y2_);
+	}
+
 	void pre_render( RenderParams & params ) 
 	{  }
 
 	void render ( RenderParams & params ) 
 	{
-/*
-		agg::rounded_rect   r( x1, y1, 100, 100, 10);
-
-		path.free_all();
-		path.concat_path( r);
-*/
 		renderer.render( params);
-
-	}
-
-	void get_bounds( int *x1_, int *y1_, int *x2_, int *y2_ ) 
-	{
-		agg::rounded_rect   r( x1, y1, x2, y2, 10);
-
-		path.free_all();
-		path.concat_path( r);
-
-		renderer.get_bounds( x1_, y1_, x2_, y2_);
 	}
 
 	int get_z_order() const 
 	{
 		return 102;
 	}; 
-
-
 };
 
 }; // anon namespace
