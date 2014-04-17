@@ -269,14 +269,14 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 	void move( int x1, int y1, int x2, int y2 )  
 	{
 
-//		set_position( x2 - x1, y2 - y1 );
+		set_position( x + x2 - x1, y + y2 - y1 );
 
+/*
 		x += x2 - x1;
 		y += y2 - y1; 
-	
 		// need to notify renderer
 		notify( "change");
-
+*/
 	}
 
 	void set_active( bool active_ ) 
