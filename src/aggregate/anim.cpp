@@ -312,8 +312,9 @@ struct MyObject : /*IPositionEditorJob,*/ IRenderJob, IAnimationJob
 	Render				renderer;
 //	Editor				editor;
 
-	int					x1, y1;
-	ControlPoint		control_point;
+	int					x1, y1, x2, y2;
+	ControlPoint		top_left;
+	ControlPoint		top_right;
 
 	Listeners			listeners;
 	
@@ -326,10 +327,13 @@ struct MyObject : /*IPositionEditorJob,*/ IRenderJob, IAnimationJob
 //		editor( is_active, path),
 		
 		x1( 20), y1( 20),
-		control_point( services, x1, y1 )
+		x2( 100), y2( 100),
+		top_left( services, x1, y1 ),
+		top_right( services, x2, y1 )
 	{ 
 
-		control_point.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
+		top_left.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
+		top_right.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
 
 
 		show( true);
@@ -440,9 +444,31 @@ struct MyObject : /*IPositionEditorJob,*/ IRenderJob, IAnimationJob
 	{
 		std::cout << "control point changed" << std::endl;
 
-		// update the position -- we just have to notify ????
-		x1 = control_point.x;
+		// we have to know which object, the event came from, update that, 
+		// then set all the other objects...
+		// and suppress feedback of events...
 
+		// Ok, one of the points has changed --- but how do we know if
+		// we should change the top_left or what-ever ?
+
+		// easy - we can just test it...		 
+
+		std::cout << "object " << &e.object << std::endl;
+
+		ControlPoint &src = dynamic_cast< ControlPoint &>( e.object ); 
+		if( &src == &top_left)
+		{
+			x1 = src.x;
+			y1 = src.y;
+		}
+		else if( &src == &top_right)
+		{
+			x2 = src.x;
+			y1 = src.y;
+		}
+
+
+		// and broadcast
 		notify( "change");
 	}
 
@@ -465,7 +491,7 @@ struct MyObject : /*IPositionEditorJob,*/ IRenderJob, IAnimationJob
 
 	void get_bounds( int *x1_, int *y1_, int *x2_, int *y2_ ) 
 	{
-		agg::rounded_rect   r( x1, y1, 100, 100, 10);
+		agg::rounded_rect   r( x1, y1, x2, y2, 10);
 
 		path.free_all();
 		path.concat_path( r);
