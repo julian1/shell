@@ -178,10 +178,6 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 		path(),
 		active( false)
 	{ 
-//		double r = 15; 
-//		double x = 125, y = 125; 
-
-
 		show( true );
 	} 
 
@@ -192,6 +188,17 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 	bool						active;
 	int							x, y;
 	double						r; 
+
+
+	void set_position( int x_, int y_)
+	{
+		if( x_ == x && y_ == y)
+			return;
+
+		x = x_;
+		y = y_;
+		notify( "change");
+	}
 
 	void register_( INotify * l) 
 	{
@@ -207,7 +214,6 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 	{
 		listeners.notify( *this, msg ); 
 	}
-
 
 	void show( bool u )
 	{
@@ -262,11 +268,15 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 	// IPositionEditorJob
 	void move( int x1, int y1, int x2, int y2 )  
 	{
+
+//		set_position( x2 - x1, y2 - y1 );
+
 		x += x2 - x1;
 		y += y2 - y1; 
 	
 		// need to notify renderer
 		notify( "change");
+
 	}
 
 	void set_active( bool active_ ) 
@@ -442,7 +452,7 @@ struct MyObject : /*IPositionEditorJob,*/ IRenderJob, IAnimationJob
 
 	void on_control_point_changed( const Event &e )
 	{
-		std::cout << "control point changed" << std::endl;
+		//std::cout << "control point changed" << std::endl;
 
 		// we have to know which object, the event came from, update that, 
 		// then set all the other objects...
@@ -453,7 +463,6 @@ struct MyObject : /*IPositionEditorJob,*/ IRenderJob, IAnimationJob
 
 		// easy - we can just test it...		 
 
-		std::cout << "object " << &e.object << std::endl;
 
 		ControlPoint &src = dynamic_cast< ControlPoint &>( e.object ); 
 		if( &src == &top_left)
@@ -466,6 +475,9 @@ struct MyObject : /*IPositionEditorJob,*/ IRenderJob, IAnimationJob
 			x2 = src.x;
 			y1 = src.y;
 		}
+
+		top_left.set_position( x1, y1);
+		top_right.set_position( x2, y1);
 
 
 		// and broadcast
