@@ -469,8 +469,6 @@ struct X : IRenderJob, IAnimationJob, IFrameSubject
 		notify( "change");
 	} 
 
-	// set_active() ...
-
 	void notify( const char *msg )
 	{
 		listeners.notify( *this, msg ); 
@@ -516,7 +514,7 @@ struct X : IRenderJob, IAnimationJob, IFrameSubject
 	}
 
 	void pre_render( RenderParams & params ) 
-	{  }
+	{ }
 
 	void render ( RenderParams & params ) 
 	{
@@ -527,24 +525,65 @@ struct X : IRenderJob, IAnimationJob, IFrameSubject
 	{
 		return 102;
 	}; 
-
 };
 
 
+
+// Ok now we want a frame multiplexer...
+
+
+struct FrameMultiplexer : IFrameSubject
+{
+	IFrameSubject & a;
+	IFrameSubject & b;
+
+	FrameMultiplexer( IFrameSubject & a, IFrameSubject & b ) 
+		: a( a),
+		b( b)
+	{ } 
+
+	void set_position( int x1, int y1, int x2, int y2) 
+	{
+		a.set_position( x1, y1, x2, y2);
+		b.set_position( x1, y1, x2, y2);
+	} 
+
+	void set_active( bool active ) 
+	{
+		a.set_active( active);	
+		b.set_active( active);	
+	} 
+};
+
+
+struct Y : IFrameSubject
+{
+	void set_position( int x1, int y1, int x2, int y2) 
+	{
+		std::cout << "Whoot Y set_position()" << std::endl;
+	} 
+
+	void set_active( bool active ) 
+	{ }
+};
+
+// This is our aggregated object...
 
 struct MyObject2
 {
 	Render		renderer; 
 	X			subject;
+	Y			y;	
+	FrameMultiplexer multi;
 	Frame		frame;
 
-//		renderer( is_active, path), 
 	MyObject2( Services & services )
 		: renderer(),
 		subject( services, renderer),
-		frame( services, subject )
+		y(),
+		multi( subject, y),
+		frame( services, multi )
 	{ } 
-
 
 };
 
