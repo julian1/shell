@@ -265,6 +265,14 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 	void set_active( bool active_ ) 
 	{ 
 		//callback.set_control_point_active( active_ ) ;
+
+		// this needs to push an event
+
+		std::cout << "control point active " << active_ << std::endl;
+		if( active_ )
+			notify("active");
+		else
+			notify("inactive");
 	}
 
 	void set_position_active( bool active_ ) 
@@ -288,6 +296,9 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 	}
 };
 
+
+// we should be propagating whether the thing is active, from the  ...
+// also we should be injecting the renderer thing ?
 
 // OK, there's an issue, that the control points are going to be moved... 
 
@@ -356,6 +367,13 @@ struct MyObject : IRenderJob, IAnimationJob
 	void on_control_point_changed( const Event &e )
 	{
 		ControlPoint &src = dynamic_cast< ControlPoint &>( e.object ); 
+
+		if( std::string( e.msg) == "active" )		
+			is_active = true;
+		else if( std::string( e.msg) == "inactive" )		
+			is_active = false;
+			
+
 		if( &src == &top_left)
 		{
 			x1 = src.x;
