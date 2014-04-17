@@ -161,20 +161,26 @@ struct Editor
 };
 
 
+
+// ok, we just need to give the control point a position...
+// and then hook the event, ... 
+// that's ok, we set the position property, which will fire an event and
+// the renderer will know to update. 
+// The issue will be propagating activeness - maybe just propagate out. 
+
 struct ControlPoint : IPositionEditorJob, IRenderJob
 {
-	ControlPoint( Services & services )
+	ControlPoint( Services & services, int x, int y )
 		: services( services ),
+		x( x),
+		y( y),
+		r( 15),
 		path(),
 		active( false)
 	{ 
-		double r = 15; 
-		double x = 125, y = 125; 
+//		double r = 15; 
+//		double x = 125, y = 125; 
 
-		path.free_all();
-
-		agg::ellipse e( x, y, r, r, (int) 20);
-		path.concat_path( e );	
 
 		show( true );
 	} 
@@ -183,7 +189,9 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 	Listeners					listeners;
 
 	agg::path_storage			path;	
-	bool						active		;
+	bool						active;
+	int							x, y;
+	double						r; 
 
 	void register_( INotify * l) 
 	{
@@ -225,6 +233,17 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 
 	void render( RenderParams & params ) 
 	{
+		path.free_all();
+		agg::ellipse e( x, y, r, r, (int) 20);
+		path.concat_path( e );
+
+//		agg::trans_affine affine;
+//		affine *= agg::trans_affine_translation( x, y );
+//		agg::path_storage tmp = path ; 
+//		tmp.transform( affine );	
+//		path = tmp; 
+//		path.transform( affine );	
+
 		agg::scanline_p8                sl;
 		agg::rasterizer_scanline_aa<>   ras;
 		ras.add_path( path );
@@ -243,13 +262,9 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 	// IPositionEditorJob
 	void move( int x1, int y1, int x2, int y2 )  
 	{
-		agg::trans_affine	affine;
-		affine *= agg::trans_affine_translation( x2 - x1, y2 - y1 );
-
-		agg::path_storage tmp = path ; 
-		tmp.transform( affine );	
-		path = tmp; 
-
+		x += x2 - x1;
+		y += y2 - y1; 
+	
 		// need to notify renderer
 		notify( "change");
 	}
@@ -280,6 +295,8 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 };
 
 
+// OK, there's an issue, that the control points are going to be moved... 
+
 struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob 
 {
 	// Assemble the object graph
@@ -303,7 +320,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		is_active( false ),
 		renderer( is_active, path), 
 		editor( is_active, path),
-		control_point( services )
+		control_point( services, 20, 20 )
 	{ 
 		agg::rounded_rect   r( 20, 20, 100, 100, 10);
 
