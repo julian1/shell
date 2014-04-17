@@ -37,73 +37,6 @@ namespace {
 
 */
 
-struct Render
-{
-	// A helper class for simple dashed line animation renderer
-//	bool				& is_active; 
-//	agg::path_storage	& path; 
-	double				offset; 
-
-public:
-//	Render( bool & is_active, agg::path_storage	& path )  
-	Render() 
-	:	offset( 0)
-	{ } 
-
-	void render ( RenderParams & params,
-		agg::path_storage	& path,
-		bool				& is_active
-	) 
-	{
-		// std::cout << "render test job " << parms.dt << std::endl;
-		// path_reader	reader( root->get_path() );
-
-		offset += params.dt * 0.020;
-
-		if( offset > 20)  
-			offset -= 20;
-
-		typedef agg::conv_dash< agg::path_storage>              dash_type;
-		typedef agg::conv_stroke< dash_type>                    stroke_type;
-
-		// very important dash is different from stroking ?? 
-		// should they be distinguished for purpose of an animation ?
-		dash_type               d( path ); 
-		d.add_dash( 10, 10);
-		d.dash_start( offset); 
-
-		stroke_type             stroke( d); 
-
-		if( is_active  )
-			stroke.width( 4);
-		else	
-			stroke.width( 2);
-
-		// agg::conv_stroke< path_reader>	stroke( reader );
-		// stroke.width( 1); 
-
-		agg::scanline_p8                sl;
-		agg::rasterizer_scanline_aa<>   ras;
-		ras.add_path( stroke );
-
-		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), agg::rgba8( 0xff, 0, 0 ) );
-	}
-
-
-	void get_bounds(
-		agg::path_storage	& path,
-		 int *x1, int *y1, int *x2, int *y2 ) 
-	{
-		bounding_rect_single( path, 0, x1, y1, x2, y2);	
-
-		*x1 -= 2; 
-		*y1 -= 2; 
-		*x2 += 2; 
-		*y2 += 2; 
-	}
-
-};
-
 #if 0
 struct Editor
 {
@@ -363,7 +296,7 @@ struct Frame
 
 	{ 
 		// frame subject is composed yet
-		std::cout << "frame subject ref " << & frame_subject << std::endl;
+		// possibly we should be reading the location from the inner object ...
 		frame_subject.set_position( x1, y1, x2, y2 ); 
 
 		top_left.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
@@ -428,8 +361,79 @@ struct Frame
 
 
 
+
+struct Render
+{
+	// A helper class for simple dashed line animation renderer
+//	bool				& is_active; 
+//	agg::path_storage	& path; 
+	double				offset; 
+
+public:
+//	Render( bool & is_active, agg::path_storage	& path )  
+	Render() 
+	:	offset( 0)
+	{ } 
+
+	void render ( RenderParams & params,
+		agg::path_storage	& path,
+		bool				& is_active
+	) 
+	{
+		// std::cout << "render test job " << parms.dt << std::endl;
+		// path_reader	reader( root->get_path() );
+
+		offset += params.dt * 0.020;
+
+		if( offset > 20)  
+			offset -= 20;
+
+		typedef agg::conv_dash< agg::path_storage>              dash_type;
+		typedef agg::conv_stroke< dash_type>                    stroke_type;
+
+		// very important dash is different from stroking ?? 
+		// should they be distinguished for purpose of an animation ?
+		dash_type               d( path ); 
+		d.add_dash( 10, 10);
+		d.dash_start( offset); 
+
+		stroke_type             stroke( d); 
+
+		if( is_active  )
+			stroke.width( 4);
+		else	
+			stroke.width( 2);
+
+		// agg::conv_stroke< path_reader>	stroke( reader );
+		// stroke.width( 1); 
+
+		agg::scanline_p8                sl;
+		agg::rasterizer_scanline_aa<>   ras;
+		ras.add_path( stroke );
+
+		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), agg::rgba8( 0xff, 0, 0 ) );
+	}
+
+
+	void get_bounds(
+		agg::path_storage	& path,
+		 int *x1, int *y1, int *x2, int *y2 ) 
+	{
+		bounding_rect_single( path, 0, x1, y1, x2, y2);	
+
+		*x1 -= 2; 
+		*y1 -= 2; 
+		*x2 += 2; 
+		*y2 += 2; 
+	}
+
+};
+
+
+
 struct X : IRenderJob, IAnimationJob, IFrameSubject
 {
+	// animate the path... 
 	// framesubject can be completely self contained. 
 
 	Services			& services ;
@@ -444,12 +448,10 @@ struct X : IRenderJob, IAnimationJob, IFrameSubject
 		: services( services),
 		renderer( renderer)
 	{
-		
-		std::cout << "frame subject constructor " << this << std::endl;
-
 		show( true);
 	}
 
+	// IFrameSubject
 	void set_active( bool active_ ) 
 	{
 		is_active = active_;
@@ -457,15 +459,13 @@ struct X : IRenderJob, IAnimationJob, IFrameSubject
 
 	void set_position( int x1_, int y1_, int x2_, int y2_) 
 	{
-		std::cout << "whoot inside frame subject " << this << std::endl;
+		if( x1 == x1_ && y1 == y1_ && x2 == x2_ && y2 == y2_ )
+			return;
 
 		x1 = x1_;
 		y1 = y1_;
 		x2 = x2_;
 		y2 = y2_;
-		//std::cout << "whoot frame changed" << std::endl;
-		// and broadcast
-
 		notify( "change");
 	} 
 
@@ -499,7 +499,6 @@ struct X : IRenderJob, IAnimationJob, IFrameSubject
 		listeners.unregister( l);
 	}
 
-
 	// IAnimationJob 
 	void tick() 
 	{
@@ -521,7 +520,6 @@ struct X : IRenderJob, IAnimationJob, IFrameSubject
 
 	void render ( RenderParams & params ) 
 	{
-
 		renderer.render( params, path, is_active );
 	}
 
