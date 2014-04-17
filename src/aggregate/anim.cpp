@@ -297,9 +297,11 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 
 // OK, there's an issue, that the control points are going to be moved... 
 
-struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob 
+struct MyObject : /*IPositionEditorJob,*/ IRenderJob, IAnimationJob 
 {
 	// Assemble the object graph
+
+	typedef MyObject	this_type;
 
 	Services			& services ;
 
@@ -308,8 +310,9 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 
 	// Helpers
 	Render				renderer;
-	Editor				editor;
+//	Editor				editor;
 
+	int					x1, y1;
 	ControlPoint		control_point;
 
 	Listeners			listeners;
@@ -318,14 +321,16 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	MyObject( Services & services )
 		: services( services),
 		is_active( false ),
+		path(),
 		renderer( is_active, path), 
-		editor( is_active, path),
-		control_point( services, 20, 20 )
+//		editor( is_active, path),
+		
+		x1( 20), y1( 20),
+		control_point( services, x1, y1 )
 	{ 
-		agg::rounded_rect   r( 20, 20, 100, 100, 10);
 
-		path.free_all();
-		path.concat_path( r);
+		control_point.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
+
 
 		show( true);
 	}  
@@ -373,12 +378,12 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 			std::cout << "show as render interface " << (IRenderJob *)this << std::endl;
 
 			services.renderer.add( *this  );
-			services.position_editor.add( *this );
+//			services.position_editor.add( *this );
 			services.animation.add( *this );
 		}
 		else {
 			services.renderer.remove( *this  );
-			services.position_editor.remove( *this );
+//			services.position_editor.remove( *this );
 			services.animation.remove( *this );
 		}
 	}
@@ -390,7 +395,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 	}
 
 
-
+#if 0
 	// IPositionEditorJob
 	double hit_test( unsigned x, unsigned y ) 
 	{
@@ -419,7 +424,7 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		editor.finish_edit();
 		// make the model fire an event 
 	}
-
+#endif
 	
 	// IAnimationJob 
 	void tick() 
@@ -430,18 +435,42 @@ struct MyObject : IPositionEditorJob, IRenderJob, IAnimationJob
 		notify( "change");
 	}
 
+
+	void on_control_point_changed( const Event &e )
+	{
+		std::cout << "control point changed" << std::endl;
+
+		// update the position -- we just have to notify ????
+		x1 = control_point.x;
+
+		notify( "change");
+	}
+
+
 	// IRenderJob 
 	void pre_render( RenderParams & params ) 
 	{  }
 
 	void render ( RenderParams & params ) 
 	{
+/*
+		agg::rounded_rect   r( x1, y1, 100, 100, 10);
+
+		path.free_all();
+		path.concat_path( r);
+*/
 		renderer.render( params);
+
 	}
 
-	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
+	void get_bounds( int *x1_, int *y1_, int *x2_, int *y2_ ) 
 	{
-		renderer.get_bounds( x1, y1, x2, y2);
+		agg::rounded_rect   r( x1, y1, 100, 100, 10);
+
+		path.free_all();
+		path.concat_path( r);
+
+		renderer.get_bounds( x1_, y1_, x2_, y2_);
 	}
 
 	int get_z_order() const 
