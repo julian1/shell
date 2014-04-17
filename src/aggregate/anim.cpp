@@ -329,6 +329,10 @@ struct MyObject : IRenderJob, IAnimationJob
 
 	~MyObject()
 	{
+		top_left.unregister( make_adapter( *this, & this_type::on_control_point_changed )); 
+		top_right.unregister( make_adapter( *this, & this_type::on_control_point_changed )); 
+		bottom_left.unregister( make_adapter( *this, & this_type::on_control_point_changed )); 
+		bottom_right.unregister( make_adapter( *this, & this_type::on_control_point_changed )); 
 		show( false);
 	}
 
