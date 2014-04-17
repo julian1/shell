@@ -319,6 +319,11 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 // with the interfaces. also events could even be forwared. 
 
 
+/*
+	OK, actually the renderering thing with the path ought into a frame subject 
+
+*/
+
 struct IFrameSubject
 {
 	// framesubject can be completely self contained. 
@@ -326,35 +331,29 @@ struct IFrameSubject
 	virtual void set_position( int x1, int y1, int x2, int y2) = 0; 
 
 	// set_active() ...
+	virtual void set_active( bool active_ ) = 0; 
 
 };
 
 
 
-struct Frame : IRenderJob, IAnimationJob 
+struct Frame  
 {
 	typedef Frame		this_type;
 
-	Services			& services ;
-	Render				& renderer;
 	IFrameSubject		& frame_subject;
 
-	bool				is_active;
-	agg::path_storage	path; 
 	// Helpers
 	int					x1, y1, x2, y2;
 	ControlPoint		top_left;
 	ControlPoint		top_right;
 	ControlPoint		bottom_left;
 	ControlPoint		bottom_right;
-	Listeners			listeners;
 
-	Frame( Services & services, Render & renderer, IFrameSubject & frame_subject )
-		: services( services),
-		renderer( renderer),
-		frame_subject( frame_subject),
-		is_active( false ),
-		path(),
+	Frame( Services & services, IFrameSubject & frame_subject )
+		: frame_subject( frame_subject),
+//		is_active( false ),
+//		path(),
 		x1( 20), y1( 20),
 		x2( 100), y2( 100),
 		top_left( services, x1, y1 ),
@@ -363,11 +362,14 @@ struct Frame : IRenderJob, IAnimationJob
 		bottom_right( services, x2, y2 )
 
 	{ 
+		// frame subject is composed yet
+		std::cout << "frame subject ref " << & frame_subject << std::endl;
+		frame_subject.set_position( x1, y1, x2, y2 ); 
+
 		top_left.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
 		top_right.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
 		bottom_left.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
 		bottom_right.register_( make_adapter( *this, & this_type::on_control_point_changed )); 
-		show( true);
 	}  
 
 	~Frame()
@@ -376,34 +378,18 @@ struct Frame : IRenderJob, IAnimationJob
 		top_right.unregister( make_adapter( *this, & this_type::on_control_point_changed )); 
 		bottom_left.unregister( make_adapter( *this, & this_type::on_control_point_changed )); 
 		bottom_right.unregister( make_adapter( *this, & this_type::on_control_point_changed )); 
-		show( false);
+		//show( false);
 	}
 
-	void notify( const char *msg )
-	{
-		listeners.notify( *this, msg ); 
-	}
-
-	void show( bool u )
-	{
-		if( u) {		
-			services.renderer.add( *this  );
-			services.animation.add( *this );
-		}
-		else {
-			services.renderer.remove( *this  );
-			services.animation.remove( *this );
-		}
-	}
 
 	void on_control_point_changed( const Event &e )
 	{
 		ControlPoint &src = dynamic_cast< ControlPoint &>( e.object ); 
 
 		if( std::string( e.msg) == "active" )		
-			is_active = true;
+			frame_subject.set_active( true );
 		else if( std::string( e.msg) == "inactive" )		
-			is_active = false;
+			frame_subject.set_active( false );
 			
 
 		if( &src == &top_left)
@@ -435,8 +421,71 @@ struct Frame : IRenderJob, IAnimationJob
 		frame_subject.set_position( x1, y1, x2, y2 );
 
 
+	}
+
+
+};
+
+
+
+struct X : IRenderJob, IAnimationJob, IFrameSubject
+{
+	// framesubject can be completely self contained. 
+
+	Services			& services ;
+	Render				& renderer;
+
+	Listeners			listeners;
+	int					x1, y1, x2, y2;
+	bool				is_active;
+	agg::path_storage	path; 
+
+	X( Services & services, Render	& renderer)
+		: services( services),
+		renderer( renderer)
+	{
+		
+		std::cout << "frame subject constructor " << this << std::endl;
+
+		show( true);
+	}
+
+	void set_active( bool active_ ) 
+	{
+		is_active = active_;
+	} 
+
+	void set_position( int x1_, int y1_, int x2_, int y2_) 
+	{
+		std::cout << "whoot inside frame subject " << this << std::endl;
+
+		x1 = x1_;
+		y1 = y1_;
+		x2 = x2_;
+		y2 = y2_;
+		//std::cout << "whoot frame changed" << std::endl;
 		// and broadcast
+
 		notify( "change");
+	} 
+
+	// set_active() ...
+
+	void notify( const char *msg )
+	{
+		listeners.notify( *this, msg ); 
+	}
+
+	void show( bool u )
+	{
+		if( u) {		
+			services.renderer.add( *this  );
+			services.animation.add( *this );
+		}
+		else {
+			services.renderer.remove( *this  );
+			services.animation.remove( *this );
+		}
 	}
 
 	// IObject
@@ -449,6 +498,7 @@ struct Frame : IRenderJob, IAnimationJob
 	{
 		listeners.unregister( l);
 	}
+
 
 	// IAnimationJob 
 	void tick() 
@@ -479,20 +529,6 @@ struct Frame : IRenderJob, IAnimationJob
 	{
 		return 102;
 	}; 
-};
-
-
-
-struct X : IFrameSubject
-{
-	// framesubject can be completely self contained. 
-
-	void set_position( int x1, int y1, int x2, int y2) 
-	{
-		std::cout << "whoot frame changed" << std::endl;
-	} 
-
-	// set_active() ...
 
 };
 
@@ -501,14 +537,14 @@ struct X : IFrameSubject
 struct MyObject2
 {
 	Render		renderer; 
+	X			subject;
 	Frame		frame;
-	X			x;
 
 //		renderer( is_active, path), 
 	MyObject2( Services & services )
 		: renderer(),
-		x(),
-		frame( services, renderer, x)
+		subject( services, renderer),
+		frame( services, subject )
 	{ } 
 
 
