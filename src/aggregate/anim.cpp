@@ -112,7 +112,7 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 		: services( services ),
 		x( x),
 		y( y),
-		r( 5),
+		r( 6),
 		path(),
 		active( false)
 	{ 
@@ -352,11 +352,7 @@ struct Frame
 		bottom_right.set_position( x2, y2);
 
 		frame_subject.set_position( x1, y1, x2, y2 );
-
-
 	}
-
-
 };
 
 
@@ -431,7 +427,7 @@ public:
 
 
 
-struct X : IRenderJob, IAnimationJob, IFrameSubject
+struct FrameAnimator : IRenderJob, IAnimationJob, IFrameSubject
 {
 	// animate the path... 
 	// framesubject can be completely self contained. 
@@ -444,7 +440,7 @@ struct X : IRenderJob, IAnimationJob, IFrameSubject
 	bool				is_active;
 	agg::path_storage	path; 
 
-	X( Services & services, Render	& renderer)
+	FrameAnimator( Services & services, Render	& renderer)
 		: services( services),
 		renderer( renderer)
 	{
@@ -571,17 +567,17 @@ struct Y : IFrameSubject
 
 struct MyObject2
 {
-	Render		renderer; 
-	X			subject;
-	Y			y;	
+	Render			renderer; 
+	FrameAnimator	frame_animator;
+	Y				y;	
 	FrameMultiplexer multi;
-	Frame		frame;
+	Frame			frame;
 
 	MyObject2( Services & services )
 		: renderer(),
-		subject( services, renderer),
+		frame_animator( services, renderer),
 		y(),
-		multi( subject, y),
+		multi( frame_animator, y),
 		frame( services, multi )
 	{ } 
 
