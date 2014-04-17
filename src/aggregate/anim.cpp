@@ -319,12 +319,26 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 // with the interfaces. also events could even be forwared. 
 
 
+struct IFrameSubject
+{
+	// framesubject can be completely self contained. 
+
+	virtual void set_position( int x1, int y1, int x2, int y2) = 0; 
+
+	// set_active() ...
+
+};
+
+
+
 struct Frame : IRenderJob, IAnimationJob 
 {
-	typedef Frame	this_type;
+	typedef Frame		this_type;
 
 	Services			& services ;
 	Render				& renderer;
+	IFrameSubject		& frame_subject;
+
 	bool				is_active;
 	agg::path_storage	path; 
 	// Helpers
@@ -335,9 +349,10 @@ struct Frame : IRenderJob, IAnimationJob
 	ControlPoint		bottom_right;
 	Listeners			listeners;
 
-	Frame( Services & services, Render & renderer )
+	Frame( Services & services, Render & renderer, IFrameSubject & frame_subject )
 		: services( services),
 		renderer( renderer),
+		frame_subject( frame_subject),
 		is_active( false ),
 		path(),
 		x1( 20), y1( 20),
@@ -417,6 +432,9 @@ struct Frame : IRenderJob, IAnimationJob
 		bottom_left.set_position( x1, y2);
 		bottom_right.set_position( x2, y2);
 
+		frame_subject.set_position( x1, y1, x2, y2 );
+
+
 		// and broadcast
 		notify( "change");
 	}
@@ -464,15 +482,33 @@ struct Frame : IRenderJob, IAnimationJob
 };
 
 
+
+struct X : IFrameSubject
+{
+	// framesubject can be completely self contained. 
+
+	void set_position( int x1, int y1, int x2, int y2) 
+	{
+		std::cout << "whoot frame changed" << std::endl;
+	} 
+
+	// set_active() ...
+
+};
+
+
+
 struct MyObject2
 {
 	Render		renderer; 
 	Frame		frame;
+	X			x;
 
 //		renderer( is_active, path), 
 	MyObject2( Services & services )
 		: renderer(),
-		frame( services, renderer)
+		x(),
+		frame( services, renderer, x)
 	{ } 
 
 
