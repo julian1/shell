@@ -40,18 +40,20 @@ namespace {
 struct Render
 {
 	// A helper class for simple dashed line animation renderer
-	bool				& is_active; 
-	agg::path_storage	& path; 
+//	bool				& is_active; 
+//	agg::path_storage	& path; 
 	double				offset; 
 
 public:
-	Render( bool & is_active, agg::path_storage	& path )  
-		: is_active ( is_active),
-		path( path),
-		offset( 0)
+//	Render( bool & is_active, agg::path_storage	& path )  
+	Render() 
+	:	offset( 0)
 	{ } 
 
-	void render ( RenderParams & params ) 
+	void render ( RenderParams & params,
+		agg::path_storage	& path,
+		bool				& is_active
+	) 
 	{
 		// std::cout << "render test job " << parms.dt << std::endl;
 		// path_reader	reader( root->get_path() );
@@ -87,7 +89,10 @@ public:
 		agg::render_scanlines_aa_solid( ras, sl, params.surface.rbase(), agg::rgba8( 0xff, 0, 0 ) );
 	}
 
-	void get_bounds( int *x1, int *y1, int *x2, int *y2 ) 
+
+	void get_bounds(
+		agg::path_storage	& path,
+		 int *x1, int *y1, int *x2, int *y2 ) 
 	{
 		bounding_rect_single( path, 0, x1, y1, x2, y2);	
 
@@ -302,15 +307,27 @@ struct ControlPoint : IPositionEditorJob, IRenderJob
 
 // OK, there's an issue, that the control points are going to be moved... 
 
-struct MyObject : IRenderJob, IAnimationJob 
+
+// Ok, MyObject Is now something of a framing/ hosting object for something ...
+
+// stuff like the Renderer should be being passed to it however ?
+
+// Ok, but hang on, how do construct the real object,
+
+
+// we can construct an aggregated object. - it's the inner objects that will communicate
+// with the interfaces. also events could even be forwared. 
+
+
+struct Frame : IRenderJob, IAnimationJob 
 {
-	typedef MyObject	this_type;
+	typedef Frame	this_type;
 
 	Services			& services ;
+	Render				& renderer;
 	bool				is_active;
 	agg::path_storage	path; 
 	// Helpers
-	Render				renderer;
 	int					x1, y1, x2, y2;
 	ControlPoint		top_left;
 	ControlPoint		top_right;
@@ -318,11 +335,11 @@ struct MyObject : IRenderJob, IAnimationJob
 	ControlPoint		bottom_right;
 	Listeners			listeners;
 
-	MyObject( Services & services )
+	Frame( Services & services, Render & renderer )
 		: services( services),
+		renderer( renderer),
 		is_active( false ),
 		path(),
-		renderer( is_active, path), 
 		x1( 20), y1( 20),
 		x2( 100), y2( 100),
 		top_left( services, x1, y1 ),
@@ -338,7 +355,7 @@ struct MyObject : IRenderJob, IAnimationJob
 		show( true);
 	}  
 
-	~MyObject()
+	~Frame()
 	{
 		top_left.unregister( make_adapter( *this, & this_type::on_control_point_changed )); 
 		top_right.unregister( make_adapter( *this, & this_type::on_control_point_changed )); 
@@ -428,7 +445,7 @@ struct MyObject : IRenderJob, IAnimationJob
 		agg::rounded_rect   r( x1, y1, x2, y2, 10);
 		path.free_all();
 		path.concat_path( r);
-		renderer.get_bounds( x1_, y1_, x2_, y2_);
+		renderer.get_bounds( path, x1_, y1_, x2_, y2_);
 	}
 
 	void pre_render( RenderParams & params ) 
@@ -436,7 +453,8 @@ struct MyObject : IRenderJob, IAnimationJob
 
 	void render ( RenderParams & params ) 
 	{
-		renderer.render( params);
+
+		renderer.render( params, path, is_active );
 	}
 
 	int get_z_order() const 
@@ -445,11 +463,30 @@ struct MyObject : IRenderJob, IAnimationJob
 	}; 
 };
 
+
+struct MyObject2
+{
+	Render		renderer; 
+	Frame		frame;
+
+//		renderer( is_active, path), 
+	MyObject2( Services & services )
+		: renderer(),
+		frame( services, renderer)
+	{ } 
+
+
+};
+
+
 }; // anon namespace
 
 
 void add_animation_object( Services & services )
 {
-	new MyObject( services);
+
+	// the renderer, ought to be being passed by reference to this thing.
+
+	new MyObject2( services);
 }
 
